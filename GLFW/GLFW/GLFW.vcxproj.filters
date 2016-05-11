@@ -98,4 +98,9 @@
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODO.txt">
+      <Filter>Файлы исходного кода</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
