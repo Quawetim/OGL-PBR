@@ -156,6 +156,7 @@ public:
 	/* Изменение размера объекта */
 	void Resize(float size)
 	{
+		/* Если умножить, то радиус сферы -> 0 */
 		ModelMatrix = scale(vec3(size));
 	}
 
@@ -728,7 +729,7 @@ private:
 class SCENE
 {
 public:
-	OBJECT CUBE, SPHERE, CYLINDER, SKYBOX;
+	OBJECT CUBE, CUBE2, SPHERE, SPHERE2, CYLINDER, SKYBOX;
 
 	SCENE() 
 	{
@@ -737,9 +738,19 @@ public:
 		CUBE.PrepareReflectionRefraction();
 		CUBE.Move(0.0, 0.0, 3.0);
 
+		CUBE2 = OBJECT("3dmodels//cube.obj");
+		CUBE2.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		CUBE2.PrepareReflectionRefraction();
+		CUBE2.Move(0.0, -3.0, 3.0);
+
 		SPHERE = OBJECT("3dmodels//sphere.obj");
-		SPHERE.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		SPHERE.LoadShaders("shaders//Refraction.vertexshader", "shaders//Refraction.fragmentshader");
 		SPHERE.PrepareReflectionRefraction();
+
+		SPHERE2 = OBJECT("3dmodels//sphere.obj");
+		SPHERE2.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		SPHERE2.PrepareReflectionRefraction();
+		SPHERE2.Move(0.0, -3.0, 0.0);
 
 		CYLINDER = OBJECT("3dmodels//cylinder.obj");
 		CYLINDER.LoadShaders("shaders//Cylinder.vertexshader", "shaders//Cylinder.fragmentshader");
@@ -751,13 +762,20 @@ public:
 		SKYBOX.PrepareSkyBox();
 
 		CUBE.cubemapTexture = SKYBOX.cubemapTexture;
+		CUBE2.cubemapTexture = SKYBOX.cubemapTexture;
+
 		SPHERE.cubemapTexture = SKYBOX.cubemapTexture;
+		SPHERE2.cubemapTexture = SKYBOX.cubemapTexture;
 	};
 
 	~SCENE() 
 	{
 		glDeleteProgram(CUBE.ShaderID);
+		glDeleteProgram(CUBE2.ShaderID);
+
 		glDeleteProgram(SPHERE.ShaderID);
+		glDeleteProgram(SPHERE2.ShaderID);
+
 		glDeleteProgram(CYLINDER.ShaderID);
 		glDeleteProgram(SKYBOX.ShaderID);
 	};
@@ -765,12 +783,16 @@ public:
 	void Render()
 	{
 		CUBE.RenderReflectionRefraction();
+		CUBE2.RenderReflectionRefraction();
+
 		SPHERE.RenderReflectionRefraction();
+		SPHERE2.RenderReflectionRefraction();
+
 		CYLINDER.RenderCylinder();
 		SKYBOX.RenderSkyBox();
 
-		SPHERE.Resize(SPHEREsize);
-		CUBE.Rotate(CUBEangle, vec3(0.0, 1.0, 1.0));
+		//CUBE.Rotate(CUBEangle, vec3(0.0, 1.0, 1.0));
+		//SPHERE.Resize(SPHEREsize);		
 		CYLINDER.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
 
 		if ((SPHEREsize > SPHEREsizeMin) && SPHEREdecreaseSize) SPHEREsize -= SPHEREsizeDelta;

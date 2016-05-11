@@ -7,8 +7,9 @@ uniform vec3 cameraPos;
 uniform samplerCube skybox;
 
 void main()
-{        
-	float ratio = 1.0 / 1.33;	    
+{      
+	float refractiveindex = 1.52;					//air: 1.0, ice: 1.309, water: 1.33, glass: 1.52, diamond: 2.42
+	float ratio = 1.0 / refractiveindex;	    
     vec3 I = normalize(Position - cameraPos);
     vec3 R = refract(I, normalize(Normal), ratio);
     color = texture(skybox, R);
