@@ -1,0 +1,15 @@
+#version 330 core
+
+// Input data
+in vec3 TexCoords;	// From vertex shader
+
+// Output data
+out vec4 color;
+
+// Constants
+uniform samplerCube skybox;
+
+void main()
+{	
+	color = texture(skybox, TexCoords);
+}
