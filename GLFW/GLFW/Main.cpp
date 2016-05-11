@@ -769,29 +769,29 @@ public:
 		CYLINDER.RenderCylinder();
 		SKYBOX.RenderSkyBox();
 
-		SPHERE.Resize(size);
-		CUBE.Rotate(angle, vec3(axisX, axisY, axisZ));	
-		CYLINDER.Rotate(angle2, vec3(0.0, 1.0, 0.0));		
+		SPHERE.Resize(SPHEREsize);
+		CUBE.Rotate(CUBEangle, vec3(0.0, 1.0, 1.0));
+		CYLINDER.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
 
-		if ((size > sizemin) && decrease) size -= sizedelta;
+		if ((SPHEREsize > SPHEREsizeMin) && SPHEREdecreaseSize) SPHEREsize -= SPHEREsizeDelta;
 		else
 		{
-			decrease = false;
-			increase = true;
+			SPHEREdecreaseSize = false;
+			SPHEREincreaseSize = true;
 		}
 
-		if ((size < sizemax) && increase) size += sizedelta;
+		if ((SPHEREsize < SPHEREsizeMax) && SPHEREincreaseSize) SPHEREsize += SPHEREsizeDelta;
 		else
 		{
-			decrease = true;
-			increase = false;
+			SPHEREdecreaseSize = true;
+			SPHEREincreaseSize = false;
 		}
+
 	}
 private:
-	bool decrease = true, increase = false;
-	float axisX = 0.0, axisY = 1.0, axisZ = 1.0;
-	float size = 1.0, sizedelta = 0.006, sizemin = 0.8, sizemax = 1.0;
-	float angle = 0.05, angle2 = -0.01;
+	bool SPHEREdecreaseSize = true, SPHEREincreaseSize = false;
+	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
+	float CUBEangle = 0.05, CYLINDERangle = -0.01;
 };
 
 /* Обработка ошибок */
