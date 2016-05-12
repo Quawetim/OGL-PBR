@@ -4,10 +4,11 @@
 #include "ViewMatrix.h"
 
 
-vec3 position;														// Позиция камеры
-float deltaTime, radius = 8.0, cameraheight = 2.0;					// Время, радиус и высота полёта второй камеры
-float horizontalAngle = pi<float>() / 4.0, verticalAngle = 0.0;		// Горизонтальный и вертикальный углы
-float FoV = 45.0, speed = 3.0, speed2 = 3.0, mouseSpeed = 0.005;	// FOV, скорость движения камеры, скорость мышки
+vec3 position;																							// Позиция камеры
+float Pi = pi<float>();
+float deltaTime, radius = 20.0, radiusMin = 2.0, radiusMax = 100.0, cameraheight = 1.0;					// Время, радиус и высота полёта второй камеры
+float horizontalAngle = 0.0, verticalAngle = 0.0;														// Горизонтальный и вертикальный углы
+float FoV = 45.0, speed = 6.0, speed2 = 6.0, mouseSpeed = 0.005;										// FOV, скорость движения камеры, скорость мышки
 
 mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
 
@@ -20,16 +21,16 @@ mat4 getViewMatrixAxes() { return ViewMatrixAxes; }
 */
 void checkmove(GLFWwindow* window)
 {
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (radius >= 2.0) radius -= 1.0 * deltaTime * speed; }
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (radius <= 10.0) radius += 1.0 * deltaTime * speed; }	
-	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { if (cameraheight >= 0.0) cameraheight -= 1.0 * deltaTime * speed; }
-	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { if (cameraheight <= 5.0) cameraheight += 1.0 * deltaTime * speed; }
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (radius >= radiusMin) radius -= deltaTime * speed; }
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (radius <= radiusMax) radius += deltaTime * speed; }
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { if (cameraheight <= 10.0) cameraheight += deltaTime * speed; }
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { if (cameraheight >= -10.0) cameraheight -= deltaTime * speed; }
 }
 
 void checkmove(GLFWwindow* window, vec3 direction, vec3 right)
 {
-	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (speed2 < 100.0) speed2 += 1.0; }
-	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (speed2 > 1.0) speed2 -= 1.0; }
+	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (speed2 < 10.0) speed2 += 0.2; }
+	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (speed2 > 1.0) speed2 -= 0.2; }
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { position += direction * deltaTime * speed2; }
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { position -= direction * deltaTime * speed2; }
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { position += right * deltaTime * speed2; }
@@ -81,7 +82,7 @@ vec3 ComputeViewMatrix(GLFWwindow* window, int cameramode)
 		vec3 direction, up;
 		
 		position = vec3(radius*cos(horizontalAngle), cameraheight, radius*sin(horizontalAngle));
-		direction = vec3(0.0, 0.0, 0.0);
+		direction = vec3(0.0, -1.5, 0.0);
 		up = vec3(0.0, 1.0, 0.0);
 
 		checkmove(window);

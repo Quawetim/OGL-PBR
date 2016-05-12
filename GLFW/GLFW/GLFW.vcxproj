@@ -162,16 +162,16 @@
   <ItemGroup>
     <None Include="shaders\Axes.fragmentshader" />
     <None Include="shaders\Axes.vertexshader" />
-    <None Include="shaders\Cube.fragmentshader" />
-    <None Include="shaders\Cube.vertexshader" />
+    <None Include="shaders\SolidColor.fragmentshader" />
+    <None Include="shaders\SolidColor.vertexshader" />
     <None Include="shaders\Reflection.fragmentshader" />
     <None Include="shaders\Reflection.vertexshader" />
     <None Include="shaders\Refraction.fragmentshader" />
     <None Include="shaders\Refraction.vertexshader" />
     <None Include="shaders\SkyBox.fragmentshader" />
     <None Include="shaders\SkyBox.vertexshader" />
-    <None Include="shaders\Sphere.fragmentshader" />
-    <None Include="shaders\Sphere.vertexshader" />
+    <None Include="shaders\GradientColor.fragmentshader" />
+    <None Include="shaders\GradientColor.vertexshader" />
     <None Include="shaders\Text.fragmentshader" />
     <None Include="shaders\Text.vertexshader" />
     <None Include="shaders\Cylinder.fragmentshader" />

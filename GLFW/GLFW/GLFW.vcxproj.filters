@@ -49,22 +49,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\Cube.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Cube.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
     <None Include="shaders\Axes.fragmentshader">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
     <None Include="shaders\Axes.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Sphere.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Sphere.vertexshader">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
     <None Include="shaders\Text.fragmentshader">
@@ -95,6 +83,18 @@
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
     <None Include="shaders\Refraction.vertexshader">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\SolidColor.fragmentshader">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\SolidColor.vertexshader">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\GradientColor.fragmentshader">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\GradientColor.vertexshader">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
   </ItemGroup>

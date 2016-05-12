@@ -28,8 +28,8 @@ bool wireframe = false;
 class OBJECT
 {
 public:
-	GLuint ShaderID;
-	GLuint  cubemapTexture;
+	GLuint ShaderID;														//Перетащить в Private, добавить метод для изменения
+	GLuint cubemapTexture;
 
 	OBJECT() {};
 
@@ -172,6 +172,14 @@ public:
 		ModelMatrix *= translate(vec3(X, Y, Z));
 	}	
 
+	/* Задаёт цвет сплошной цвет объекта */
+	void SolidColor(float R, float G, float B)
+	{
+		solidcolor.x = R;
+		solidcolor.y = G;
+		solidcolor.z = B;
+	}
+
 	void PrepareAxes()
 	{
 		LoadShaders("shaders//Axes.vertexshader", "shaders//Axes.fragmentshader");
@@ -205,12 +213,12 @@ public:
 
 		glGenBuffers(1, &vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexbuffer_data), vertexbuffer_data, GL_STATIC_DRAW);
 
 		glGenBuffers(1, &colorbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(colorbuffer_data), colorbuffer_data, GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
@@ -259,7 +267,7 @@ public:
 		ModelViewMatrix = ViewMatrix * ModelMatrix;
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
 
 		glBindVertexArray(VAO);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -332,12 +340,12 @@ public:
 		glBindVertexArray(0);
 
 		vector<const GLchar*> faces;
-		faces.push_back("skybox/right.jpg");
-		faces.push_back("skybox/left.jpg");
-		faces.push_back("skybox/top.jpg");
-		faces.push_back("skybox/bottom.jpg");
-		faces.push_back("skybox/back.jpg");
-		faces.push_back("skybox/front.jpg");
+		faces.push_back("skybox//right.jpg");
+		faces.push_back("skybox//left.jpg");
+		faces.push_back("skybox//top.jpg");
+		faces.push_back("skybox//bottom.jpg");
+		faces.push_back("skybox//back.jpg");
+		faces.push_back("skybox//front.jpg");
 		cubemapTexture = loadCubemap(faces);
 	}
 
@@ -408,6 +416,120 @@ public:
 
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindVertexArray(0);
+	}
+
+	void PrepareSolidColor()
+	{
+		LoadShaders("shaders//SolidColor.vertexshader", "shaders//SolidColor.fragmentshader");
+
+		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
+
+		/*static const GLfloat colorbuffer_data[] = {
+			1.0f, 0.0f, 0.0f,
+			1.0f, 0.0f, 0.0f,
+
+			0.0f, 1.0f, 0.0f,
+			0.0f, 1.0f, 0.0f,
+
+			0.0f, 0.0f, 1.0f,
+			0.0f, 0.0f, 1.0f,
+		};*/
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		/*glGenBuffers(1, &colorbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(colorbuffer_data), colorbuffer_data, GL_STATIC_DRAW);*/
+
+		glEnableVertexAttribArray(0);
+		//glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
+	}
+
+	void RenderSolidColor()
+	{
+		glUseProgram(ShaderID);
+
+		ComputeViewMatrix(window, cameramode);
+		ProjectionMatrix = getProjectionMatrix();
+		ViewMatrix = getViewMatrix();
+		ModelViewMatrix = ViewMatrix * ModelMatrix;
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+		glUniform3f(SolidColorID, solidcolor.x, solidcolor.y, solidcolor.z);
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindVertexArray(0);
+	}
+
+	void PrepareGradientColor()
+	{
+		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
+
+		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
+		
+		GLfloat *colorbuffer_data = new GLfloat[vertices.size() * sizeof(vec3) * 3];
+
+		for (int i = 0; i < vertices.size() * sizeof(vec3) * 3; i += 3)
+		{
+			if (i % 2 == 0)
+			{
+				colorbuffer_data[i] = 0.33;
+				colorbuffer_data[i + 1] = 0.66;
+				colorbuffer_data[i + 2] = 0.99;
+			}
+			else
+			{
+				colorbuffer_data[i] = 0.24;
+				colorbuffer_data[i + 1] = 0.16;
+				colorbuffer_data[i + 2] = 0.71;
+			}
+		}
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &colorbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size() * sizeof(vec3) * 3, colorbuffer_data, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
+	}
+
+	void RenderGradientColor()
+	{
+		glUseProgram(ShaderID);
+
+		ComputeViewMatrix(window, cameramode);
+		ProjectionMatrix = getProjectionMatrix();
+		ViewMatrix = getViewMatrix();
+		ModelViewMatrix = ViewMatrix * ModelMatrix;
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
 		glBindVertexArray(0);
 	}
@@ -495,7 +617,7 @@ public:
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
 
-		vec3 lightPos = vec3(0.0, 0.0, 0.0);
+		vec3 lightPos = vec3(0.0, -7.0, 0.0);
 		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
 		glBindVertexArray(VAO);
@@ -518,19 +640,23 @@ public:
 	}
 
 private:
-	mat4 ModelMatrix = mat4(1.0), ProjectionMatrix, ViewMatrix, ModelViewMatrix, MVP;
-	mat3 ModelView3x3Matrix;
-
 	/* Vertex Array Object */
 	GLuint VAO;
 
+	/* Матрицы */
+	mat4 ModelMatrix = mat4(1.0), ProjectionMatrix, ViewMatrix, ModelViewMatrix, MVP;
+	mat3 ModelView3x3Matrix;
+
 	/* Идентификаторы источника света, матриц и текстур для шейдеров*/
-	GLuint CameraPosID, LightID, MatrixID, ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID, DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
+	GLuint CameraPosID, LightID, SolidColorID;
+	GLuint MatrixID, ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
+	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
 	GLuint DiffuseTexture, NormalTexture, SpecularTexture;
 	/* Буферы */
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
+	vec3 solidcolor;
 	vector<vec3> vertices, normals, tangents, bitangents;
 	vector<vec2> uvs;
 	vector<unsigned short> indices;
@@ -729,70 +855,140 @@ private:
 class SCENE
 {
 public:
-	OBJECT CUBE, CUBE2, SPHERE, SPHERE2, CYLINDER, SKYBOX;
+	OBJECT CUBE_Solid, CUBE_Gradient, CUBE_Glass, CUBE_Mirror;
+	OBJECT SPHERE_Solid, SPHERE_Gradient, SPHERE_Glass, SPHERE_Mirror;
+	OBJECT CYLINDER, CYLINDER_Gradient, CYLINDER_Solid, CYLINDER_Glass, CYLINDER_Mirror;
+	OBJECT SKYBOX;
 
 	SCENE() 
 	{
-		CUBE = OBJECT("3dmodels//cube.obj");
-		CUBE.LoadShaders("shaders//Refraction.vertexshader", "shaders//Refraction.fragmentshader");
-		CUBE.PrepareReflectionRefraction();
-		CUBE.Move(0.0, 0.0, 3.0);
+		CUBE_Solid = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid.PrepareSolidColor();
+		CUBE_Solid.SolidColor(0.9, 0.0, 0.5);
+		CUBE_Solid.Move(0.0, 6.0, 3.0);
 
-		CUBE2 = OBJECT("3dmodels//cube.obj");
-		CUBE2.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
-		CUBE2.PrepareReflectionRefraction();
-		CUBE2.Move(0.0, -3.0, 3.0);
+		CUBE_Gradient = OBJECT("3dmodels//cube.obj");
+		CUBE_Gradient.PrepareGradientColor();
+		CUBE_Gradient.Move(0.0, 3.0, 3.0);
 
-		SPHERE = OBJECT("3dmodels//sphere.obj");
-		SPHERE.LoadShaders("shaders//Refraction.vertexshader", "shaders//Refraction.fragmentshader");
-		SPHERE.PrepareReflectionRefraction();
+		CUBE_Glass = OBJECT("3dmodels//cube.obj");
+		CUBE_Glass.LoadShaders("shaders//Refraction.vertexshader", "shaders//Refraction.fragmentshader");
+		CUBE_Glass.PrepareReflectionRefraction();
+		CUBE_Glass.Move(0.0, 0.0, 3.0);
 
-		SPHERE2 = OBJECT("3dmodels//sphere.obj");
-		SPHERE2.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
-		SPHERE2.PrepareReflectionRefraction();
-		SPHERE2.Move(0.0, -3.0, 0.0);
+		CUBE_Mirror = OBJECT("3dmodels//cube.obj");
+		CUBE_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		CUBE_Mirror.PrepareReflectionRefraction();
+		CUBE_Mirror.Move(0.0, -3.0, 3.0);
+
+		SPHERE_Solid = OBJECT("3dmodels//sphere.obj");
+		SPHERE_Solid.PrepareSolidColor();
+		SPHERE_Solid.SolidColor(0.6, 0.3, 0.9);
+		SPHERE_Solid.Move(0.0, 6.0, 0.0);
+
+		SPHERE_Gradient = OBJECT("3dmodels//sphere.obj");
+		SPHERE_Gradient.PrepareGradientColor();
+		SPHERE_Gradient.Move(0.0, 3.0, 0.0);
+
+		SPHERE_Glass = OBJECT("3dmodels//sphere.obj");
+		SPHERE_Glass.LoadShaders("shaders//Refraction.vertexshader", "shaders//Refraction.fragmentshader");
+		SPHERE_Glass.PrepareReflectionRefraction();
+
+		SPHERE_Mirror = OBJECT("3dmodels//sphere.obj");
+		SPHERE_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		SPHERE_Mirror.PrepareReflectionRefraction();
+		SPHERE_Mirror.Move(0.0, -3.0, 0.0);
 
 		CYLINDER = OBJECT("3dmodels//cylinder.obj");
 		CYLINDER.LoadShaders("shaders//Cylinder.vertexshader", "shaders//Cylinder.fragmentshader");
 		CYLINDER.PrepareCylinder();
-		CYLINDER.Move(0.0, -1.0, -3.0);
+		CYLINDER.Move(0.0, -7.0, -3.0);
+
+		CYLINDER_Solid = OBJECT("3dmodels//cylinder.obj");
+		CYLINDER_Solid.PrepareSolidColor();
+		CYLINDER_Solid.SolidColor(0.0, 0.3, 0.8);
+		CYLINDER_Solid.Move(0.0, 5.0, -3.0);
+
+		CYLINDER_Gradient = OBJECT("3dmodels//cylinder.obj");
+		CYLINDER_Gradient.PrepareGradientColor();
+		CYLINDER_Gradient.Move(0.0, 2.0, -3.0);
+
+		CYLINDER_Glass = OBJECT("3dmodels//cylinder.obj");
+		CYLINDER_Glass.LoadShaders("shaders//Refraction.vertexshader", "shaders//Refraction.fragmentshader");
+		CYLINDER_Glass.PrepareReflectionRefraction();
+		CYLINDER_Glass.Move(0.0, -1.0, -3.0);
+
+		CYLINDER_Mirror = OBJECT("3dmodels//cylinder.obj");
+		CYLINDER_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		CYLINDER_Mirror.PrepareReflectionRefraction();
+		CYLINDER_Mirror.Move(0.0, -4.0, -3.0);
 
 		SKYBOX = OBJECT();
 		SKYBOX.LoadShaders("shaders//SkyBox.vertexshader", "shaders//SkyBox.fragmentshader");
 		SKYBOX.PrepareSkyBox();
 
-		CUBE.cubemapTexture = SKYBOX.cubemapTexture;
-		CUBE2.cubemapTexture = SKYBOX.cubemapTexture;
+		CUBE_Glass.cubemapTexture = SKYBOX.cubemapTexture;
+		CUBE_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
 
-		SPHERE.cubemapTexture = SKYBOX.cubemapTexture;
-		SPHERE2.cubemapTexture = SKYBOX.cubemapTexture;
+		SPHERE_Glass.cubemapTexture = SKYBOX.cubemapTexture;
+		SPHERE_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
+
+		CYLINDER_Glass.cubemapTexture = SKYBOX.cubemapTexture;
+		CYLINDER_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
 	};
 
 	~SCENE() 
 	{
-		glDeleteProgram(CUBE.ShaderID);
-		glDeleteProgram(CUBE2.ShaderID);
+		glDeleteProgram(CUBE_Solid.ShaderID);
+		glDeleteProgram(CUBE_Gradient.ShaderID);
+		glDeleteProgram(CUBE_Glass.ShaderID);
+		glDeleteProgram(CUBE_Mirror.ShaderID);
 
-		glDeleteProgram(SPHERE.ShaderID);
-		glDeleteProgram(SPHERE2.ShaderID);
+		glDeleteProgram(SPHERE_Solid.ShaderID);
+		glDeleteProgram(SPHERE_Gradient.ShaderID);
+		glDeleteProgram(SPHERE_Glass.ShaderID);
+		glDeleteProgram(SPHERE_Mirror.ShaderID);
 
+		glDeleteProgram(CYLINDER_Solid.ShaderID);
+		glDeleteProgram(CYLINDER_Gradient.ShaderID);
+		glDeleteProgram(CYLINDER_Glass.ShaderID);
+		glDeleteProgram(CYLINDER_Mirror.ShaderID);
 		glDeleteProgram(CYLINDER.ShaderID);
+
 		glDeleteProgram(SKYBOX.ShaderID);
 	};
 
 	void Render()
 	{
-		CUBE.RenderReflectionRefraction();
-		CUBE2.RenderReflectionRefraction();
+		CUBE_Solid.RenderSolidColor();
+		CUBE_Gradient.RenderGradientColor();
+		CUBE_Glass.RenderReflectionRefraction();
+		CUBE_Mirror.RenderReflectionRefraction();
 
-		SPHERE.RenderReflectionRefraction();
-		SPHERE2.RenderReflectionRefraction();
+		SPHERE_Solid.RenderSolidColor();
+		SPHERE_Gradient.RenderGradientColor();
+		SPHERE_Glass.RenderReflectionRefraction();
+		SPHERE_Mirror.RenderReflectionRefraction();
 
+		CYLINDER_Solid.RenderSolidColor();
+		CYLINDER_Gradient.RenderGradientColor();
+		CYLINDER_Glass.RenderReflectionRefraction();
+		CYLINDER_Mirror.RenderReflectionRefraction();
 		CYLINDER.RenderCylinder();
+		
 		SKYBOX.RenderSkyBox();
 
-		//CUBE.Rotate(CUBEangle, vec3(0.0, 1.0, 1.0));
-		//SPHERE.Resize(SPHEREsize);		
+		CUBE_Solid.Rotate(-CUBEangle, vec3(0.0, 1.0, 0.0));
+		CUBE_Gradient.Rotate(CUBEangle, vec3(0.0, 1.0, 0.0));
+		CUBE_Glass.Rotate(-CUBEangle, vec3(0.0, 1.0, 0.0));
+		CUBE_Mirror.Rotate(CUBEangle, vec3(0.0, 1.0, 0.0));
+		
+		SPHERE_Glass.Resize(SPHEREsize);
+
+		CYLINDER_Solid.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
+		CYLINDER_Gradient.Rotate(-CYLINDERangle, vec3(0.0, 1.0, 0.0));
+		CYLINDER_Glass.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
+		CYLINDER_Mirror.Rotate(-CYLINDERangle, vec3(0.0, 1.0, 0.0));
 		CYLINDER.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
 
 		if ((SPHEREsize > SPHEREsizeMin) && SPHEREdecreaseSize) SPHEREsize -= SPHEREsizeDelta;
