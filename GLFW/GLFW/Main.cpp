@@ -22,8 +22,9 @@ GLFWwindow* window;
 #include "VboIndexer.h"
 #include "Text2D.h"
 
+int WindowWidth = 1280, WindowHeight = 800;
 int cameramode = 2;
-bool wireframe = false;
+bool wireframe = false;														// F1
 
 class OBJECT
 {
@@ -157,19 +158,19 @@ public:
 	void Resize(float size)
 	{
 		/* Если умножить, то радиус сферы -> 0 */
-		ModelMatrix = scale(vec3(size));
+		ModelMatrix = scale(ModelMatrix, vec3(size, size, size));
 	}
 
 	/* Вращение объекта */
 	void Rotate(float angle, vec3 axis)
 	{
-		ModelMatrix *= rotate(angle, axis);
+		ModelMatrix = rotate(ModelMatrix, angle, axis);
 	}
 
 	/* Перемещение объекта */
 	void Move(float X, float Y, float Z)
 	{
-		ModelMatrix *= translate(vec3(X, Y, Z));
+		ModelMatrix = translate(ModelMatrix, vec3(X, Y, Z));
 	}	
 
 	/* Задаёт цвет сплошной цвет объекта */
@@ -182,7 +183,7 @@ public:
 
 	void PrepareAxes()
 	{
-		LoadShaders("shaders//Axes.vertexshader", "shaders//Axes.fragmentshader");
+		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
 
 		MatrixID = glGetUniformLocation(ShaderID, "MVP");
 
@@ -251,20 +252,13 @@ public:
 		*/
 	}
 
-	void RenderAxes()
+	void RenderAxes(mat4 ViewMatrix)
 	{
-		int width, height;
-
-		glfwGetWindowSize(window, &width, &height);
-
 		glUseProgram(ShaderID);
 
 		glViewport(5, 5, 60, 60);
 
-		ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = perspective(45.0f, 1.0f, 0.1f, 100.0f);
-		ViewMatrix = getViewMatrixAxes();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
+		mat4 ProjectionMatrix = perspective(radians(45.0f), 1.0f, 0.1f, 100.0f);
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -274,7 +268,7 @@ public:
 		glDrawArrays(GL_LINES, 0, 6);
 		glBindVertexArray(0);
 
-		glViewport(0, 0, width, height);
+		glViewport(0, 0, WindowWidth, WindowHeight);
 	}
 
 	void PrepareSkyBox()
@@ -349,18 +343,11 @@ public:
 		cubemapTexture = loadCubemap(faces);
 	}
 
-	void RenderSkyBox()
+	void RenderSkyBox(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glDepthFunc(GL_LEQUAL);
 
 		glUseProgram(ShaderID);
-		
-		ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
-		ModelView3x3Matrix = mat3(ModelViewMatrix);
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
@@ -399,15 +386,9 @@ public:
 		glBindVertexArray(0);
 	}
 
-	void RenderReflectionRefraction()
+	void RenderReflectionRefraction(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
-
-		vec3 camera = ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
@@ -427,17 +408,6 @@ public:
 		MatrixID = glGetUniformLocation(ShaderID, "MVP");
 		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
 
-		/*static const GLfloat colorbuffer_data[] = {
-			1.0f, 0.0f, 0.0f,
-			1.0f, 0.0f, 0.0f,
-
-			0.0f, 1.0f, 0.0f,
-			0.0f, 1.0f, 0.0f,
-
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f,
-		};*/
-
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
 
@@ -446,24 +416,18 @@ public:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
 
-		/*glGenBuffers(1, &colorbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(colorbuffer_data), colorbuffer_data, GL_STATIC_DRAW);*/
-
 		glEnableVertexAttribArray(0);
-		//glEnableVertexAttribArray(1);
 		glBindVertexArray(0);
 	}
 
-	void RenderSolidColor()
+	void RenderSolidColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
-		ComputeViewMatrix(window, cameramode);
+		/*ComputeViewMatrix(window, cameramode);
 		ProjectionMatrix = getProjectionMatrix();
 		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
+		ModelViewMatrix = ViewMatrix * ModelMatrix;*/
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -517,14 +481,14 @@ public:
 		glBindVertexArray(0);
 	}
 
-	void RenderGradientColor()
+	void RenderGradientColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
-		ComputeViewMatrix(window, cameramode);
+		/*ComputeViewMatrix(window, cameramode);
 		ProjectionMatrix = getProjectionMatrix();
 		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
+		ModelViewMatrix = ViewMatrix * ModelMatrix;*/
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -601,13 +565,13 @@ public:
 		glBindVertexArray(0);
 	}
 
-	void RenderCylinder()
+	void RenderCylinder(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
-		ComputeViewMatrix(window, cameramode);
+		/*ComputeViewMatrix(window, cameramode);
 		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
+		ViewMatrix = getViewMatrix();*/
 		ModelViewMatrix = ViewMatrix * ModelMatrix;
 		ModelView3x3Matrix = mat3(ModelViewMatrix);
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
@@ -644,7 +608,8 @@ private:
 	GLuint VAO;
 
 	/* Матрицы */
-	mat4 ModelMatrix = mat4(1.0), ProjectionMatrix, ViewMatrix, ModelViewMatrix, MVP;
+	//mat4 ModelMatrix = mat4(1.0), ProjectionMatrix, ViewMatrix, ModelViewMatrix, MVP;
+	mat4 ModelMatrix = mat4(1.0), ModelViewMatrix, MVP;
 	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы источника света, матриц и текстур для шейдеров*/
@@ -855,6 +820,7 @@ private:
 class SCENE
 {
 public:
+	OBJECT AXES;
 	OBJECT CUBE_Solid, CUBE_Gradient, CUBE_Glass, CUBE_Mirror;
 	OBJECT SPHERE_Solid, SPHERE_Gradient, SPHERE_Glass, SPHERE_Mirror;
 	OBJECT CYLINDER, CYLINDER_Gradient, CYLINDER_Solid, CYLINDER_Glass, CYLINDER_Mirror;
@@ -862,6 +828,9 @@ public:
 
 	SCENE() 
 	{
+		AXES = OBJECT();
+		AXES.PrepareAxes();
+		
 		CUBE_Solid = OBJECT("3dmodels//cube.obj");
 		CUBE_Solid.PrepareSolidColor();
 		CUBE_Solid.SolidColor(0.9, 0.0, 0.5);
@@ -906,7 +875,7 @@ public:
 
 		CYLINDER_Solid = OBJECT("3dmodels//cylinder.obj");
 		CYLINDER_Solid.PrepareSolidColor();
-		CYLINDER_Solid.SolidColor(0.0, 0.3, 0.8);
+		CYLINDER_Solid.SolidColor(0.1, 0.9, 0.8);
 		CYLINDER_Solid.Move(0.0, 5.0, -3.0);
 
 		CYLINDER_Gradient = OBJECT("3dmodels//cylinder.obj");
@@ -935,11 +904,34 @@ public:
 
 		CYLINDER_Glass.cubemapTexture = SKYBOX.cubemapTexture;
 		CYLINDER_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
+
+		/*AXES = OBJECT();
+		AXES.PrepareAxes();
+
+		CUBE_Solid = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid.PrepareSolidColor();
+		CUBE_Solid.SolidColor(0.9, 0.0, 0.5);
+		CUBE_Solid.Move(0.0, 0.0, 5.0);
+
+		CUBE_Mirror = OBJECT("3dmodels//cube.obj");
+		CUBE_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		CUBE_Mirror.PrepareReflectionRefraction();
+
+		SKYBOX = OBJECT();
+		SKYBOX.LoadShaders("shaders//SkyBox.vertexshader", "shaders//SkyBox.fragmentshader");
+		SKYBOX.PrepareSkyBox();*/
+
+		//CUBE_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
+
+		//PrepareRenderToTexture();
+		
+		//PrepareCubemap();
+		//CUBE_Mirror.cubemapTexture = cubemap;
 	};
 
 	~SCENE() 
 	{
-		glDeleteProgram(CUBE_Solid.ShaderID);
+		/*glDeleteProgram(CUBE_Solid.ShaderID);
 		glDeleteProgram(CUBE_Gradient.ShaderID);
 		glDeleteProgram(CUBE_Glass.ShaderID);
 		glDeleteProgram(CUBE_Mirror.ShaderID);
@@ -953,43 +945,54 @@ public:
 		glDeleteProgram(CYLINDER_Gradient.ShaderID);
 		glDeleteProgram(CYLINDER_Glass.ShaderID);
 		glDeleteProgram(CYLINDER_Mirror.ShaderID);
-		glDeleteProgram(CYLINDER.ShaderID);
+		glDeleteProgram(CYLINDER.ShaderID);*/
+
+		glDeleteProgram(CUBE_Solid.ShaderID);
+		glDeleteProgram(CUBE_Mirror.ShaderID);
 
 		glDeleteProgram(SKYBOX.ShaderID);
 	};
 
 	void Render()
-	{
-		CUBE_Solid.RenderSolidColor();
-		CUBE_Gradient.RenderGradientColor();
-		CUBE_Glass.RenderReflectionRefraction();
-		CUBE_Mirror.RenderReflectionRefraction();
+	{		
+		camera = ComputeViewMatrix(window, cameramode);
+		ProjectionMatrix = getProjectionMatrix();
+		ViewMatrix = getViewMatrix();
 
-		SPHERE_Solid.RenderSolidColor();
-		SPHERE_Gradient.RenderGradientColor();
-		SPHERE_Glass.RenderReflectionRefraction();
-		SPHERE_Mirror.RenderReflectionRefraction();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		CYLINDER_Solid.RenderSolidColor();
-		CYLINDER_Gradient.RenderGradientColor();
-		CYLINDER_Glass.RenderReflectionRefraction();
-		CYLINDER_Mirror.RenderReflectionRefraction();
-		CYLINDER.RenderCylinder();
-		
-		SKYBOX.RenderSkyBox();
+		CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Gradient.RenderGradientColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Glass.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+		CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
 
-		CUBE_Solid.Rotate(-CUBEangle, vec3(0.0, 1.0, 0.0));
-		CUBE_Gradient.Rotate(CUBEangle, vec3(0.0, 1.0, 0.0));
-		CUBE_Glass.Rotate(-CUBEangle, vec3(0.0, 1.0, 0.0));
-		CUBE_Mirror.Rotate(CUBEangle, vec3(0.0, 1.0, 0.0));
-		
-		SPHERE_Glass.Resize(SPHEREsize);
+		SPHERE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		SPHERE_Gradient.RenderGradientColor(ProjectionMatrix, ViewMatrix);
+		SPHERE_Glass.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+		SPHERE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+
+		CYLINDER_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CYLINDER_Gradient.RenderGradientColor(ProjectionMatrix, ViewMatrix);
+		CYLINDER_Glass.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+		CYLINDER_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+		CYLINDER.RenderCylinder(ProjectionMatrix, ViewMatrix);
+
+		SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+
+		CUBE_Solid.Rotate(-CUBEangle, vec3(0.0, 1.0, 1.0));
+		CUBE_Gradient.Rotate(CUBEangle, vec3(1.0, 1.0, 0.0));
+		CUBE_Glass.Rotate(-CUBEangle, vec3(1.0, 0.0, 0.0));
+		CUBE_Mirror.Rotate(CUBEangle, vec3(1.0, 0.0, 0.0));
+
+		//SPHERE_Glass.Resize(SPHEREsize);
 
 		CYLINDER_Solid.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
 		CYLINDER_Gradient.Rotate(-CYLINDERangle, vec3(0.0, 1.0, 0.0));
 		CYLINDER_Glass.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
 		CYLINDER_Mirror.Rotate(-CYLINDERangle, vec3(0.0, 1.0, 0.0));
 		CYLINDER.Rotate(CYLINDERangle, vec3(0.0, 1.0, 0.0));
+
+		AXES.RenderAxes(ViewMatrix);
 
 		if ((SPHEREsize > SPHEREsizeMin) && SPHEREdecreaseSize) SPHEREsize -= SPHEREsizeDelta;
 		else
@@ -1005,11 +1008,299 @@ public:
 			SPHEREincreaseSize = false;
 		}
 
+		
+
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		//CUBE_Solid.RenderSolidColor();
+		//CUBE_Mirror.RenderReflectionRefraction();
+		//SKYBOX.RenderSkyBox();
+
+		//RenderToTexture();
+		//ComputeViewMatrix(window, cameramode);
+		//SKYBOX.RenderSkyBox(getProjectionMatrix(), getViewMatrix());
+		//AXES.RenderAxes(getViewMatrixAxes());
 	}
 private:
 	bool SPHEREdecreaseSize = true, SPHEREincreaseSize = false;
 	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
 	float CUBEangle = 0.05, CYLINDERangle = -0.01;
+
+	vec3 camera;
+	mat4 ProjectionMatrix, ViewMatrix;
+
+	GLuint VAO;
+	GLuint ShaderID;
+	GLuint timeID, texID;
+	GLuint framebuffer, renderedTexture, depthbuffer;
+	GLuint cubemap;
+
+	bool LoadShaders(const char * vertex_file_path, const char * fragment_file_path)
+	{
+		// Создание шейдеров
+		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER); // Вершинный
+		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER); // Фрагментный
+
+																	  // Читаем код вершинного шейдера из файла vertex_file_path
+		string VertexShaderCode;
+		ifstream VertexShaderStream(vertex_file_path, ios::in);
+
+		if (VertexShaderStream.is_open())
+		{
+			string Line = "";
+			while (getline(VertexShaderStream, Line)) VertexShaderCode += "\n" + Line;
+			VertexShaderStream.close();
+		}
+		else
+		{
+			printf("File %s not found.\n", vertex_file_path);
+			getchar();
+			return 0;
+		}
+
+		// Читаем код фрагментного шейдера из файла fragment_file_path
+		string FragmentShaderCode;
+		ifstream FragmentShaderStream(fragment_file_path, ios::in);
+
+		if (FragmentShaderStream.is_open())
+		{
+			string Line = "";
+			while (getline(FragmentShaderStream, Line)) FragmentShaderCode += "\n" + Line;
+			FragmentShaderStream.close();
+		}
+
+		GLint Result = GL_FALSE;
+		int InfoLogLength;
+
+		// Компилируем вершинный шейдер
+		printf("Compiling vertex shader: %s...\n", vertex_file_path);
+		char const * VertexSourcePointer = VertexShaderCode.c_str();
+		glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
+		glCompileShader(VertexShaderID);
+
+		// Проверка
+		glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+		glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+		if (InfoLogLength > 0)
+		{
+			vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
+			glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+			printf("\nError: %s\n", &VertexShaderErrorMessage[0]);
+		}
+
+		// Компилируем фрагментный шейдер
+		printf("Compiling fragment shader: %s...\n", fragment_file_path);
+		char const * FragmentSourcePointer = FragmentShaderCode.c_str();
+		glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
+		glCompileShader(FragmentShaderID);
+
+		// Проверка
+		glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+		glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+		if (InfoLogLength > 0)
+		{
+			vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
+			glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+			printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
+		}
+
+		// Линкуем
+		printf("Linking program...\n");
+
+		ShaderID = glCreateProgram();
+		glAttachShader(ShaderID, VertexShaderID);
+		glAttachShader(ShaderID, FragmentShaderID);
+		glLinkProgram(ShaderID);
+
+		// Проверка
+		glGetProgramiv(ShaderID, GL_LINK_STATUS, &Result);
+		glGetProgramiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+		if (InfoLogLength > 0)
+		{
+			vector<char> ProgramErrorMessage(InfoLogLength + 1);
+			glGetProgramInfoLog(ShaderID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+			printf("\nError: %s\n", &ProgramErrorMessage[0]);
+		}
+
+		glDetachShader(ShaderID, VertexShaderID);
+		glDetachShader(ShaderID, FragmentShaderID);
+
+		glDeleteShader(VertexShaderID);
+		glDeleteShader(FragmentShaderID);
+
+		return true;
+	}
+
+	void PrepareRenderToTexture()
+	{
+		glGenFramebuffers(1, &framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+		glGenTextures(1, &renderedTexture);
+		glBindTexture(GL_TEXTURE_2D, renderedTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1280, 800, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glGenRenderbuffers(1, &depthbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 800);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
+
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+
+		GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, DrawBuffers);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer problem.\n");
+		else printf("Framebuffer OK.\n");
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		// The fullscreen quad's FBO
+		static const GLfloat g_quad_vertex_buffer_data[] = {
+			-1.0f, -1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			1.0f,  1.0f, 0.0f,
+		};
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		GLuint quad_vertexbuffer;
+		glGenBuffers(1, &quad_vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(0);
+
+		// Create and compile our GLSL program from the shaders
+		LoadShaders("shaders//RenderToTexture.vertexshader", "shaders//RenderToTexture.fragmentshader");
+		texID = glGetUniformLocation(ShaderID, "renderedTexture");
+		timeID = glGetUniformLocation(ShaderID, "time");
+	}
+
+	void RenderToTexture(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glViewport(0, 0, WindowWidth, WindowHeight);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+		SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		glViewport(0, 0, WindowWidth, WindowHeight);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(ShaderID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, renderedTexture);
+		glUniform1i(texID, 0);
+		glUniform1f(timeID, (float)(glfwGetTime()*10.0f));
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+	}
+
+	void PrepareCubemap(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glGenTextures(1, &cubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		for (int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		}
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		glGenFramebuffers(1, &framebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+		for (int i = 0; i < 6; i++)
+		{
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemap, 0);
+		}
+
+		glGenRenderbuffers(1, &depthbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
+
+		/*glGenRenderbuffers(1, &depthbuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight);
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, cubemap, 0);*/
+
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer check 1 problem.\n");
+		else printf("Framebuffer check 1 OK.\n");
+
+		for (int face = 0; face < 6; face++)
+		{
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + face);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, cubemap, 0);
+			
+			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer face%d problem.\n", face);
+			else printf("Framebuffer face%d OK.\n", face);
+			
+			/*
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X	Right	0
+			GL_TEXTURE_CUBE_MAP_NEGATIVE_X	Left	1
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Y	Top		2
+			GL_TEXTURE_CUBE_MAP_NEGATIVE_Y	Bottom	3
+			GL_TEXTURE_CUBE_MAP_POSITIVE_Z	Back	4
+			GL_TEXTURE_CUBE_MAP_NEGATIVE_Z	Front	5
+			*/
+
+			//CUBE_Mirror.ViewMatrix = lookAt(vec3(0.0, 0.0, -3.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0));
+
+			int a = 0;
+
+			switch (face)
+			{
+			case 4:
+				ViewMatrix = lookAt(vec3(-1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0));
+				break;
+			case 5:
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0));
+			default:
+				break;
+			};
+
+			glViewport(0, 0, WindowWidth, WindowHeight);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+			SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 };
 
 /* Обработка ошибок */
@@ -1025,9 +1316,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 	if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) { cameramode = 1; }	
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) { cameramode = 2; }
-	if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) { cameramode = 3; }
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) 
+	{ 
+		cameramode++;
+		if (cameramode > 2) cameramode = 1;
+	}
+	
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) cameramode = 3;
 
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) 
 	{ 
@@ -1072,7 +1367,7 @@ void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum 
 
 void main()
 {
-	int nbFrames = 0, width = 1280, height = 800;
+	int nbFrames = 0;
 	double currentTime, lastTime;
 	char text[100];
 
@@ -1089,8 +1384,12 @@ void main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-
-	window = glfwCreateWindow(width, height, "Diploma", NULL, NULL);	// Ширина, высота, название окна, монитор (Fullscrean, NUll - оконный, обмен ресурсами с окном (NULL - нет такого))
+	
+	window = glfwCreateWindow(WindowWidth, WindowHeight, "Diploma", NULL, NULL);	// Ширина, высота, название окна, монитор (Fullscrean, NUll - оконный, обмен ресурсами с окном (NULL - нет такого))
+	
+	const GLFWvidmode *Screen = glfwGetVideoMode(glfwGetPrimaryMonitor());						// Информация об экране, разрешение
+	
+	glfwSetWindowPos(window, Screen->width / 2 - WindowWidth / 2, Screen->height / 2 - WindowHeight / 2);	// Окно в центр экрана
 
 	if (!window)
 	{
@@ -1122,10 +1421,10 @@ void main()
 		printf("OpenGL debug output doesn't work.\n");
 	}
 	
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, WindowWidth, WindowHeight);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);		//Скрыть курсор
-	glfwSetCursorPos(window, width / 2, height / 2);
+	glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
 	glClearColor(0.0f, 0.6f, 0.8f, 0.0f);								// Цвет фона, RGBA		
 	glEnable(GL_DEPTH_TEST);											// Включаем буфер глубины	
 	glDepthFunc(GL_LESS);												// Выбираем фрагмент, ближайший к камере						  
@@ -1135,13 +1434,7 @@ void main()
 
 	SCENE Scene = SCENE();
 
-	OBJECT Axes = OBJECT();
-	Axes.PrepareAxes();	
-
 	initText2D("Text.DDS");
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);						// Сетка
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	lastTime = glfwGetTime();
 
@@ -1163,10 +1456,8 @@ void main()
 		glfwSetWindowTitle(window, text2);
 
 		glfwPollEvents();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Очистили экран		
 
 		Scene.Render();
-		Axes.RenderAxes();
 		printText2D(text, 0, 568, 20);
 
 		glfwSwapBuffers(window); // Меняем буферы															  

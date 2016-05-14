@@ -160,8 +160,8 @@
     <ClInclude Include="VboIndexer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\Axes.fragmentshader" />
-    <None Include="shaders\Axes.vertexshader" />
+    <None Include="shaders\RenderToTexture.fragmentshader" />
+    <None Include="shaders\RenderToTexture.vertexshader" />
     <None Include="shaders\SolidColor.fragmentshader" />
     <None Include="shaders\SolidColor.vertexshader" />
     <None Include="shaders\Reflection.fragmentshader" />

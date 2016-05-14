@@ -8,7 +8,7 @@ vec3 position;																							// Позиция камеры
 float Pi = pi<float>();
 float deltaTime, radius = 20.0, radiusMin = 2.0, radiusMax = 100.0, cameraheight = 1.0;					// Время, радиус и высота полёта второй камеры
 float horizontalAngle = 0.0, verticalAngle = 0.0;														// Горизонтальный и вертикальный углы
-float FoV = 45.0, speed = 6.0, speed2 = 6.0, mouseSpeed = 0.005;										// FOV, скорость движения камеры, скорость мышки
+float FoV = 90.0, speed = 6.0, speed2 = 6.0, mouseSpeed = 0.005;										// FOV, скорость движения камеры, скорость мышки
 
 mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
 
@@ -67,7 +67,7 @@ vec3 ComputeViewMatrix(GLFWwindow* window, int cameramode)
 
 		// Direction : Spherical coordinates to Cartesian coordinates conversion
 		direction = vec3(cos(verticalAngle) * sin(horizontalAngle), sin(verticalAngle), cos(verticalAngle) * cos(horizontalAngle));
-		right = vec3(sin(horizontalAngle - 3.14f / 2.0f), 0, cos(horizontalAngle - 3.14f / 2.0f));
+		right = vec3(sin(horizontalAngle - Pi / 2.0), 0, cos(horizontalAngle - Pi / 2.0));
 		up = vec3(0, 1, 0);
 
 		checkmove(window, direction, right);
@@ -105,7 +105,7 @@ vec3 ComputeViewMatrix(GLFWwindow* window, int cameramode)
 		ViewMatrixAxes = ViewMatrix;
 	}
 		
-	ProjectionMatrix = perspective(FoV, width_float / height_float, 0.1f, 100.0f); // FOV, ratio, range : 0.1 unit <-> 100 units	 	
+	ProjectionMatrix = perspective(radians(FoV), width_float / height_float, 0.1f, 100.0f); // FOV, ratio, range : 0.1 unit <-> 100 units	 	
 	lastTime = currentTime;
 
 	return position;

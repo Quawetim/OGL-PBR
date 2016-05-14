@@ -49,12 +49,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\Axes.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Axes.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
     <None Include="shaders\Text.fragmentshader">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
@@ -95,6 +89,12 @@
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
     <None Include="shaders\GradientColor.vertexshader">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\RenderToTexture.vertexshader">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\RenderToTexture.fragmentshader">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
   </ItemGroup>
