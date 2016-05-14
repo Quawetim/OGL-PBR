@@ -164,13 +164,13 @@ public:
 	/* Вращение объекта */
 	void Rotate(float angle, vec3 axis)
 	{
-		ModelMatrix = rotate(ModelMatrix, angle, axis);
+		ModelMatrix *= rotate(angle, axis);
 	}
 
 	/* Перемещение объекта */
 	void Move(float X, float Y, float Z)
 	{
-		ModelMatrix = translate(ModelMatrix, vec3(X, Y, Z));
+		ModelMatrix *= translate(vec3(X, Y, Z));
 	}	
 
 	/* Задаёт цвет сплошной цвет объекта */
@@ -273,6 +273,8 @@ public:
 
 	void PrepareSkyBox()
 	{				
+		LoadShaders("shaders//SkyBox.vertexshader", "shaders//SkyBox.fragmentshader");
+
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");			
 		cubemapTextureID = glGetUniformLocation(ShaderID, "cubemap");
@@ -355,6 +357,7 @@ public:
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		glBindVertexArray(0);
 
 		glDepthFunc(GL_LESS);
@@ -398,6 +401,7 @@ public:
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		glBindVertexArray(0);
 	}
 
@@ -424,10 +428,6 @@ public:
 	{
 		glUseProgram(ShaderID);
 
-		/*ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;*/
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -485,10 +485,6 @@ public:
 	{
 		glUseProgram(ShaderID);
 
-		/*ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;*/
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -569,9 +565,6 @@ public:
 	{
 		glUseProgram(ShaderID);
 
-		/*ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();*/
 		ModelViewMatrix = ViewMatrix * ModelMatrix;
 		ModelView3x3Matrix = mat3(ModelViewMatrix);
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
@@ -821,7 +814,7 @@ class SCENE
 {
 public:
 	OBJECT AXES;
-	OBJECT CUBE_Solid, CUBE_Gradient, CUBE_Glass, CUBE_Mirror;
+	OBJECT CUBE_Solid, CUBE_Solid2, CUBE_Solid3, CUBE_Solid4, CUBE_Solid5, CUBE_Solid6, CUBE_Gradient, CUBE_Glass, CUBE_Mirror;
 	OBJECT SPHERE_Solid, SPHERE_Gradient, SPHERE_Glass, SPHERE_Mirror;
 	OBJECT CYLINDER, CYLINDER_Gradient, CYLINDER_Solid, CYLINDER_Glass, CYLINDER_Mirror;
 	OBJECT SKYBOX;
@@ -831,7 +824,7 @@ public:
 		AXES = OBJECT();
 		AXES.PrepareAxes();
 		
-		CUBE_Solid = OBJECT("3dmodels//cube.obj");
+		/*CUBE_Solid = OBJECT("3dmodels//cube.obj");
 		CUBE_Solid.PrepareSolidColor();
 		CUBE_Solid.SolidColor(0.9, 0.0, 0.5);
 		CUBE_Solid.Move(0.0, 6.0, 3.0);
@@ -903,30 +896,54 @@ public:
 		SPHERE_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
 
 		CYLINDER_Glass.cubemapTexture = SKYBOX.cubemapTexture;
-		CYLINDER_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
-
-		/*AXES = OBJECT();
-		AXES.PrepareAxes();
+		CYLINDER_Mirror.cubemapTexture = SKYBOX.cubemapTexture;*/
 
 		CUBE_Solid = OBJECT("3dmodels//cube.obj");
 		CUBE_Solid.PrepareSolidColor();
 		CUBE_Solid.SolidColor(0.9, 0.0, 0.5);
 		CUBE_Solid.Move(0.0, 0.0, 5.0);
 
-		CUBE_Mirror = OBJECT("3dmodels//cube.obj");
-		CUBE_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+		CUBE_Solid2 = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid2.PrepareSolidColor();
+		CUBE_Solid2.SolidColor(1.0, 0.0, 0.5);
+		CUBE_Solid2.Move(0.0, 0.0, -5.0);
+
+		CUBE_Solid3 = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid3.PrepareSolidColor();
+		CUBE_Solid3.SolidColor(0.3, 0.8, 0.5);
+		CUBE_Solid3.Move(5.0, 0.0, 0.0);
+
+		CUBE_Solid4 = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid4.PrepareSolidColor();
+		CUBE_Solid4.SolidColor(0.5, 0.0, 0.9);
+		CUBE_Solid4.Move(-5.0, 0.0, 0.0);
+
+		CUBE_Solid5 = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid5.PrepareSolidColor();
+		CUBE_Solid5.SolidColor(0.1, 0.3, 0.5);
+		CUBE_Solid5.Move(0.0, 5.0, 0.0);
+
+		CUBE_Solid6 = OBJECT("3dmodels//cube.obj");
+		CUBE_Solid6.PrepareSolidColor();
+		CUBE_Solid6.SolidColor(0.5, 0.8, 0.9);
+		CUBE_Solid6.Move(0.0, -5.0, 0.0);
+
+		CUBE_Mirror = OBJECT("3dmodels//sphere.obj");
+		CUBE_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");	
 		CUBE_Mirror.PrepareReflectionRefraction();
+		CUBE_Mirror.Resize(2.0);
 
 		SKYBOX = OBJECT();
-		SKYBOX.LoadShaders("shaders//SkyBox.vertexshader", "shaders//SkyBox.fragmentshader");
-		SKYBOX.PrepareSkyBox();*/
+		SKYBOX.PrepareSkyBox();
+
+		ProjectionMatrix = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
+
+		PrepareCubemap(camera, ProjectionMatrix, ViewMatrix);
+		CUBE_Mirror.cubemapTexture = cubemap;
+
+		ProjectionMatrix = perspective(radians(90.0f), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
 
 		//CUBE_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
-
-		//PrepareRenderToTexture();
-		
-		//PrepareCubemap();
-		//CUBE_Mirror.cubemapTexture = cubemap;
 	};
 
 	~SCENE() 
@@ -956,12 +973,11 @@ public:
 	void Render()
 	{		
 		camera = ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
 		ViewMatrix = getViewMatrix();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		/*CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
 		CUBE_Gradient.RenderGradientColor(ProjectionMatrix, ViewMatrix);
 		CUBE_Glass.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
 		CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
@@ -1006,21 +1022,18 @@ public:
 		{
 			SPHEREdecreaseSize = true;
 			SPHEREincreaseSize = false;
-		}
+		}*/
 
-		
-
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		//CUBE_Solid.RenderSolidColor();
-		//CUBE_Mirror.RenderReflectionRefraction();
-		//SKYBOX.RenderSkyBox();
-
-		//RenderToTexture();
-		//ComputeViewMatrix(window, cameramode);
-		//SKYBOX.RenderSkyBox(getProjectionMatrix(), getViewMatrix());
-		//AXES.RenderAxes(getViewMatrixAxes());
+		CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Solid2.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Solid3.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Solid4.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Solid5.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Solid6.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+		CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
+		SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);
 	}
+
 private:
 	bool SPHEREdecreaseSize = true, SPHEREincreaseSize = false;
 	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
@@ -1161,7 +1174,7 @@ private:
 		else printf("Framebuffer OK.\n");
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// The fullscreen quad's FBO
 		static const GLfloat g_quad_vertex_buffer_data[] = {
@@ -1217,6 +1230,8 @@ private:
 
 	void PrepareCubemap(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
+		int texSize = 2048;
+
 		glGenTextures(1, &cubemap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1227,7 +1242,7 @@ private:
 
 		for (int i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, 1024, 1024, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, texSize, texSize, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		}
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -1241,33 +1256,24 @@ private:
 
 		glGenRenderbuffers(1, &depthbuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, texSize, texSize);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
-
-		/*glGenRenderbuffers(1, &depthbuffer);
-		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WindowWidth, WindowHeight);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-		
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
-
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X, cubemap, 0);*/
 
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer check 1 problem.\n");
 		else printf("Framebuffer check 1 OK.\n");
 
-		for (int face = 0; face < 6; face++)
+		for (int i = 0; i < 6; i++)
 		{
-			glDrawBuffer(GL_COLOR_ATTACHMENT0 + face);
+			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, cubemap, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemap, 0);
 			
-			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer face%d problem.\n", face);
-			else printf("Framebuffer face%d OK.\n", face);
+			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer face %d problem.\n", i);
+			else printf("Framebuffer face %d OK.\n", i);
 			
 			/*
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X	Right	0
@@ -1278,27 +1284,40 @@ private:
 			GL_TEXTURE_CUBE_MAP_NEGATIVE_Z	Front	5
 			*/
 
-			//CUBE_Mirror.ViewMatrix = lookAt(vec3(0.0, 0.0, -3.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0));
-
-			int a = 0;
-
-			switch (face)
+			switch (i)
 			{
+			case 0:
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				break;
+			case 1:
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				break;
+			case 2:
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
+				break;
+			case 3:
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0));
+				break;
 			case 4:
-				ViewMatrix = lookAt(vec3(-1.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0));
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, -1.0, 0.0));
 				break;
 			case 5:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0));
+				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0));
 			default:
 				break;
 			};
 
-			glViewport(0, 0, WindowWidth, WindowHeight);
+			glViewport(0, 0, texSize, texSize);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
-			SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+			CUBE_Solid2.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			CUBE_Solid3.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			CUBE_Solid4.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			CUBE_Solid5.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			CUBE_Solid6.RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);			
 		}
+		glViewport(0, 0, WindowWidth, WindowHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 };
@@ -1458,7 +1477,7 @@ void main()
 		glfwPollEvents();
 
 		Scene.Render();
-		printText2D(text, 0, 568, 20);
+		//printText2D(text, 0, 568, 20);
 
 		glfwSwapBuffers(window); // Меняем буферы															  
 	}
