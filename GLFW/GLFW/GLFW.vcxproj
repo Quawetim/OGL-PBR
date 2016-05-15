@@ -147,9 +147,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="Text2D.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="VboIndexer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -158,8 +158,6 @@
     <ClInclude Include="VboIndexer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\RenderToTexture.fragmentshader" />
-    <None Include="shaders\RenderToTexture.vertexshader" />
     <None Include="shaders\SolidColor.fragmentshader" />
     <None Include="shaders\SolidColor.vertexshader" />
     <None Include="shaders\Reflection.fragmentshader" />
