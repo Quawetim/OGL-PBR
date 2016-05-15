@@ -21,115 +21,125 @@ GLFWwindow* window;
 #include "VboIndexer.h"
 #include "Text2D.h"
 
+/* WindowWidth, WindowHeight - ширина и высота окна */
+/* FOV - field of view */
+/* CameraMode - выбранная камера */
+/* GenTextureSize - размер генерируемой текстуры */
+/* Wireframe - отображение сетки объектов, переключение по F1 */
+/* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
 int WindowWidth = 1280, WindowHeight = 800;
 float FOV = 90.0;
-int cameramode = 2;
-int textureSize = 128;
-bool wireframe = false;														// F1
+int CameraMode = 2;
+int GenTextureSize = 128;
+bool Wireframe = false;
+bool MirrorExample = true;
 
 class CAMERA
 {
 private:
-	vec3 position;																							// Позиция камеры
+	/* Position - позиция камеры */
+	/* Radius, RadiusMin, RadiusMax - радиус полёта камеры от начала координат для камеры №2 и его минимальное и максимальное значения */
+	/* CameraHeight - высота полёта камеры №2 */
+	/* HorizontalAngle, VerticalAngle - uоризонтальный и вертикальный углы для камеры №2 */
+	/* Speed, Speed2 - скорость движения камер №1 и №2  */
+	/* MouseSpeed - скорость движения мышки */
+	vec3 Position;
 	float Pi = pi<float>();
-	float deltaTime, radius = 20.0, radiusMin = 2.0, radiusMax = 100.0, cameraheight = 1.0;					// Время, радиус и высота полёта второй камеры
-	float horizontalAngle = 0.0, verticalAngle = 0.0;														// Горизонтальный и вертикальный углы
-	float speed = 6.0, speed2 = 6.0, mouseSpeed = 0.005;										// FOV, скорость движения камеры, скорость мышки
+	float DeltaTime, Radius = 20.0, RadiusMin = 2.0, RadiusMax = 100.0, CameraHeight = 1.0;
+	float HorizontalAngle = 0.0, VerticalAngle = 0.0;
+	float Speed = 6.0, Speed2 = 6.0, MouseSpeed = 0.005;
 
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
+	/* ViewMatrix - матрица вида для координатных осей */
 	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
 
-public:
-	mat4 getProjectionMatrix() { return ProjectionMatrix; }
-	mat4 getViewMatrix() { return ViewMatrix; }
-	mat4 getViewMatrixAxes() { return ViewMatrixAxes; }
-
-	/* Обработка клавиатуры для движения камеры 2 */
+	/* Обработка клавиатуры для движения камеры №2 */
+	/* window - указатель на окно */
 	void checkmove(GLFWwindow* window)
 	{
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (radius >= radiusMin) radius -= deltaTime * speed; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (radius <= radiusMax) radius += deltaTime * speed; }
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { if (cameraheight <= 10.0) cameraheight += deltaTime * speed; }
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { if (cameraheight >= -10.0) cameraheight -= deltaTime * speed; }
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius >= RadiusMin) Radius -= DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius <= RadiusMax) Radius += DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { if (CameraHeight <= 10.0) CameraHeight += DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { if (CameraHeight >= -10.0) CameraHeight -= DeltaTime * Speed; }
 	}
 
-	/* Обработка клавиатуры для движения камеры 1 */
-	void checkmove(GLFWwindow* window, vec3 direction, vec3 right)
+	/* Обработка клавиатуры для движения камеры №1 */
+	/* window - указатель на окно */
+	/* direction - направление камеры */
+	/* right - вектор "вправо" для камеры */
+	void checkmove(GLFWwindow* window, vec3 Direction, vec3 Right)
 	{
-		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (speed2 < 20.0) speed2 += 0.2; }
-		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (speed2 > 1.0) speed2 -= 0.2; }
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { position += direction * deltaTime * speed2; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { position -= direction * deltaTime * speed2; }
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { position += right * deltaTime * speed2; }
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { position -= right * deltaTime * speed2; }
+		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (Speed2 < 20.0) Speed2 += 0.2; }
+		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (Speed2 > 1.0) Speed2 -= 0.2; }
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += Direction * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= Direction * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { Position += Right * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= Right * DeltaTime * Speed2; }
 	}
 
-	/* Вычисление матриц вида и проекции */
-	/* Возвращает позицию камеры */
-	vec3 ComputeViewMatrix(GLFWwindow* window, int cameramode)
+public:
+	/* Возвращает матрицу проекции */
+	mat4 getProjectionMatrix() { return ProjectionMatrix; }
+	/* Возвращает матрицу вида */
+	mat4 getViewMatrix() { return ViewMatrix; }
+	/* Возвращает матрицу вида для координатных осей */
+	mat4 getViewMatrixAxes() { return ViewMatrixAxes; }
+
+	/* Вычисление матриц вида и проекции, возвращает позицию камеры */
+	/* window - указатель окна */
+	/* CameraMode - выбранная камера */
+	vec3 ComputeViewMatrix(GLFWwindow* window, int CameraMode)
 	{
-		double currentTime, mouseX, mouseY;
+		double CurrentTime, MouseX, MouseY;
+		static double LastTime = glfwGetTime();
 
-		static double lastTime = glfwGetTime();
+		CurrentTime = glfwGetTime();
+		DeltaTime = float(CurrentTime - LastTime);
 
-		currentTime = glfwGetTime();
-		deltaTime = float(currentTime - lastTime);
+		glfwGetCursorPos(window, &MouseX, &MouseY);
+		glfwSetCursorPos(window, WindowWidth / 2.0, WindowHeight / 2.0);
 
-		glfwGetCursorPos(window, &mouseX, &mouseY);
+		HorizontalAngle += MouseSpeed * float(WindowWidth / 2.0 - MouseX);
+		VerticalAngle += MouseSpeed * float(WindowHeight / 2.0 - MouseY);
 
-		//glfwGetWindowSize(window, &width, &height);
-		glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
-
-		horizontalAngle += mouseSpeed * float(WindowWidth / 2 - mouseX);
-		verticalAngle += mouseSpeed * float(WindowHeight / 2 - mouseY);
-
-		if (cameramode == 1)
+		if (CameraMode == 1)
 		{
-			vec3 direction, right, up;
+			vec3 Direction, Right;
 
 			// Direction : Spherical coordinates to Cartesian coordinates conversion
-			direction = vec3(cos(verticalAngle) * sin(horizontalAngle), sin(verticalAngle), cos(verticalAngle) * cos(horizontalAngle));
-			right = vec3(sin(horizontalAngle - Pi / 2.0), 0, cos(horizontalAngle - Pi / 2.0));
-			up = vec3(0, 1, 0);
+			Direction = vec3(cos(VerticalAngle) * sin(HorizontalAngle), sin(VerticalAngle), cos(VerticalAngle) * cos(HorizontalAngle));
+			Right = vec3(sin(HorizontalAngle - Pi / 2.0), 0, cos(HorizontalAngle - Pi / 2.0));
 
-			checkmove(window, direction, right);
+			checkmove(window, Direction, Right);
 
-			ViewMatrix = lookAt(position, position + direction, up);
+			ViewMatrix = lookAt(Position, Position + Direction, vec3(0.0, 1.0, 0.0));
 
 			ViewMatrixAxes = ViewMatrix;
 		}
 
-		if (cameramode == 2)
+		if (CameraMode == 2)
 		{
-			vec3 direction, up;
-
-			position = vec3(radius*cos(horizontalAngle), cameraheight, radius*sin(horizontalAngle));
-			direction = vec3(0.0, -1.5, 0.0);
-			up = vec3(0.0, 1.0, 0.0);
+			Position = vec3(Radius*cos(HorizontalAngle), CameraHeight, Radius*sin(HorizontalAngle));
 
 			checkmove(window);
 
-			ViewMatrix = lookAt(position, direction, up);
+			ViewMatrix = lookAt(Position, vec3(0.0, -1.5, 0.0), vec3(0.0, 1.0, 0.0));
 
-			ViewMatrixAxes = lookAt(vec3(5 * cos(horizontalAngle), cameraheight, 5 * sin(horizontalAngle)), direction, up);
+			ViewMatrixAxes = lookAt(vec3(5 * cos(HorizontalAngle), CameraHeight, 5 * sin(HorizontalAngle)), vec3(0.0, -1.5, 0.0), vec3(0.0, 1.0, 0.0));
 		}
 
-		if (cameramode == 3)
+		if (CameraMode == 3)
 		{
-			vec3 direction, up;
-
-			position = vec3(5.0, 3.0, 4.0);
-			direction = vec3(0.0, 0.0, 0.0);
-			up = vec3(0.0, 1.0, 0.0);
-
-			ViewMatrix = lookAt(position, direction, up);
+			ViewMatrix = lookAt(vec3(5.0, 3.0, 4.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
 
 			ViewMatrixAxes = ViewMatrix;
 		}
 
-		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f); // FOV, ratio, range : 0.1 unit <-> 100 units	 	
-		lastTime = currentTime;
+		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f); 	
+		LastTime = CurrentTime;
 
-		return position;
+		return Position;
 	}
 };
 
@@ -139,7 +149,7 @@ private:
 	/* Vertex Array Object */
 	GLuint VAO;
 
-	/* Mатрицы */
+	/* ModelMatrix - матрица модели */
 	mat4 ModelMatrix = mat4(1.0), ModelViewMatrix, MVP;
 	mat3 ModelView3x3Matrix;
 
@@ -152,52 +162,13 @@ private:
 	/* Буферы */
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
+	/* UserSolidColor - пользовательский цвет объекта */
 	vec3 UserSolidColor;
 	vector<vec3> vertices, normals, tangents, bitangents;
 	vector<vec2> uvs;
 	vector<unsigned short> indices;
 
-	void PrepareReflectionRefraction()
-	{
-		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
-		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
-		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
-		CameraPosID = glGetUniformLocation(ShaderID, "cameraPos");
-
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		glGenBuffers(1, &vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &normalbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-
-		glBindVertexArray(0);
-	}
-
-	void RenderReflectionRefraction(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
-	{
-		glUseProgram(ShaderID);
-
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
-		glUniform3f(CameraPosID, camera.x, camera.y, camera.z);
-
-		glBindVertexArray(VAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
-		glBindVertexArray(0);
-	}
-
+	/* Подготовка данных для объекта сплошного цвета */
 	void PrepareSolidColor()
 	{
 		LoadShaders("shaders//SolidColor.vertexshader", "shaders//SolidColor.fragmentshader");
@@ -217,14 +188,13 @@ private:
 		glBindVertexArray(0);
 	}
 
+	/* Рендеринг объекта сплошного цвета */
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
 	void RenderSolidColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
-		/*ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;*/
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -235,6 +205,7 @@ private:
 		glBindVertexArray(0);
 	}
 
+	/* Подготовка данных для объекта градиентного цвета */
 	void PrepareGradientColor()
 	{
 		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
@@ -278,14 +249,13 @@ private:
 		glBindVertexArray(0);
 	}
 
+	/* Рендеринг объекта градиентного цвета */
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
 	void RenderGradientColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
-		/*ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();
-		ModelViewMatrix = ViewMatrix * ModelMatrix;*/
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
@@ -295,6 +265,53 @@ private:
 		glBindVertexArray(0);
 	}
 
+	/* Подготовка данных для стекла/зеркала */
+	void PrepareReflectionRefraction()
+	{
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		CameraPosID = glGetUniformLocation(ShaderID, "cameraPos");
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &normalbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glBindVertexArray(0);
+	}
+
+	/* Рендеринг стекла/зеркала */
+	/* Camera - позиция камеры */
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
+	void RenderReflectionRefraction(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glUseProgram(ShaderID);
+
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniform3f(CameraPosID, Camera.x, Camera.y, Camera.z);
+
+		glBindVertexArray(VAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindVertexArray(0);
+	}
+
+	/* Подготовка данных для цилиндра с картой нормалей */
 	void PrepareCylinder()
 	{
 		MatrixID = glGetUniformLocation(ShaderID, "MVP");
@@ -311,7 +328,7 @@ private:
 		SpecularTextureID = glGetUniformLocation(ShaderID, "SpecularTexture");
 		LightID = glGetUniformLocation(ShaderID, "LightPosition_worldspace");
 
-		computeTangentBasis(vertices, uvs, normals, tangents, bitangents);
+		ComputeTBT(vertices, uvs, normals, tangents, bitangents);
 
 		vector<vec3> indexed_vertices;
 		vector<vec2> indexed_uvs;
@@ -362,13 +379,13 @@ private:
 		glBindVertexArray(0);
 	}
 
+	/* Рендеринг цилиндра с картой нормалей */
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
 	void RenderCylinder(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
-		/*ComputeViewMatrix(window, cameramode);
-		ProjectionMatrix = getProjectionMatrix();
-		ViewMatrix = getViewMatrix();*/
 		ModelViewMatrix = ViewMatrix * ModelMatrix;
 		ModelView3x3Matrix = mat3(ModelViewMatrix);
 		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
@@ -378,8 +395,8 @@ private:
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
 
-		vec3 lightPos = vec3(0.0, -7.0, 0.0);
-		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+		vec3 LightPos = vec3(0.0, -7.0, 0.0);
+		glUniform3f(LightID, LightPos.x, LightPos.y, LightPos.z);
 
 		glBindVertexArray(VAO);
 
@@ -400,64 +417,70 @@ private:
 		glBindVertexArray(0);
 	}
 
-	/* Загрузка модели из obj-файла */
-	bool loadOBJ(const char * path, vector<vec3> &vertices, vector<vec2> &uvs, vector<vec3> &normals)
+	/* Загрузка модели из obj-файла, возвращает успех/ошибку */
+	/* Path - путь к файлу */
+	/* Vertices - список координат вершин, возвращаемое значение */
+	/* UVs - список текстурных координат вершин, возвращаемое значение */
+	/* Normals - список нормалей вершин, возвращаемое значение */
+	bool LoadOBJ(const char *Path, vector<vec3> &Vertices, vector<vec2> &UVs, vector<vec3> &Normals)
 	{
-		printf("Loading OBJ file %s...\n", path);
+		char Buf[128];
+		vector<int> VertexIndices, UVIndices, NormalIndices;
+		vector<vec3> tmp_Vertices;
+		vector<vec2> tmp_UVs;
+		vector<vec3> tmp_Normals;
 
-		vector<int> vertexIndices, uvIndices, normalIndices;
-		vector<vec3> tmp_vertices;
-		vector<vec2> tmp_uvs;
-		vector<vec3> tmp_normals;
+		printf("Loading OBJ file %s...\n", Path);		
 
-		FILE *fin = fopen(path, "r");
+		FILE *Fin = fopen(Path, "r");		
 
-		char buf[128];
-		int i, res;
-
-		if (fin == NULL)
+		if (Fin == NULL)
 		{
 			printf("OBJ file not found.\n");
-			getchar();
 			return false;
 		}
 
 		while (true)
 		{
-			res = fscanf(fin, "%s", buf);
+			if (fscanf(Fin, "%s", Buf) == EOF) break;
 
-			if (res == EOF) break;
-
-			if (strcmp(buf, "v") == 0)
+			if (strcmp(Buf, "v") == 0)
 			{
+				/* Координаты вершины */
 				vec3 vertex;
-				fscanf(fin, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
-				tmp_vertices.push_back(vertex);
+
+				fscanf(Fin, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+				tmp_Vertices.push_back(vertex);
 			}
 			else
 			{
-				if (strcmp(buf, "vt") == 0)
+				if (strcmp(Buf, "vt") == 0)
 				{
+					/* Текстурные координаты */
 					vec2 uv;
-					fscanf(fin, "%f %f\n", &uv.x, &uv.y);
-					uv.y = -uv.y; // »вертируем дл€ DDS текстуры.”брать дл€ TGA или BMP.
-					tmp_uvs.push_back(uv);
+
+					fscanf(Fin, "%f %f\n", &uv.x, &uv.y);
+					uv.y = -uv.y; // ивертируем для DDS текстуры. Убрать для TGA или BMP.
+					tmp_UVs.push_back(uv);
 				}
 				else
 				{
-					if (strcmp(buf, "vn") == 0)
+					if (strcmp(Buf, "vn") == 0)
 					{
+						/* Нормаль */
 						vec3 normal;
-						fscanf(fin, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
-						tmp_normals.push_back(normal);
+
+						fscanf(Fin, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+						tmp_Normals.push_back(normal);
 					}
 					else
 					{
-						if (strcmp(buf, "f") == 0)
+						/* Грань (полигон) */
+						if (strcmp(Buf, "f") == 0)
 						{
-							int vertexIndex[3], uvIndex[3], normalIndex[3];
+							int VertexIndex[3], UVIndex[3], NormalIndex[3];
 
-							int count = fscanf(fin, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+							int count = fscanf(Fin, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &VertexIndex[0], &UVIndex[0], &NormalIndex[0], &VertexIndex[1], &UVIndex[1], &NormalIndex[1], &VertexIndex[2], &UVIndex[2], &NormalIndex[2]);
 
 							if (count != 9)
 							{
@@ -465,22 +488,23 @@ private:
 								return false;
 							}
 
-							vertexIndices.push_back(vertexIndex[0]);
-							vertexIndices.push_back(vertexIndex[1]);
-							vertexIndices.push_back(vertexIndex[2]);
+							VertexIndices.push_back(VertexIndex[0]);
+							VertexIndices.push_back(VertexIndex[1]);
+							VertexIndices.push_back(VertexIndex[2]);
 
-							uvIndices.push_back(uvIndex[0]);
-							uvIndices.push_back(uvIndex[1]);
-							uvIndices.push_back(uvIndex[2]);
+							UVIndices.push_back(UVIndex[0]);
+							UVIndices.push_back(UVIndex[1]);
+							UVIndices.push_back(UVIndex[2]);
 
-							normalIndices.push_back(normalIndex[0]);
-							normalIndices.push_back(normalIndex[1]);
-							normalIndices.push_back(normalIndex[2]);
+							NormalIndices.push_back(NormalIndex[0]);
+							NormalIndices.push_back(NormalIndex[1]);
+							NormalIndices.push_back(NormalIndex[2]);
 						}
 						else
 						{
-							char buf2[1000];
-							fgets(buf2, 1000, fin);
+							/* Что-то ещё, не нужное */
+							char Buf2[1000];
+							fgets(Buf2, 1000, Fin);
 						}
 					}
 				}
@@ -488,16 +512,16 @@ private:
 
 		}
 
-		//?л€ каждой вершины в каждом треугольнике
-		for (i = 0; i < vertexIndices.size(); i++)
+		/* Для каждой вершины в каждом треугольнике достаём данные на выход */
+		for (int i = 0; i < VertexIndices.size(); i++)
 		{
-			int vertexIndex = vertexIndices[i];
-			int uvIndex = uvIndices[i];
-			int normalIndex = normalIndices[i];
+			int vertexIndex = VertexIndices[i];
+			int uvIndex = UVIndices[i];
+			int normalIndex = NormalIndices[i];
 
-			vec3 vertex = tmp_vertices[vertexIndex - 1];
-			vec2 uv = tmp_uvs[uvIndex - 1];
-			vec3 normal = tmp_normals[normalIndex - 1];
+			vec3 vertex = tmp_Vertices[vertexIndex - 1];
+			vec2 uv = tmp_UVs[uvIndex - 1];
+			vec3 normal = tmp_Normals[normalIndex - 1];
 
 			vertices.push_back(vertex);
 			uvs.push_back(uv);
@@ -507,77 +531,79 @@ private:
 	}
 
 	/* Вычисление касательных и бикасательных */
-	void computeTangentBasis(vector<vec3> &vertices, vector<vec2> &uvs, vector<vec3> &normals, vector<vec3> &tangents, vector<vec3> &bitangents)
+	/* Vertices - список координат вершин */
+	/* UVs - список текстурных координат вершин */
+	/* Normals - список нормалей вершин */
+	/* Tangents - список касательных нормалей, возвращаемое значение */
+	/* Bitangents - список бикасательных нормалей, возвращаемое значение */
+	void ComputeTBT(vector<vec3> Vertices, vector<vec2> UVs, vector<vec3> Normals, vector<vec3> &Tangents, vector<vec3> &Bitangents)
 	{
-		int i;
-		float r;
+		float R;
+		vec3 V0, V1, V2, DeltaPos1, DeltaPos2, Tangent, Bitangent, Normal;
+		vec2 UV0, UV1, UV2, DeltaUV1, DeltaUV2;
 
-		vec3 v0, v1, v2, deltaPos1, deltaPos2, tangent, bitangent, normal;
-		vec2 uv0, uv1, uv2, deltaUV1, deltaUV2;
-
-		for (i = 0; i < vertices.size(); i += 3)
+		for (int i = 0; i < vertices.size(); i += 3)
 		{
-			v0 = vertices[i + 0];
-			v1 = vertices[i + 1];
-			v2 = vertices[i + 2];
+			V0 = Vertices[i + 0];
+			V1 = Vertices[i + 1];
+			V2 = Vertices[i + 2];
 
-			uv0 = uvs[i + 0];
-			uv1 = uvs[i + 1];
-			uv2 = uvs[i + 2];
+			UV0 = UVs[i + 0];
+			UV1 = UVs[i + 1];
+			UV2 = UVs[i + 2];
 
-			// Postion delta
-			deltaPos1 = v1 - v0;
-			deltaPos2 = v2 - v0;
+			DeltaPos1 = V1 - V0;
+			DeltaPos2 = V2 - V0;
 
-			// UV delta
-			deltaUV1 = uv1 - uv0;
-			deltaUV2 = uv2 - uv0;
+			DeltaUV1 = UV1 - UV0;
+			DeltaUV2 = UV2 - UV0;
 
-			r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+			R = 1.0f / (DeltaUV1.x * DeltaUV2.y - DeltaUV1.y * DeltaUV2.x);
 
-			tangent = r*(deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y);
-			bitangent = r*(deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x);
+			Tangent = R * (DeltaPos1 * DeltaUV2.y - DeltaPos2 * DeltaUV1.y);
+			Bitangent = R * (DeltaPos2 * DeltaUV1.x - DeltaPos1 * DeltaUV2.x);
 
-			tangents.push_back(tangent);
-			tangents.push_back(tangent);
-			tangents.push_back(tangent);
+			Tangents.push_back(Tangent);
+			Tangents.push_back(Tangent);
+			Tangents.push_back(Tangent);
 
-			bitangents.push_back(bitangent);
-			bitangents.push_back(bitangent);
-			bitangents.push_back(bitangent);
+			Bitangents.push_back(Bitangent);
+			Bitangents.push_back(Bitangent);
+			Bitangents.push_back(Bitangent);
 		}
 
-		for (i = 0; i < vertices.size(); i++)
+		for (int i = 0; i < vertices.size(); i++)
 		{
-			normal = normals[i];
-			tangent = tangents[i];
-			bitangent = bitangents[i];
+			Normal = Normals[i];
+			Tangent = Tangents[i];
+			Bitangent = Bitangents[i];
 
-			// ќртогонализаци€
-			tangent = normalize(tangent - normal * dot(normal, tangent));
+			/* Ортогонализация */
+			Tangent = normalize(Tangent - Normal * dot(Normal, Tangent));
 
-			// Ќаправление
-			if (dot(cross(normal, tangent), bitangent) < 0.0f) tangent = tangent * -1.0f;
+			/* Направление */
+			if (dot(cross(Normal, Tangent), Bitangent) < 0.0f) Tangent = Tangent * -1.0f;
 		}
 	}
 
-	/* Загрузка 6 cubemap текстур */
-	/* ѕор€док: +X (право), -X (лево), +Y (верх), -Y (низ), +Z (перед), -Z (зад) */
-	GLuint loadCubemap(vector<const GLchar*> faces)
+	/* Загрузка 6 CubeMap текстур, возвращает идентификатор загруженной текстуры */
+	/* Порядок: +X (Право), -X (Лево), +Y (Верх), -Y (Низ), +Z (Перед), -Z (Зад) */
+	/* faces - список изображений для каждой грани */
+	GLuint LoadCubeMap(vector<const GLchar*> faces)
 	{
-		GLuint textureID;
-		glGenTextures(1, &textureID);
+		GLuint TextureID;
+		glGenTextures(1, &TextureID);
 
-		int i, width, height;
-		unsigned char* image;
+		int Width, Height;
+		unsigned char* Image;
 
-		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, TextureID);
 
-		for (i = 0; i < faces.size(); i++)
+		for (int i = 0; i < faces.size(); i++)
 		{
-			image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-			SOIL_free_image_data(image);
+			Image = SOIL_load_image(faces[i], &Width, &Height, 0, SOIL_LOAD_RGB);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Image);
+			SOIL_free_image_data(Image);
 		}
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -587,8 +613,9 @@ private:
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
-		return textureID;
+		return TextureID;
 	}
+
 public:
 	int Material;
 	GLuint ShaderID;														//ѕеретащить в Private, добавить метод дл€ изменени€
@@ -600,7 +627,7 @@ public:
 	OBJECT(int material, const char *path)
 	{
 		Material = material;
-		loadOBJ(path, vertices, uvs, normals);
+		LoadOBJ(path, vertices, uvs, normals);
 	}
 
 	~OBJECT()
@@ -984,7 +1011,7 @@ public:
 		faces.push_back("skybox//bottom.jpg");
 		faces.push_back("skybox//back.jpg");
 		faces.push_back("skybox//front.jpg");
-		CubemapTexture = loadCubemap(faces);
+		CubemapTexture = LoadCubeMap(faces);
 	}
 
 	void RenderSkyBox(mat4 ProjectionMatrix, mat4 ViewMatrix)
@@ -1042,7 +1069,7 @@ private:
 
 		for (int i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, textureSize, textureSize, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, GenTextureSize, GenTextureSize, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		}
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -1056,7 +1083,7 @@ private:
 
 		glGenRenderbuffers(1, &depthbuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, textureSize, textureSize);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, GenTextureSize, GenTextureSize);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
@@ -1118,7 +1145,7 @@ private:
 				break;
 			};
 
-			glViewport(0, 0, textureSize, textureSize);
+			glViewport(0, 0, GenTextureSize, GenTextureSize);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			for (int j = 0; j < ObjectsCount; j++)
 			{
@@ -1138,8 +1165,6 @@ private:
 	}
 
 public:
-	bool MirrorExample = true;
-
 	SCENE()
 	{
 		Axes = OBJECT();
@@ -1270,7 +1295,7 @@ public:
 
 	void Render()
 	{
-		CameraPos = Camera.ComputeViewMatrix(window, cameramode);
+		CameraPos = Camera.ComputeViewMatrix(window, CameraMode);
 		ProjectionMatrix = Camera.getProjectionMatrix();
 		ViewMatrix = Camera.getViewMatrix();
 
@@ -1357,23 +1382,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 	{
-		cameramode++;
-		if (cameramode > 2) cameramode = 1;
+		CameraMode++;
+		if (CameraMode > 2) CameraMode = 1;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) cameramode = 3;
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) CameraMode = 3;
 
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
 	{
-		if (wireframe)
+		if (Wireframe)
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			wireframe = false;
+			Wireframe = false;
 		}
 		else
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			wireframe = true;
+			Wireframe = true;
 		}
 	}
 }
