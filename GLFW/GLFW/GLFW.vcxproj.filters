@@ -30,9 +30,6 @@
     <ClCompile Include="Text2D.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="ViewMatrix.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TextureLoader.h">
@@ -42,9 +39,6 @@
       <Filter>Файлы исходного кода</Filter>
     </ClInclude>
     <ClInclude Include="Text2D.h">
-      <Filter>Файлы исходного кода</Filter>
-    </ClInclude>
-    <ClInclude Include="ViewMatrix.h">
       <Filter>Файлы исходного кода</Filter>
     </ClInclude>
   </ItemGroup>

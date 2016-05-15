@@ -18,29 +18,164 @@ using namespace glm;
 GLFWwindow* window;
 
 #include "TextureLoader.h"
-#include "ViewMatrix.h"
 #include "VboIndexer.h"
 #include "Text2D.h"
 
 int WindowWidth = 1280, WindowHeight = 800;
+float FOV = 90.0;
 int cameramode = 2;
+int textureSize = 128;
 bool wireframe = false;														// F1
+
+class CAMERA
+{
+private:
+	vec3 position;																							// Позиция камеры
+	float Pi = pi<float>();
+	float deltaTime, radius = 20.0, radiusMin = 2.0, radiusMax = 100.0, cameraheight = 1.0;					// Время, радиус и высота полёта второй камеры
+	float horizontalAngle = 0.0, verticalAngle = 0.0;														// Горизонтальный и вертикальный углы
+	float FoV = 90.0, speed = 6.0, speed2 = 6.0, mouseSpeed = 0.005;										// FOV, скорость движения камеры, скорость мышки
+
+	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
+
+public:
+	mat4 getProjectionMatrix() { return ProjectionMatrix; }
+	mat4 getViewMatrix() { return ViewMatrix; }
+	mat4 getViewMatrixAxes() { return ViewMatrixAxes; }
+
+	/* Обработка клавиатуры для движения камеры 2 */
+	void checkmove(GLFWwindow* window)
+	{
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (radius >= radiusMin) radius -= deltaTime * speed; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (radius <= radiusMax) radius += deltaTime * speed; }
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { if (cameraheight <= 10.0) cameraheight += deltaTime * speed; }
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { if (cameraheight >= -10.0) cameraheight -= deltaTime * speed; }
+	}
+
+	/* Обработка клавиатуры для движения камеры 1 */
+	void checkmove(GLFWwindow* window, vec3 direction, vec3 right)
+	{
+		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (speed2 < 20.0) speed2 += 0.2; }
+		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (speed2 > 1.0) speed2 -= 0.2; }
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { position += direction * deltaTime * speed2; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { position -= direction * deltaTime * speed2; }
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { position += right * deltaTime * speed2; }
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { position -= right * deltaTime * speed2; }
+	}
+
+	/* Вычисление матриц вида и проекции */
+	/* Возвращает позицию камеры */
+	vec3 ComputeViewMatrix(GLFWwindow* window, int cameramode)
+	{
+		double currentTime, mouseX, mouseY;
+
+		static double lastTime = glfwGetTime();
+
+		currentTime = glfwGetTime();
+		deltaTime = float(currentTime - lastTime);
+
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+
+		//glfwGetWindowSize(window, &width, &height);
+		glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
+
+		horizontalAngle += mouseSpeed * float(WindowWidth / 2 - mouseX);
+		verticalAngle += mouseSpeed * float(WindowHeight / 2 - mouseY);
+
+		if (cameramode == 1)
+		{
+			vec3 direction, right, up;
+
+			// Direction : Spherical coordinates to Cartesian coordinates conversion
+			direction = vec3(cos(verticalAngle) * sin(horizontalAngle), sin(verticalAngle), cos(verticalAngle) * cos(horizontalAngle));
+			right = vec3(sin(horizontalAngle - Pi / 2.0), 0, cos(horizontalAngle - Pi / 2.0));
+			up = vec3(0, 1, 0);
+
+			checkmove(window, direction, right);
+
+			ViewMatrix = lookAt(position, position + direction, up);
+
+			ViewMatrixAxes = ViewMatrix;
+		}
+
+		if (cameramode == 2)
+		{
+			vec3 direction, up;
+
+			position = vec3(radius*cos(horizontalAngle), cameraheight, radius*sin(horizontalAngle));
+			direction = vec3(0.0, -1.5, 0.0);
+			up = vec3(0.0, 1.0, 0.0);
+
+			checkmove(window);
+
+			ViewMatrix = lookAt(position, direction, up);
+
+			ViewMatrixAxes = lookAt(vec3(5 * cos(horizontalAngle), cameraheight, 5 * sin(horizontalAngle)), direction, up);
+		}
+
+		if (cameramode == 3)
+		{
+			vec3 direction, up;
+
+			position = vec3(5.0, 3.0, 4.0);
+			direction = vec3(0.0, 0.0, 0.0);
+			up = vec3(0.0, 1.0, 0.0);
+
+			ViewMatrix = lookAt(position, direction, up);
+
+			ViewMatrixAxes = ViewMatrix;
+		}
+
+		//ProjectionMatrix = perspective(radians(FoV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f); // FOV, ratio, range : 0.1 unit <-> 100 units	 	
+		lastTime = currentTime;
+
+		return position;
+	}
+};
+
 
 class OBJECT
 {
 public:
+	int ID;
+	int Material;
 	GLuint ShaderID;														//Перетащить в Private, добавить метод для изменения
 	GLuint cubemapTexture;
 
 	OBJECT() {};
 
-	OBJECT(const char * path)
+	/* id - уникальный идентификатор */
+	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - зеркало, 3 - "цилиндр"*/
+	OBJECT(int id, int material, const char *path)
 	{
+		ID = id;
+		Material = material;
 		loadOBJ(path, vertices, uvs, normals);
+		/*switch (material)
+		{
+		case 0:
+			PrepareSolidColor();
+			break;
+		case 1:
+			PrepareGradientColor();
+			break;
+		case 2:
+		{
+			LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+			PrepareReflectionRefraction();
+		}
+			break;
+		case 3:
+			PrepareCylinder();
+			break;
+		default:
+			break;
+		}*/
 	}
 
 	~OBJECT()
 	{
+		
 		glDeleteBuffers(1, &vertexbuffer);
 		glDeleteBuffers(1, &uvbuffer);
 		glDeleteBuffers(1, &normalbuffer);
@@ -50,7 +185,7 @@ public:
 		glDeleteTextures(1, &DiffuseTexture);
 		glDeleteTextures(1, &NormalTexture);
 		glDeleteTextures(1, &SpecularTexture);	
-
+	
 		glDeleteVertexArrays(1, &VAO);
 	}
 
@@ -155,30 +290,97 @@ public:
 	}
 
 	/* Изменение размера объекта */
-	void Resize(float size)
+	void setScale(float size)
 	{
 		/* Если умножить, то радиус сферы -> 0 */
 		ModelMatrix = scale(ModelMatrix, vec3(size, size, size));
 	}
 
 	/* Вращение объекта */
-	void Rotate(float angle, vec3 axis)
+	void setRotation(float angle, vec3 axis)
 	{
 		ModelMatrix *= rotate(angle, axis);
 	}
 
-	/* Перемещение объекта */
-	void Move(float X, float Y, float Z)
+	/* Задаёт позицию объекта */
+	void setPosition(float X, float Y, float Z)
 	{
 		ModelMatrix *= translate(vec3(X, Y, Z));
 	}	
 
+	/* возвращает позицию объекта */
+	vec3 getPosition()
+	{
+		return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z);
+	}
+
 	/* Задаёт цвет сплошной цвет объекта */
-	void SolidColor(float R, float G, float B)
+	void setSolidColor(float R, float G, float B)
 	{
 		solidcolor.x = R;
 		solidcolor.y = G;
 		solidcolor.z = B;
+	}
+
+	/* Material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - зеркало, 3 - "цилиндр"*/
+	void Prepare()
+	{
+		switch (Material)
+		{
+			case 0:
+			{
+				PrepareSolidColor();
+				break;
+			}
+			case 1:
+			{
+				PrepareGradientColor();
+				break;
+			}
+			case 2:
+			{
+				LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");
+				PrepareReflectionRefraction();
+				break;
+			}
+			case 3:
+			{
+				LoadShaders("shaders//Cylinder.vertexshader", "shaders//Cylinder.fragmentshader");
+				PrepareCylinder();
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	void Render(vec3 campos, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		switch (Material)
+		{
+			case 0:
+			{
+				RenderSolidColor(ProjectionMatrix, ViewMatrix);
+				break;
+			}
+			case 1:
+			{
+				RenderGradientColor(ProjectionMatrix, ViewMatrix);
+				break;
+			}
+			case 2:
+			{
+				RenderReflectionRefraction(campos, ProjectionMatrix, ViewMatrix);
+				break;
+			}
+			case 3:
+			{
+				RenderCylinder(ProjectionMatrix, ViewMatrix);
+				break;
+			}
+			default:
+				break;
+		}
 	}
 
 	void PrepareAxes()
@@ -362,239 +564,6 @@ public:
 
 		glDepthFunc(GL_LESS);
 	}	
-
-	void PrepareReflectionRefraction()
-	{
-		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
-		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
-		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
-		CameraPosID = glGetUniformLocation(ShaderID, "cameraPos");
-
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		glGenBuffers(1, &vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &normalbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
-		
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-
-		glBindVertexArray(0);
-	}
-
-	void RenderReflectionRefraction(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
-	{
-		glUseProgram(ShaderID);
-
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
-		glUniform3f(CameraPosID, camera.x, camera.y, camera.z);
-
-		glBindVertexArray(VAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-		glBindVertexArray(0);
-	}
-
-	void PrepareSolidColor()
-	{
-		LoadShaders("shaders//SolidColor.vertexshader", "shaders//SolidColor.fragmentshader");
-
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
-		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
-
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		glGenBuffers(1, &vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glBindVertexArray(0);
-	}
-
-	void RenderSolidColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
-	{
-		glUseProgram(ShaderID);
-
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
-		glUniform3f(SolidColorID, solidcolor.x, solidcolor.y, solidcolor.z);
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
-		glBindVertexArray(0);
-	}
-
-	void PrepareGradientColor()
-	{
-		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
-
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
-		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
-		
-		GLfloat *colorbuffer_data = new GLfloat[vertices.size() * sizeof(vec3) * 3];
-
-		for (int i = 0; i < vertices.size() * sizeof(vec3) * 3; i += 3)
-		{
-			if (i % 2 == 0)
-			{
-				colorbuffer_data[i] = 0.33;
-				colorbuffer_data[i + 1] = 0.66;
-				colorbuffer_data[i + 2] = 0.99;
-			}
-			else
-			{
-				colorbuffer_data[i] = 0.24;
-				colorbuffer_data[i + 1] = 0.16;
-				colorbuffer_data[i + 2] = 0.71;
-			}
-		}
-
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		glGenBuffers(1, &vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &colorbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size() * sizeof(vec3) * 3, colorbuffer_data, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glBindVertexArray(0);
-	}
-
-	void RenderGradientColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
-	{
-		glUseProgram(ShaderID);
-
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
-
-		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
-		glBindVertexArray(0);
-	}
-
-	void PrepareCylinder()
-	{
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
-		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
-		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
-		ModelView3x3MatrixID = glGetUniformLocation(ShaderID, "MV3x3");
-
-		DiffuseTexture = loadDDS("diffuse.DDS");
-		NormalTexture = loadBMP_custom("normal.bmp");
-		SpecularTexture = loadDDS("specular.DDS");
-
-		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
-		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
-		SpecularTextureID = glGetUniformLocation(ShaderID, "SpecularTexture");
-		LightID = glGetUniformLocation(ShaderID, "LightPosition_worldspace");
-
-		computeTangentBasis(vertices, uvs, normals, tangents, bitangents);
-
-		vector<vec3> indexed_vertices;
-		vector<vec2> indexed_uvs;
-		vector<vec3> indexed_normals;
-		vector<vec3> indexed_tangents;
-		vector<vec3> indexed_bitangents;
-		indexVBO(vertices, uvs, normals, tangents, bitangents, indices, indexed_vertices, indexed_uvs, indexed_normals, indexed_tangents, indexed_bitangents);
-
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		glGenBuffers(1, &vertexbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(vec3), &indexed_vertices[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &uvbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, indexed_uvs.size() * sizeof(vec2), &indexed_uvs[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &normalbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, indexed_normals.size() * sizeof(vec3), &indexed_normals[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &tangentbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, indexed_tangents.size() * sizeof(vec3), &indexed_tangents[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &bitangentbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
-		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, indexed_bitangents.size() * sizeof(glm::vec3), &indexed_bitangents[0], GL_STATIC_DRAW);
-
-		glGenBuffers(1, &elementbuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
-		
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0], GL_STATIC_DRAW);	
-
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glEnableVertexAttribArray(3);
-		glEnableVertexAttribArray(4);
-
-		glBindVertexArray(0);
-	}
-
-	void RenderCylinder(mat4 ProjectionMatrix, mat4 ViewMatrix)
-	{
-		glUseProgram(ShaderID);
-
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
-		ModelView3x3Matrix = mat3(ModelViewMatrix);
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
-
-		vec3 lightPos = vec3(0.0, -7.0, 0.0);
-		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-
-		glBindVertexArray(VAO);
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, DiffuseTexture);
-		glUniform1i(DiffuseTextureID, 0);
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, NormalTexture);
-		glUniform1i(NormalTextureID, 1);
-
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, SpecularTexture);
-		glUniform1i(SpecularTextureID, 2);
-
-		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_SHORT, (void*)0);
-
-		glBindVertexArray(0);
-	}
 
 private:
 	/* Vertex Array Object */
@@ -808,21 +777,258 @@ private:
 
 		return textureID;
 	}
+
+	void PrepareReflectionRefraction()
+	{
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		CameraPosID = glGetUniformLocation(ShaderID, "cameraPos");
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &normalbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+
+		glBindVertexArray(0);
+	}
+
+	void RenderReflectionRefraction(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glUseProgram(ShaderID);
+
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniform3f(CameraPosID, camera.x, camera.y, camera.z);
+
+		glBindVertexArray(VAO);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		glBindVertexArray(0);
+	}
+
+	void PrepareSolidColor()
+	{
+		LoadShaders("shaders//SolidColor.vertexshader", "shaders//SolidColor.fragmentshader");
+
+		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glBindVertexArray(0);
+	}
+
+	void RenderSolidColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glUseProgram(ShaderID);
+
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+		glUniform3f(SolidColorID, solidcolor.x, solidcolor.y, solidcolor.z);
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindVertexArray(0);
+	}
+
+	void PrepareGradientColor()
+	{
+		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
+
+		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		SolidColorID = glGetUniformLocation(ShaderID, "userColor");
+
+		GLfloat *colorbuffer_data = new GLfloat[vertices.size() * sizeof(vec3) * 3];
+
+		for (int i = 0; i < vertices.size() * sizeof(vec3) * 3; i += 3)
+		{
+			if (i % 2 == 0)
+			{
+				colorbuffer_data[i] = 0.33;
+				colorbuffer_data[i + 1] = 0.66;
+				colorbuffer_data[i + 2] = 0.99;
+			}
+			else
+			{
+				colorbuffer_data[i] = 0.24;
+				colorbuffer_data[i + 1] = 0.16;
+				colorbuffer_data[i + 2] = 0.71;
+			}
+		}
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &colorbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size() * sizeof(vec3) * 3, colorbuffer_data, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
+	}
+
+	void RenderGradientColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glUseProgram(ShaderID);
+
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+		glBindVertexArray(0);
+	}
+
+	void PrepareCylinder()
+	{
+		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
+		ModelView3x3MatrixID = glGetUniformLocation(ShaderID, "MV3x3");
+
+		DiffuseTexture = loadDDS("diffuse.DDS");
+		NormalTexture = loadBMP_custom("normal.bmp");
+		SpecularTexture = loadDDS("specular.DDS");
+
+		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
+		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
+		SpecularTextureID = glGetUniformLocation(ShaderID, "SpecularTexture");
+		LightID = glGetUniformLocation(ShaderID, "LightPosition_worldspace");
+
+		computeTangentBasis(vertices, uvs, normals, tangents, bitangents);
+
+		vector<vec3> indexed_vertices;
+		vector<vec2> indexed_uvs;
+		vector<vec3> indexed_normals;
+		vector<vec3> indexed_tangents;
+		vector<vec3> indexed_bitangents;
+		indexVBO(vertices, uvs, normals, tangents, bitangents, indices, indexed_vertices, indexed_uvs, indexed_normals, indexed_tangents, indexed_bitangents);
+
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(vec3), &indexed_vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &uvbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, indexed_uvs.size() * sizeof(vec2), &indexed_uvs[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &normalbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, indexed_normals.size() * sizeof(vec3), &indexed_normals[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &tangentbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, indexed_tangents.size() * sizeof(vec3), &indexed_tangents[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &bitangentbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, bitangentbuffer);
+		glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, indexed_bitangents.size() * sizeof(glm::vec3), &indexed_bitangents[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &elementbuffer);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), &indices[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
+		glEnableVertexAttribArray(4);
+
+		glBindVertexArray(0);
+	}
+
+	void RenderCylinder(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	{
+		glUseProgram(ShaderID);
+
+		ModelViewMatrix = ViewMatrix * ModelMatrix;
+		ModelView3x3Matrix = mat3(ModelViewMatrix);
+		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
+
+		vec3 lightPos = vec3(0.0, -7.0, 0.0);
+		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+
+		glBindVertexArray(VAO);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, DiffuseTexture);
+		glUniform1i(DiffuseTextureID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, NormalTexture);
+		glUniform1i(NormalTextureID, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, SpecularTexture);
+		glUniform1i(SpecularTextureID, 2);
+
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_SHORT, (void*)0);
+
+		glBindVertexArray(0);
+	}
 };
 
 class SCENE
 {
 public:
-	OBJECT AXES;
-	OBJECT CUBE_Solid, CUBE_Solid2, CUBE_Solid3, CUBE_Solid4, CUBE_Solid5, CUBE_Solid6, CUBE_Gradient, CUBE_Glass, CUBE_Mirror;
-	OBJECT SPHERE_Solid, SPHERE_Gradient, SPHERE_Glass, SPHERE_Mirror;
-	OBJECT CYLINDER, CYLINDER_Gradient, CYLINDER_Solid, CYLINDER_Glass, CYLINDER_Mirror;
-	OBJECT SKYBOX;
+	OBJECT Axes, Skybox;
+	CAMERA camera;
+
+	int ObjectsCount = 7;
+
+	OBJECT *Objects = new OBJECT[ObjectsCount];
 
 	SCENE() 
 	{
-		AXES = OBJECT();
-		AXES.PrepareAxes();
+		Axes = OBJECT();
+		Axes.PrepareAxes();
+
+		Skybox = OBJECT();
+		Skybox.PrepareSkyBox();
 		
 		/*CUBE_Solid = OBJECT("3dmodels//cube.obj");
 		CUBE_Solid.PrepareSolidColor();
@@ -898,52 +1104,50 @@ public:
 		CYLINDER_Glass.cubemapTexture = SKYBOX.cubemapTexture;
 		CYLINDER_Mirror.cubemapTexture = SKYBOX.cubemapTexture;*/
 
-		CUBE_Solid = OBJECT("3dmodels//cube.obj");
-		CUBE_Solid.PrepareSolidColor();
-		CUBE_Solid.SolidColor(0.9, 0.0, 0.5);
-		CUBE_Solid.Move(0.0, 0.0, 5.0);
+		Objects[0] = OBJECT(0, 0, "3dmodels//cube.obj");
+		Objects[0].Prepare();
+		Objects[0].setSolidColor(0.9, 0.0, 0.5);
+		Objects[0].setPosition(0.0, 0.0, 10.0);
 
-		CUBE_Solid2 = OBJECT("3dmodels//cube.obj");
-		CUBE_Solid2.PrepareSolidColor();
-		CUBE_Solid2.SolidColor(1.0, 0.0, 0.5);
-		CUBE_Solid2.Move(0.0, 0.0, -5.0);
+		Objects[1] = OBJECT(1, 0, "3dmodels//cube.obj");
+		Objects[1].Prepare();
+		Objects[1].setSolidColor(1.0, 0.6, 0.5);
+		Objects[1].setPosition(0.0, 0.0, -10.0);
 
-		CUBE_Solid3 = OBJECT("3dmodels//cube.obj");
-		CUBE_Solid3.PrepareSolidColor();
-		CUBE_Solid3.SolidColor(0.3, 0.8, 0.5);
-		CUBE_Solid3.Move(5.0, 0.0, 0.0);
+		Objects[2] = OBJECT(2, 0, "3dmodels//cube.obj");
+		Objects[2].Prepare();
+		Objects[2].setSolidColor(0.3, 0.8, 0.5);
+		Objects[2].setPosition(5.0, 0.0, 0.0);
 
-		CUBE_Solid4 = OBJECT("3dmodels//cube.obj");
-		CUBE_Solid4.PrepareSolidColor();
-		CUBE_Solid4.SolidColor(0.5, 0.0, 0.9);
-		CUBE_Solid4.Move(-5.0, 0.0, 0.0);
+		Objects[3] = OBJECT(3, 0, "3dmodels//cube.obj");
+		Objects[3].Prepare();
+		Objects[3].setSolidColor(0.5, 0.0, 0.9);
+		Objects[3].setPosition(-5.0, 0.0, 0.0);
 
-		CUBE_Solid5 = OBJECT("3dmodels//cube.obj");
-		CUBE_Solid5.PrepareSolidColor();
-		CUBE_Solid5.SolidColor(0.1, 0.3, 0.5);
-		CUBE_Solid5.Move(0.0, 5.0, 0.0);
+		Objects[4] = OBJECT(4, 0, "3dmodels//cube.obj");
+		Objects[4].Prepare();
+		Objects[4].setSolidColor(0.1, 0.3, 0.5);
+		Objects[4].setPosition(0.0, 15.0, 0.0);
 
-		CUBE_Solid6 = OBJECT("3dmodels//cube.obj");
-		CUBE_Solid6.PrepareSolidColor();
-		CUBE_Solid6.SolidColor(0.5, 0.8, 0.9);
-		CUBE_Solid6.Move(0.0, -5.0, 0.0);
+		Objects[5] = OBJECT(5, 0, "3dmodels//cube.obj");
+		Objects[5].Prepare();
+		Objects[5].setSolidColor(0.5, 0.8, 0.9);
+		Objects[5].setPosition(0.0, -15.0, 0.0);
 
-		CUBE_Mirror = OBJECT("3dmodels//sphere.obj");
-		CUBE_Mirror.LoadShaders("shaders//Reflection.vertexshader", "shaders//Reflection.fragmentshader");	
-		CUBE_Mirror.PrepareReflectionRefraction();
-		CUBE_Mirror.Resize(2.0);
+		Objects[6] = OBJECT(6, 2, "3dmodels//sphere.obj");
+		Objects[6].Prepare();
+		Objects[6].setScale(2.0);
 
-		SKYBOX = OBJECT();
-		SKYBOX.PrepareSkyBox();
+		/*Objects[0] = OBJECT(0, 2, "3dmodels//sphere.obj");
+		Objects[0].Prepare();
+		Objects[0].setPosition(0.0, 0.0, 3.0);
+		Objects[0].setScale(2.0);
 
-		ProjectionMatrix = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
-
-		PrepareCubemap(camera, ProjectionMatrix, ViewMatrix);
-		CUBE_Mirror.cubemapTexture = cubemap;
-
-		ProjectionMatrix = perspective(radians(90.0f), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
-
-		//CUBE_Mirror.cubemapTexture = SKYBOX.cubemapTexture;
+		Objects[1] = OBJECT(1, 2, "3dmodels//sphere.obj");
+		Objects[1].Prepare();
+		Objects[1].setPosition(0.0, 0.0, -3.0);
+		Objects[1].setScale(2.0);
+		Objects[1].cubemapTexture = SKYBOX.cubemapTexture;*/
 	};
 
 	~SCENE() 
@@ -964,16 +1168,19 @@ public:
 		glDeleteProgram(CYLINDER_Mirror.ShaderID);
 		glDeleteProgram(CYLINDER.ShaderID);*/
 
-		glDeleteProgram(CUBE_Solid.ShaderID);
-		glDeleteProgram(CUBE_Mirror.ShaderID);
+		for (int i = 0; i < ObjectsCount; i++)
+		{
+			glDeleteProgram(Objects[i].ShaderID);
+		}
 
-		glDeleteProgram(SKYBOX.ShaderID);
+		glDeleteProgram(Skybox.ShaderID);
+		glDeleteProgram(Axes.ShaderID);
 	};
 
 	void Render()
 	{		
-		camera = ComputeViewMatrix(window, cameramode);
-		ViewMatrix = getViewMatrix();
+		camPos = camera.ComputeViewMatrix(window, cameramode);
+		ViewMatrix = camera.getViewMatrix();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1024,14 +1231,34 @@ public:
 			SPHEREincreaseSize = false;
 		}*/
 
-		CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-		CUBE_Solid2.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-		CUBE_Solid3.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-		CUBE_Solid4.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-		CUBE_Solid5.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-		CUBE_Solid6.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-		CUBE_Mirror.RenderReflectionRefraction(camera, ProjectionMatrix, ViewMatrix);
-		SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
+
+		for (int i = 0; i < ObjectsCount; i++)
+		{
+			if (Objects[i].Material == 2)
+			{			
+				Objects[i].cubemapTexture = PrepareCubemap(i, camPos, ViewMatrix);
+			}
+		}
+
+		for (int i = 0; i < ObjectsCount; i++)
+		{
+			Objects[i].Render(camPos, ProjectionMatrix, ViewMatrix);
+			if (Objects[i].Material == 2)
+			{
+				glDeleteTextures(1, &(Objects[i].cubemapTexture));
+			}
+		}
+
+		Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+		Axes.RenderAxes(ViewMatrix);
+
+		/*Objects[0].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));
+		Objects[1].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
+		Objects[2].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));
+		Objects[3].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
+		Objects[4].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));*/
+		//Objects[5].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
 	}
 
 private:
@@ -1039,14 +1266,14 @@ private:
 	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
 	float CUBEangle = 0.05, CYLINDERangle = -0.01;
 
-	vec3 camera;
+	vec3 camPos;
 	mat4 ProjectionMatrix, ViewMatrix;
 
 	GLuint VAO;
 	GLuint ShaderID;
 	GLuint timeID, texID;
 	GLuint framebuffer, renderedTexture, depthbuffer;
-	GLuint cubemap;
+	//GLuint cubemap;
 
 	bool LoadShaders(const char * vertex_file_path, const char * fragment_file_path)
 	{
@@ -1147,7 +1374,7 @@ private:
 		return true;
 	}
 
-	void PrepareRenderToTexture()
+	/*void PrepareRenderToTexture()
 	{
 		glGenFramebuffers(1, &framebuffer);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -1227,10 +1454,19 @@ private:
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
+	*/
 
-	void PrepareCubemap(vec3 camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	GLuint PrepareCubemap(int id, vec3 camera, mat4 ViewMatrix)
 	{
-		int texSize = 2048;
+		GLuint cubemap;
+
+		/*glDeleteTextures(1, &cubemap);
+		glDeleteRenderbuffers(1, &depthbuffer);
+		glDeleteFramebuffers(1, &framebuffer);*/
+
+		mat4 ProjectionMatrix = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
+		//glEnable(GL_CULL_FACE);
+		//glDepthFunc(GL_LEQUAL);
 
 		glGenTextures(1, &cubemap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
@@ -1242,7 +1478,7 @@ private:
 
 		for (int i = 0; i < 6; i++)
 		{
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, texSize, texSize, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, textureSize, textureSize, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		}
 		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -1256,25 +1492,23 @@ private:
 
 		glGenRenderbuffers(1, &depthbuffer);
 		glBindRenderbuffer(GL_RENDERBUFFER, depthbuffer);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, texSize, texSize);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, textureSize, textureSize);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthbuffer);
 
 		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer check 1 problem.\n");
-		else printf("Framebuffer check 1 OK.\n");
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer init problem.\n");
 
 		for (int i = 0; i < 6; i++)
 		{
 			glDrawBuffer(GL_COLOR_ATTACHMENT0 + i);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubemap, 0);
-			
+
 			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) printf("Framebuffer face %d problem.\n", i);
-			else printf("Framebuffer face %d OK.\n", i);
-			
+
 			/*
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X	Right	0
 			GL_TEXTURE_CUBE_MAP_NEGATIVE_X	Left	1
@@ -1287,38 +1521,49 @@ private:
 			switch (i)
 			{
 			case 0:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				//ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
 				break;
 			case 1:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				//ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(-1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
 				break;
 			case 2:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
+				//ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
 				break;
 			case 3:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0));
+				//ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0));
 				break;
 			case 4:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, -1.0, 0.0));
+				//ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, 1.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, 0.0, 1.0), vec3(0.0, -1.0, 0.0));
 				break;
 			case 5:
-				ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0));
+				//ViewMatrix = lookAt(vec3(0.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0));
 			default:
 				break;
 			};
 
-			glViewport(0, 0, texSize, texSize);
+			glViewport(0, 0, textureSize, textureSize);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			CUBE_Solid.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			CUBE_Solid2.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			CUBE_Solid3.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			CUBE_Solid4.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			CUBE_Solid5.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			CUBE_Solid6.RenderSolidColor(ProjectionMatrix, ViewMatrix);
-			SKYBOX.RenderSkyBox(ProjectionMatrix, ViewMatrix);			
+			for (int j = 0; j < ObjectsCount; j++)
+			{
+				if (Objects[j].ID != id)
+				{
+					Objects[j].Render(camera, ProjectionMatrix, ViewMatrix);
+				}
+			}
+			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
 		}
 		glViewport(0, 0, WindowWidth, WindowHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDeleteRenderbuffers(1, &depthbuffer);
+		glDeleteFramebuffers(1, &framebuffer);
+
+		return cubemap;
 	}
 };
 

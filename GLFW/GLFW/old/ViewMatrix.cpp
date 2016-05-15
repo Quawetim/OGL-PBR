@@ -29,7 +29,7 @@ void checkmove(GLFWwindow* window)
 
 void checkmove(GLFWwindow* window, vec3 direction, vec3 right)
 {
-	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (speed2 < 10.0) speed2 += 0.2; }
+	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (speed2 < 20.0) speed2 += 0.2; }
 	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (speed2 > 1.0) speed2 -= 0.2; }
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { position += direction * deltaTime * speed2; }
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { position -= direction * deltaTime * speed2; }
