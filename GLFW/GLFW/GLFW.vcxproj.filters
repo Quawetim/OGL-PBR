@@ -89,9 +89,4 @@
       <Filter>Файлы исходного кода</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="TODO.txt">
-      <Filter>Файлы исходного кода</Filter>
-    </Text>
-  </ItemGroup>
 </Project>
