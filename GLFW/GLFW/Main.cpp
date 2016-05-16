@@ -32,7 +32,8 @@ float FOV = 90.0;
 int CameraMode = 2;
 int GenTextureSize = 512;
 bool Wireframe = false;
-bool MirrorExample = true;
+bool MirrorExample = false;
+bool StopRotations = true;
 bool FullSceen = false;
 
 class CAMERA
@@ -774,7 +775,7 @@ public:
 	}
 
 	/* Возвращает размер объекта */
-	vec3 getScale() { return vec3(ModelMatrix[0].x, ModelMatrix[1].y, ModelMatrix[2].z); }
+	float getScale() { return ModelMatrix[0].x; }
 
 	/* Вращение объекта */
 	void setRotation(float angle, vec3 axis) { ModelMatrix *= rotate(angle, axis); }
@@ -785,12 +786,12 @@ public:
 	/* Задаёт позицию объекта */
 	void setPosition(float X, float Y, float Z) 
 	{ 
-		vec3 scale = getScale();
+		float scale = getScale();
 		ModelMatrix = mat4(1.0);
 		ModelMatrix *= translate(vec3(X, Y, Z)); 
-		ModelMatrix[0].x = scale.x;
-		ModelMatrix[1].y = scale.y;
-		ModelMatrix[2].z = scale.z;
+		ModelMatrix[0].x = scale;
+		ModelMatrix[1].y = scale;
+		ModelMatrix[2].z = scale;
 	}	
 
 	/* Задаёт сплошной цвет объекта */
@@ -1069,13 +1070,13 @@ class SCENE
 {
 private:
 	/* Число объектов на сцене */
-	int ObjectsCount;
-	OBJECT Axes, Skybox, *Objects;
+	int ObjectsCount, ObjectsCountMirror;
+	OBJECT Axes, Skybox, *Objects, *ObjectsMirror;
 	CAMERA Camera;
 
-	bool SPHEREdecreaseSize = true, SPHEREincreaseSize = false;
-	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
-	float CUBEangle = 0.05, CYLINDERangle = -0.01;
+	bool SphereDecrease = true, SphereIncrease = false;
+	float SpheresSize = 1.0, SpheresSizeDelta = 0.006, SpheresSizeMin = 0.8, SpheresSizeMax = 1.0;
+	float CubeAngle = 0.06, CylinderAngle = -0.01;
 	float Angle = 90.0, Angle2 = 90.0, AngleDelta = 2.0, AngleDelta2 = 5.0;
 	vec3 Position, NewPosition;
 
@@ -1185,11 +1186,11 @@ private:
 
 			glViewport(0, 0, GenTextureSize, GenTextureSize);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			for (int j = 0; j < ObjectsCount; j++)
+			for (int j = 0; j < ObjectsCountMirror; j++)
 			{
 				if (j != id)
 				{
-					Objects[j].Render(camera, ProjectionMatrix, ViewMatrix);
+					ObjectsMirror[j].Render(camera, ProjectionMatrix, ViewMatrix);
 				}
 			}
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
@@ -1212,115 +1213,108 @@ public:
 		Skybox = OBJECT();
 		Skybox.PrepareSkyBox();
 
-		if (MirrorExample)
-		{
-			ObjectsCount = 7;
-			Objects = new OBJECT[ObjectsCount];
+		ObjectsCount = 13;
+		Objects = new OBJECT[ObjectsCount];
 
-			Objects[0] = OBJECT(0, "3dmodels//cube.obj");
-			Objects[0].Prepare();
-			Objects[0].setSolidColor(0.9, 0.0, 0.5);
-			Objects[0].setPosition(0.0, 0.0, 10.0);
-			
-			Objects[1] = OBJECT(1, "3dmodels//cube.obj");
-			Objects[1].Prepare();
-			Objects[1].setSolidColor(1.0, 0.6, 0.5);
-			Objects[1].setPosition(0.0, 0.0, -10.0);
-			
-			Objects[2] = OBJECT(0, "3dmodels//cube.obj");
-			Objects[2].Prepare();
-			Objects[2].setSolidColor(0.3, 0.8, 0.5);
-			Objects[2].setPosition(5.0, 0.0, 0.0);
-			
-			Objects[3] = OBJECT(0, "3dmodels//cube.obj");
-			Objects[3].Prepare();
-			Objects[3].setSolidColor(0.5, 0.0, 0.9);
-			Objects[3].setPosition(-5.0, 0.0, 0.0);
-			
-			Objects[4] = OBJECT(0, "3dmodels//cube.obj");
-			Objects[4].Prepare();
-			Objects[4].setSolidColor(0.1, 0.3, 0.5);
-			Objects[4].setPosition(0.0, 15.0, 0.0);
-			
-			Objects[5] = OBJECT(0, "3dmodels//cube.obj");
-			Objects[5].Prepare();
-			Objects[5].setSolidColor(0.5, 0.8, 0.9);
-			Objects[5].setScale(2.0);
-			Objects[5].setPosition(0.0, -15.0, 0.0);
-			
-			
-			Objects[6] = OBJECT(3, "3dmodels//sphere.obj");
-			Objects[6].Prepare();
-			Objects[6].setScale(2.0);
-		}
-		else
-		{
-			ObjectsCount = 13;
-			Objects = new OBJECT[ObjectsCount];
+		Objects[0] = OBJECT(0, "3dmodels//cube.obj");
+		Objects[0].Prepare();
+		Objects[0].setSolidColor(0.9, 0.0, 0.5);
+		Objects[0].setPosition(0.0, 6.0, 3.0);	
 
-			Objects[0] = OBJECT(0, "3dmodels//cube.obj");
-			Objects[0].Prepare();
-			Objects[0].setSolidColor(0.9, 0.0, 0.5);
-			Objects[0].setPosition(0.0, 6.0, 3.0);	
+		Objects[1] = OBJECT(1, "3dmodels//cube.obj");
+		Objects[1].Prepare();
+		Objects[1].setPosition(0.0, 3.0, 3.0);
 
-			Objects[1] = OBJECT(1, "3dmodels//cube.obj");
-			Objects[1].Prepare();
-			Objects[1].setPosition(0.0, 3.0, 3.0);
+		Objects[2] = OBJECT(2, "3dmodels//cube.obj");
+		Objects[2].Prepare();
+		Objects[2].setPosition(0.0, 0.0, 3.0);
 
-			Objects[2] = OBJECT(2, "3dmodels//cube.obj");
-			Objects[2].Prepare();
-			Objects[2].setPosition(0.0, 0.0, 3.0);
+		Objects[3] = OBJECT(3, "3dmodels//cube.obj");
+		Objects[3].Prepare();
+		Objects[3].setPosition(0.0, -3.0, 3.0);
 
-			Objects[3] = OBJECT(3, "3dmodels//cube.obj");
-			Objects[3].Prepare();
-			Objects[3].setPosition(0.0, -3.0, 3.0);
+		Objects[4] = OBJECT(0, "3dmodels//sphere.obj");
+		Objects[4].Prepare();
+		Objects[4].setSolidColor(0.6, 0.3, 0.9);			
+		Objects[4].setPosition(0.0, 6.0, 0.0);	
 
-			Objects[4] = OBJECT(0, "3dmodels//sphere.obj");
-			Objects[4].Prepare();
-			Objects[4].setSolidColor(0.6, 0.3, 0.9);			
-			Objects[4].setPosition(0.0, 6.0, 0.0);	
+		Objects[5] = OBJECT(1, "3dmodels//sphere.obj");
+		Objects[5].Prepare();
+		Objects[5].setPosition(0.0, 3.0, 0.0);
 
-			Objects[5] = OBJECT(1, "3dmodels//sphere.obj");
-			Objects[5].Prepare();
-			Objects[5].setPosition(0.0, 3.0, 0.0);
+		Objects[6] = OBJECT(2, "3dmodels//sphere.obj");
+		Objects[6].Prepare();
 
-			Objects[6] = OBJECT(2, "3dmodels//sphere.obj");
-			Objects[6].Prepare();
+		Objects[7] = OBJECT(3, "3dmodels//sphere.obj");
+		Objects[7].Prepare();
+		Objects[7].setPosition(0.0, -3.0, 0.0);
 
-			Objects[7] = OBJECT(3, "3dmodels//sphere.obj");
-			Objects[7].Prepare();
-			Objects[7].setPosition(0.0, -3.0, 0.0);
+		Objects[8] = OBJECT(4, "3dmodels//cylinder.obj");
+		Objects[8].Prepare();
+		Objects[8].setPosition(0.0, -7.0, -3.0);
 
-			Objects[8] = OBJECT(4, "3dmodels//cylinder.obj");
-			Objects[8].Prepare();
-			Objects[8].setPosition(0.0, -7.0, -3.0);
+		Objects[9] = OBJECT(0, "3dmodels//cylinder.obj");
+		Objects[9].Prepare();
+		Objects[9].setSolidColor(0.1, 0.9, 0.8);
+		Objects[9].setPosition(0.0, 5.0, -3.0);
 
-			Objects[9] = OBJECT(0, "3dmodels//cylinder.obj");
-			Objects[9].Prepare();
-			Objects[9].setSolidColor(0.1, 0.9, 0.8);
-			Objects[9].setPosition(0.0, 5.0, -3.0);
+		Objects[10] = OBJECT(1, "3dmodels//cylinder.obj");
+		Objects[10].Prepare();
+		Objects[10].setPosition(0.0, 2.0, -3.0);
 
-			Objects[10] = OBJECT(1, "3dmodels//cylinder.obj");
-			Objects[10].Prepare();
-			Objects[10].setPosition(0.0, 2.0, -3.0);
+		Objects[11] = OBJECT(2, "3dmodels//cylinder.obj");
+		Objects[11].Prepare();
+		Objects[11].setPosition(0.0, -1.0, -3.0);
 
-			Objects[11] = OBJECT(2, "3dmodels//cylinder.obj");
-			Objects[11].Prepare();
-			Objects[11].setPosition(0.0, -1.0, -3.0);
+		Objects[12] = OBJECT(3, "3dmodels//cylinder.obj");
+		Objects[12].Prepare();
+		Objects[12].setPosition(0.0, -4.0, -3.0);
 
-			Objects[12] = OBJECT(3, "3dmodels//cylinder.obj");
-			Objects[12].Prepare();
-			Objects[12].setPosition(0.0, -4.0, -3.0);
+		Objects[2].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[3].setCubeMapTexture(Skybox.getCubeMapTexture());
 
-			Objects[2].setCubeMapTexture(Skybox.getCubeMapTexture());
-			Objects[3].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[7].setCubeMapTexture(Skybox.getCubeMapTexture());
 
-			Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
-			Objects[7].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[11].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[12].setCubeMapTexture(Skybox.getCubeMapTexture());
 
-			Objects[11].setCubeMapTexture(Skybox.getCubeMapTexture());
-			Objects[12].setCubeMapTexture(Skybox.getCubeMapTexture());
-		}
+		ObjectsCountMirror = 7;
+		ObjectsMirror = new OBJECT[ObjectsCountMirror];
+
+		ObjectsMirror[0] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[0].Prepare();
+		ObjectsMirror[0].setSolidColor(0.9, 0.0, 0.5);
+		ObjectsMirror[0].setPosition(0.0, 0.0, 10.0);
+
+		ObjectsMirror[1] = OBJECT(1, "3dmodels//cube.obj");
+		ObjectsMirror[1].Prepare();
+		ObjectsMirror[1].setSolidColor(1.0, 0.6, 0.5);
+		ObjectsMirror[1].setPosition(0.0, 0.0, -10.0);
+
+		ObjectsMirror[2] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[2].Prepare();
+		ObjectsMirror[2].setSolidColor(0.3, 0.8, 0.5);
+		ObjectsMirror[2].setPosition(5.0, 0.0, 0.0);
+
+		ObjectsMirror[3] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[3].Prepare();
+		ObjectsMirror[3].setSolidColor(0.5, 0.0, 0.9);
+		ObjectsMirror[3].setPosition(-5.0, 0.0, 0.0);
+
+		ObjectsMirror[4] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[4].Prepare();
+		ObjectsMirror[4].setSolidColor(0.1, 0.3, 0.5);
+		ObjectsMirror[4].setPosition(0.0, 15.0, 0.0);
+
+		ObjectsMirror[5] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[5].Prepare();
+		ObjectsMirror[5].setSolidColor(0.5, 0.8, 0.9);
+		ObjectsMirror[5].setScale(2.0);
+		ObjectsMirror[5].setPosition(0.0, -15.0, 0.0);
+
+		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere.obj");
+		ObjectsMirror[6].Prepare();
 	};
 
 	/* Деструктор, удаляет шейдеры */
@@ -1329,6 +1323,11 @@ public:
 		for (int i = 0; i < ObjectsCount; i++)
 		{
 			glDeleteProgram(Objects[i].getShaderID());
+		}
+
+		for (int i = 0; i < ObjectsCountMirror; i++)
+		{
+			glDeleteProgram(ObjectsMirror[i].getShaderID());
 		}
 
 		glDeleteProgram(Skybox.getShaderID());
@@ -1346,47 +1345,50 @@ public:
 
 		if (MirrorExample)
 		{
-			for (int i = 0; i < ObjectsCount; i++)
+			for (int i = 0; i < ObjectsCountMirror; i++)
 			{
-				if (Objects[i].getMaterial() == 3) Objects[i].setCubeMapTexture(MakeCubemap(i, CameraPos, ViewMatrix));
+				if (ObjectsMirror[i].getMaterial() == 3) ObjectsMirror[i].setCubeMapTexture(MakeCubemap(i, CameraPos, ViewMatrix));
 			}
 
-			for (int i = 0; i < ObjectsCount; i++)
+			for (int i = 0; i < ObjectsCountMirror; i++)
 			{
-				Objects[i].Render(CameraPos, ProjectionMatrix, ViewMatrix);
-				if (Objects[i].getMaterial() == 3)
+				ObjectsMirror[i].Render(CameraPos, ProjectionMatrix, ViewMatrix);
+				if (ObjectsMirror[i].getMaterial() == 3)
 				{
-					GLuint tex = Objects[i].getCubeMapTexture();
+					GLuint tex = ObjectsMirror[i].getCubeMapTexture();
 					glDeleteTextures(1, &tex);
 				}
 			}
 
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
 			Axes.RenderAxes(ViewMatrix);
-						
-			Position = Objects[0].getPosition();
-			NewPosition = vec3(10.0 * cos(radians(Angle)), 0.0, 10.0 * sin(radians(Angle)));
-			Objects[0].setPosition(NewPosition.x, Position.y, NewPosition.z);
+					
+			if (!StopRotations)
+			{
+				Position = ObjectsMirror[0].getPosition();
+				NewPosition = vec3(10.0 * cos(radians(Angle)), 0.0, 10.0 * sin(radians(Angle)));
+				ObjectsMirror[0].setPosition(NewPosition.x, Position.y, NewPosition.z);
 
-			Position = Objects[1].getPosition();
-			NewPosition = vec3(-10.0 * cos(radians(Angle)), 0.0, -10.0 * sin(radians(Angle)));
-			Objects[1].setPosition(NewPosition.x, Position.y, NewPosition.z);
+				Position = ObjectsMirror[1].getPosition();
+				NewPosition = vec3(-10.0 * cos(radians(Angle)), 0.0, -10.0 * sin(radians(Angle)));
+				ObjectsMirror[1].setPosition(NewPosition.x, Position.y, NewPosition.z);
 
-			Position = Objects[4].getPosition();
-			NewPosition = vec3(15.0 * cos(radians(Angle2)), 15.0 * sin(radians(Angle2)), 0.0);
-			Objects[4].setPosition(NewPosition.x, NewPosition.y, Position.z);
+				ObjectsMirror[2].setRotation(CubeAngle, vec3(0.0, 1.0, 1.0));
+				ObjectsMirror[3].setRotation(-CubeAngle, vec3(0.0, 1.0, 1.0));
 
-			Position = Objects[5].getPosition();
-			NewPosition = vec3(-15.0 * cos(radians(Angle2)), -15.0 * sin(radians(Angle2)), 0.0);
-			Objects[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
+				Position = ObjectsMirror[4].getPosition();
+				NewPosition = vec3(15.0 * cos(radians(Angle2)), 15.0 * sin(radians(Angle2)), 0.0);
+				ObjectsMirror[4].setPosition(NewPosition.x, NewPosition.y, Position.z);
 
-			Angle += AngleDelta;
-			Angle2 += AngleDelta2;
-			if (Angle > 360) Angle = 0.0;
-			if (Angle2 > 360) Angle2 = 0.0;
+				Position = ObjectsMirror[5].getPosition();
+				NewPosition = vec3(-15.0 * cos(radians(Angle2)), -15.0 * sin(radians(Angle2)), 0.0);
+				ObjectsMirror[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
 
-			Objects[2].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));
-			Objects[3].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
+				Angle += AngleDelta;
+				Angle2 += AngleDelta2;
+				if (Angle > 360) Angle = 0.0;
+				if (Angle2 > 360) Angle2 = 0.0;
+			}
 		}
 		else
 		{
@@ -1398,34 +1400,37 @@ public:
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
 			Axes.RenderAxes(ViewMatrix);
 
-			Objects[0].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
-			Objects[1].setRotation(CUBEangle, vec3(1.0, 1.0, 0.0));
-			Objects[2].setRotation(-CUBEangle, vec3(1.0, 0.0, 0.0));
-			Objects[3].setRotation(CUBEangle, vec3(1.0, 0.0, 0.0));
-
-			Objects[4].setScale(SPHEREsize);
-			Objects[5].setScale(SPHEREsize);
-			Objects[6].setScale(SPHEREsize);
-			Objects[7].setScale(SPHEREsize);
-
-			Objects[8].setRotation(CYLINDERangle, vec3(0.0, 1.0, 0.0));
-			Objects[9].setRotation(CYLINDERangle, vec3(0.0, 1.0, 0.0));
-			Objects[10].setRotation(-CYLINDERangle, vec3(0.0, 1.0, 0.0));
-			Objects[11].setRotation(CYLINDERangle, vec3(0.0, 1.0, 0.0));
-			Objects[12].setRotation(-CYLINDERangle, vec3(0.0, 1.0, 0.0));
-
-			if ((SPHEREsize > SPHEREsizeMin) && SPHEREdecreaseSize) SPHEREsize -= SPHEREsizeDelta;
-			else
+			if (!StopRotations)
 			{
-				SPHEREdecreaseSize = false;
-				SPHEREincreaseSize = true;
-			}
+				Objects[0].setRotation(-CubeAngle, vec3(0.0, 1.0, 1.0));
+				Objects[1].setRotation(CubeAngle, vec3(1.0, 1.0, 0.0));
+				Objects[2].setRotation(-CubeAngle, vec3(1.0, 0.0, 0.0));
+				Objects[3].setRotation(CubeAngle, vec3(1.0, 0.0, 0.0));
 
-			if ((SPHEREsize < SPHEREsizeMax) && SPHEREincreaseSize) SPHEREsize += SPHEREsizeDelta;
-			else
-			{
-				SPHEREdecreaseSize = true;
-				SPHEREincreaseSize = false;
+				Objects[4].setScale(SpheresSize);
+				Objects[5].setScale(SpheresSize);
+				Objects[6].setScale(SpheresSize);
+				Objects[7].setScale(SpheresSize);
+
+				Objects[8].setRotation(-CylinderAngle, vec3(0.0, 1.0, 0.0));
+				Objects[9].setRotation(CylinderAngle, vec3(0.0, 1.0, 0.0));
+				Objects[10].setRotation(-CylinderAngle, vec3(0.0, 1.0, 0.0));
+				Objects[11].setRotation(CylinderAngle, vec3(0.0, 1.0, 0.0));
+				Objects[12].setRotation(-CylinderAngle, vec3(0.0, 1.0, 0.0));
+
+				if ((SpheresSize > SpheresSizeMin) && SphereDecrease) SpheresSize -= SpheresSizeDelta;
+				else
+				{
+					SphereDecrease = false;
+					SphereIncrease = true;
+				}
+
+				if ((SpheresSize < SpheresSizeMax) && SphereIncrease) SpheresSize += SpheresSizeDelta;
+				else
+				{
+					SphereDecrease = true;
+					SphereIncrease = false;
+				}
 			}
 		}
 	}
@@ -1467,6 +1472,32 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		{
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			Wireframe = true;
+		}
+	}
+
+	/* Переключение примеров работы */
+	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
+	{
+		if (MirrorExample)
+		{
+			MirrorExample = false;
+		}
+		else
+		{
+			MirrorExample = true;
+		}
+	}
+
+	/* Включение/отключение вращений */
+	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
+	{
+		if (StopRotations)
+		{
+			StopRotations = false;
+		}
+		else
+		{
+			StopRotations = true;
 		}
 	}
 }
