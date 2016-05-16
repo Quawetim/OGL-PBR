@@ -158,6 +158,7 @@
     <ClInclude Include="VboIndexer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\README.md" />
     <None Include="shaders\SolidColor.fragmentshader" />
     <None Include="shaders\SolidColor.vertexshader" />
     <None Include="shaders\Reflection.fragmentshader" />

@@ -85,6 +85,9 @@
     <None Include="shaders\GradientColor.vertexshader">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
+    <None Include="..\..\README.md">
+      <Filter>Файлы исходного кода</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="TODO.txt">

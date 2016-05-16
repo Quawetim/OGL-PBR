@@ -2,24 +2,23 @@
 #include <map>
 #include <glm/glm.hpp>
 #include "VboIndexer.h"
-#include <string.h> // for memcmp
+#include <string.h>
 
+/* Проверяет близость точек */
 bool is_near(float v1, float v2)
 {
 	return fabs(v1 - v2) < 0.01f;
 }
 
-/*
-Поиск одинаковых вершин
-Одинаковые, если одни позиции, одни UV, одни нормали.
-*/
-bool getSimilarVertexIndex(vec3 &in_vertex, vec2 &in_uv, vec3 &in_normal, vector<vec3> &out_vertices, vector<vec2> &out_uvs, vector<vec3> &out_normals, unsigned short &result)
+/* Поиск одинаковых вершин */
+/* Одинаковые, если одни позиции, одни UV, одни нормали */
+bool getSimilarVertexIndex(vec3 vertex, vec2 uv, vec3 normal, vector<vec3> &out_vertices, vector<vec2> &out_uvs, vector<vec3> &out_normals, unsigned short &result)
 {
 	int i;
 
 	for (i = 0; i < out_vertices.size(); i++)
 	{
-		if (is_near(in_vertex.x, out_vertices[i].x) && is_near(in_vertex.y, out_vertices[i].y) && is_near(in_vertex.z, out_vertices[i].z) && is_near(in_uv.x, out_uvs[i].x) && is_near(in_uv.y, out_uvs[i].y) && is_near(in_normal.x, out_normals[i].x) && is_near(in_normal.y, out_normals[i].y) && is_near(in_normal.z, out_normals[i].z))
+		if (is_near(vertex.x, out_vertices[i].x) && is_near(vertex.y, out_vertices[i].y) && is_near(vertex.z, out_vertices[i].z) && is_near(uv.x, out_uvs[i].x) && is_near(uv.y, out_uvs[i].y) && is_near(normal.x, out_normals[i].x) && is_near(normal.y, out_normals[i].y) && is_near(normal.z, out_normals[i].z))
 		{
 			result = i;
 			return true;
@@ -28,6 +27,7 @@ bool getSimilarVertexIndex(vec3 &in_vertex, vec2 &in_uv, vec3 &in_normal, vector
 	return false;
 }
 
+/*
 struct PackedVertex
 {
 	vec3 position;
@@ -76,32 +76,32 @@ void indexVBO_fast(vector<vec3> &in_vertices, vector<vec2> &in_uvs, vector<vec3>
 		}
 	}
 }
+*/
 
-void indexVBO(vector<vec3> &in_vertices, vector<vec2> &in_uvs, vector<vec3> &in_normals, vector<vec3> &in_tangents, vector<vec3> &in_bitangents, vector<unsigned short> &out_indices, vector<vec3> &out_vertices, vector<vec2> &out_uvs, vector<vec3> &out_normals, vector<vec3> &out_tangents, vector<vec3> &out_bitangents)
+/* Индексация вершин */
+void IndexVBO(vector<vec3> vertices, vector<vec2> uvs, vector<vec3> normals, vector<vec3> tangents, vector<vec3> bitangents, vector<unsigned short> &out_indices, vector<vec3> &out_vertices, vector<vec2> &out_uvs, vector<vec3> &out_normals, vector<vec3> &out_tangents, vector<vec3> &out_bitangents)
 {
-	int i;
-
-	for (i = 0; i < in_vertices.size(); i++)
+	for (int i = 0; i < vertices.size(); i++)
 	{
-		// Для каждой новой вершины ищем одинаковый в out
+		/* Для каждой новой вершины ищем одинаковую в out */
 		unsigned short index;
-		bool found = getSimilarVertexIndex(in_vertices[i], in_uvs[i], in_normals[i], out_vertices, out_uvs, out_normals, index);
+		bool found = getSimilarVertexIndex(vertices[i], uvs[i], normals[i], out_vertices, out_uvs, out_normals, index);
 
-		if ( found )
+		if (found)
 		{
-			// Нашли такой же, дублируем индекс
+			/* Нашли такую же, дублируем индекс */
 			out_indices.push_back(index);
-			out_tangents[index] += in_tangents[i];
-			out_bitangents[index] += in_bitangents[i];
+			out_tangents[index] += tangents[i];
+			out_bitangents[index] += bitangents[i];
 		}
 		else
 		{ 
-			// Не нашли, добавляем
-			out_vertices.push_back(in_vertices[i]);
-			out_uvs.push_back(in_uvs[i]);
-			out_normals.push_back(in_normals[i]);
-			out_tangents.push_back(in_tangents[i]);
-			out_bitangents.push_back(in_bitangents[i]);
+			/* Не нашли, добавляем */
+			out_vertices.push_back(vertices[i]);
+			out_uvs.push_back(uvs[i]);
+			out_normals.push_back(normals[i]);
+			out_tangents.push_back(tangents[i]);
+			out_bitangents.push_back(bitangents[i]);
 			out_indices.push_back((unsigned short)out_vertices.size() - 1);
 		}
 	}

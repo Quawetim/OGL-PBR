@@ -342,7 +342,7 @@ private:
 		vector<vec3> indexed_normals;
 		vector<vec3> indexed_tangents;
 		vector<vec3> indexed_bitangents;
-		indexVBO(vertices, uvs, normals, tangents, bitangents, indices, indexed_vertices, indexed_uvs, indexed_normals, indexed_tangents, indexed_bitangents);
+		IndexVBO(vertices, uvs, normals, tangents, bitangents, indices, indexed_vertices, indexed_uvs, indexed_normals, indexed_tangents, indexed_bitangents);
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
