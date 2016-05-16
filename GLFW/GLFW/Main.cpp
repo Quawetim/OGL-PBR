@@ -30,9 +30,10 @@ GLFWwindow* window;
 int WindowWidth = 1280, WindowHeight = 800;
 float FOV = 90.0;
 int CameraMode = 2;
-int GenTextureSize = 128;
+int GenTextureSize = 512;
 bool Wireframe = false;
 bool MirrorExample = true;
+bool FullSceen = true;
 
 class CAMERA
 {
@@ -146,6 +147,9 @@ public:
 class OBJECT
 {
 private:
+	/* Material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
+	int Material;
+
 	/* Vertex Array Object */
 	GLuint VAO;
 
@@ -153,12 +157,12 @@ private:
 	mat4 ModelMatrix = mat4(1.0), ModelViewMatrix, MVP;
 	mat3 ModelView3x3Matrix;
 
-	/* Идентификаторы источника света, матриц и текстур для шейдеров*/
-	GLuint CameraPosID, LightID, UserSolidColorID;
+	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
+	GLuint ShaderID, CameraPosID, LightID, UserSolidColorID;
 	GLuint MatrixID, ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
-	GLuint DiffuseTexture, NormalTexture, SpecularTexture;
+	GLuint DiffuseTexture, SpecularTexture, NormalTexture, CubeMapTexture;
 	/* Буферы */
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
@@ -306,7 +310,7 @@ private:
 		glUniform3f(CameraPosID, Camera.x, Camera.y, Camera.z);
 
 		glBindVertexArray(VAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, CubeMapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
 		glBindVertexArray(0);
 	}
@@ -314,6 +318,8 @@ private:
 	/* Подготовка данных для цилиндра с картой нормалей */
 	void PrepareCylinder()
 	{
+		LoadShaders("shaders//Cylinder.vertexshader", "shaders//Cylinder.fragmentshader");
+
 		MatrixID = glGetUniformLocation(ShaderID, "MVP");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
@@ -617,12 +623,10 @@ private:
 	}
 
 public:
-	int Material;
-	GLuint ShaderID;														//ѕеретащить в Private, добавить метод дл€ изменени€
-	GLuint CubemapTexture;
-
+	/* Пустой конструктор для Скайбокса и координтных осей */
 	OBJECT() {};
 
+	/* Конструктор для объектов*/
 	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр" */
 	OBJECT(int material, const char *path)
 	{
@@ -630,6 +634,7 @@ public:
 		LoadOBJ(path, vertices, uvs, normals);
 	}
 
+	/* Деструктор */
 	~OBJECT()
 	{
 		glDeleteBuffers(1, &vertexbuffer);
@@ -645,16 +650,29 @@ public:
 		glDeleteVertexArrays(1, &VAO);
 	}
 
-	/* Загрузка вершинного и фрагментного шейдеров */
-	bool LoadShaders(const char * vertex_file_path, const char * fragment_file_path)
-	{
-		// —оздание шейдеров
-		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER); // ¬ершинный
-		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER); // ‘рагментный
+	/* Возвращает указатель на шейдер */
+	GLuint getShaderID() { return ShaderID; }
 
-																	  // „итаем код вершинного шейдера из файла vertex_file_path
+	/* Возвращает материал */
+	int getMaterial() { return Material; }
+
+	/* Задаёт материал */
+	void setMaterial(int value) { Material = value; }
+	
+	/* Возврщает указатель на CubeMap-текстуру */
+	GLuint getCubeMapTexture() { return CubeMapTexture; }
+
+	/* Задаёт CubeMap-текстуру */
+	void setCubeMapTexture(GLuint value){ CubeMapTexture = value; }
+
+	/* Загрузка вершинного и фрагментного шейдеров */
+	bool LoadShaders(const char *VertexShader, const char *FragmentShader)
+	{
+		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
 		string VertexShaderCode;
-		ifstream VertexShaderStream(vertex_file_path, ios::in);
+		ifstream VertexShaderStream(VertexShader, ios::in);
 
 		if (VertexShaderStream.is_open())
 		{
@@ -664,14 +682,12 @@ public:
 		}
 		else
 		{
-			printf("File %s not found.\n", vertex_file_path);
-			getchar();
-			return 0;
+			printf("File %s not found.\n", VertexShader);
+			return false;
 		}
 
-		// „итаем код фрагментного шейдера из файла fragment_file_path
 		string FragmentShaderCode;
-		ifstream FragmentShaderStream(fragment_file_path, ios::in);
+		ifstream FragmentShaderStream(FragmentShader, ios::in);
 
 		if (FragmentShaderStream.is_open())
 		{
@@ -679,17 +695,20 @@ public:
 			while (getline(FragmentShaderStream, Line)) FragmentShaderCode += "\n" + Line;
 			FragmentShaderStream.close();
 		}
+		else
+		{
+			printf("File %s not found.\n", FragmentShader);
+			return false;
+		}
 
 		GLint Result = GL_FALSE;
 		int InfoLogLength;
 
-		//  омпилируем вершинный шейдер
-		printf("Compiling vertex shader: %s...\n", vertex_file_path);
+		printf("Compiling vertex shader: %s...\n", VertexShader);
 		char const * VertexSourcePointer = VertexShaderCode.c_str();
 		glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
 		glCompileShader(VertexShaderID);
 
-		// ѕроверка
 		glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
 		glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 
@@ -700,13 +719,11 @@ public:
 			printf("\nError: %s\n", &VertexShaderErrorMessage[0]);
 		}
 
-		//  омпилируем фрагментный шейдер
-		printf("Compiling fragment shader: %s...\n", fragment_file_path);
+		printf("Compiling fragment shader: %s...\n", FragmentShader);
 		char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 		glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
 		glCompileShader(FragmentShaderID);
 
-		// ѕроверка
 		glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
 		glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 
@@ -717,7 +734,6 @@ public:
 			printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
 		}
 
-		// Ћинкуем
 		printf("Linking program...\n");
 
 		ShaderID = glCreateProgram();
@@ -725,7 +741,6 @@ public:
 		glAttachShader(ShaderID, FragmentShaderID);
 		glLinkProgram(ShaderID);
 
-		// ѕроверка
 		glGetProgramiv(ShaderID, GL_LINK_STATUS, &Result);
 		glGetProgramiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 
@@ -742,10 +757,10 @@ public:
 		glDeleteShader(VertexShaderID);
 		glDeleteShader(FragmentShaderID);
 
-		return false;
+		return true;
 	}
 
-	/* Изменение размера объекта */
+	/* Задаёт размер объекта */
 	void setScale(float size)
 	{
 		/* Если умножить, то радиус сферы -> 0 */
@@ -753,24 +768,15 @@ public:
 	}
 
 	/* Вращение объекта */
-	void setRotation(float angle, vec3 axis)
-	{
-		ModelMatrix *= rotate(angle, axis);
-	}
+	void setRotation(float angle, vec3 axis) { ModelMatrix *= rotate(angle, axis); }
+
+	/* Возвращает позицию объекта */
+	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
 	/* Задаёт позицию объекта */
-	void setPosition(float X, float Y, float Z)
-	{
-		ModelMatrix *= translate(vec3(X, Y, Z));
-	}
+	void setPosition(float X, float Y, float Z) { ModelMatrix *= translate(vec3(X, Y, Z)); }	
 
-	/* возвращает позицию объекта */
-	vec3 getPosition()
-	{
-		return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z);
-	}
-
-	/* Задаёт цвет сплошной цвет объекта */
+	/* Задаёт сплошной цвет объекта */
 	void setSolidColor(float R, float G, float B)
 	{
 		UserSolidColor.x = R;
@@ -778,7 +784,7 @@ public:
 		UserSolidColor.z = B;
 	}
 
-	/* Material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало, 4 - "цилиндр" */
+	/* Выполняет инициализацию объекта */
 	void Prepare()
 	{
 		switch (Material)
@@ -807,7 +813,6 @@ public:
 		}
 		case 4:
 		{
-			LoadShaders("shaders//Cylinder.vertexshader", "shaders//Cylinder.fragmentshader");
 			PrepareCylinder();
 			break;
 		}
@@ -816,7 +821,11 @@ public:
 		}
 	}
 
-	void Render(vec3 campos, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	/* Рендеринг объекта */
+	/* CameraPosition - позиция камеры */
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
+	void Render(vec3 CameraPosition, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		switch (Material)
 		{
@@ -832,12 +841,12 @@ public:
 		}
 		case 2:
 		{
-			RenderReflectionRefraction(campos, ProjectionMatrix, ViewMatrix);
+			RenderReflectionRefraction(CameraPosition, ProjectionMatrix, ViewMatrix);
 			break;
 		}
 		case 3:
 		{
-			RenderReflectionRefraction(campos, ProjectionMatrix, ViewMatrix);
+			RenderReflectionRefraction(CameraPosition, ProjectionMatrix, ViewMatrix);
 			break;
 		}
 		case 4:
@@ -850,6 +859,7 @@ public:
 		}
 	}
 
+	/* Инициализация координатных осей */
 	void PrepareAxes()
 	{
 		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
@@ -895,9 +905,9 @@ public:
 		glEnableVertexAttribArray(1);
 		glBindVertexArray(0);
 
-		/* ¬ариант 2: координаты точек и их цвета хран€тс€ в одном массиве
+		/* Вариант 2: координаты точек и их цвета хранятся в одном массиве
 		static const GLfloat vertexcolorbuffer[] = {
-		// XYZ, RGB дл€ каждой точки
+		// XYZ, RGB для каждой точки
 		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 		3.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
@@ -921,6 +931,8 @@ public:
 		*/
 	}
 
+	/* Рендеринг координатных осей */
+	/* ViewMatrix - матрица вида для осей */
 	void RenderAxes(mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
@@ -940,6 +952,7 @@ public:
 		glViewport(0, 0, WindowWidth, WindowHeight);
 	}
 
+	/* Инициализация Скайбокса */
 	void PrepareSkyBox()
 	{
 		LoadShaders("shaders//SkyBox.vertexshader", "shaders//SkyBox.fragmentshader");
@@ -1011,9 +1024,12 @@ public:
 		faces.push_back("skybox//bottom.jpg");
 		faces.push_back("skybox//back.jpg");
 		faces.push_back("skybox//front.jpg");
-		CubemapTexture = LoadCubeMap(faces);
+		CubeMapTexture = LoadCubeMap(faces);
 	}
 
+	/* Рендеринг Скайбокса */
+	/* ProjectionMatrix - матрица проекции */
+	/* ViewMatrix - матрица вида */
 	void RenderSkyBox(mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glDepthFunc(GL_LEQUAL);
@@ -1024,7 +1040,7 @@ public:
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 
 		glBindVertexArray(VAO);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapTexture);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, CubeMapTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
@@ -1035,6 +1051,7 @@ public:
 class SCENE
 {
 private:
+	/* Число объектов на сцене */
 	int ObjectsCount;
 	OBJECT Axes, Skybox, *Objects;
 	CAMERA Camera;
@@ -1043,11 +1060,13 @@ private:
 	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
 	float CUBEangle = 0.05, CYLINDERangle = -0.01;
 
+	/* Пзиция камеры */
 	vec3 CameraPos;
+	/* Матрицы проекции и вида */
 	mat4 ProjectionMatrix, ViewMatrix;
 
 	/* Генерирует CubeMap-текстуру для зеркального объекта */
-	/* id - позиция объекта в массиве всех объектов */
+	/* id - идентификатор объекта, позиция в массиве всех объектов */
 	/* camera - позиция камеры */
 	/* ViewMatrix - матрица вида */
 	GLuint MakeCubemap(int id, vec3 camera, mat4 ViewMatrix)
@@ -1165,6 +1184,7 @@ private:
 	}
 
 public:
+	/* Конструктор, инициализирует объекты сцены */
 	SCENE()
 	{
 		Axes = OBJECT();
@@ -1271,28 +1291,30 @@ public:
 			Objects[12].Prepare();
 			Objects[12].setPosition(0.0, -4.0, -3.0);
 
-			Objects[2].CubemapTexture = Skybox.CubemapTexture;
-			Objects[3].CubemapTexture = Skybox.CubemapTexture;
+			Objects[2].setCubeMapTexture(Skybox.getCubeMapTexture());
+			Objects[3].setCubeMapTexture(Skybox.getCubeMapTexture());
 
-			Objects[6].CubemapTexture = Skybox.CubemapTexture;
-			Objects[7].CubemapTexture = Skybox.CubemapTexture;
+			Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
+			Objects[7].setCubeMapTexture(Skybox.getCubeMapTexture());
 
-			Objects[11].CubemapTexture = Skybox.CubemapTexture;
-			Objects[12].CubemapTexture = Skybox.CubemapTexture;
+			Objects[11].setCubeMapTexture(Skybox.getCubeMapTexture());
+			Objects[12].setCubeMapTexture(Skybox.getCubeMapTexture());
 		}
 	};
 
+	/* Деструктор, удаляет шейдеры */
 	~SCENE()
 	{
 		for (int i = 0; i < ObjectsCount; i++)
 		{
-			glDeleteProgram(Objects[i].ShaderID);
+			glDeleteProgram(Objects[i].getShaderID());
 		}
 
-		glDeleteProgram(Skybox.ShaderID);
-		glDeleteProgram(Axes.ShaderID);
+		glDeleteProgram(Skybox.getShaderID());
+		glDeleteProgram(Axes.getShaderID());
 	};
 
+	/* Рендеринг сцены */
 	void Render()
 	{
 		CameraPos = Camera.ComputeViewMatrix(window, CameraMode);
@@ -1305,15 +1327,16 @@ public:
 		{
 			for (int i = 0; i < ObjectsCount; i++)
 			{
-				if (Objects[i].Material == 3) Objects[i].CubemapTexture = MakeCubemap(i, CameraPos, ViewMatrix);
+				if (Objects[i].getMaterial() == 3) Objects[i].setCubeMapTexture(MakeCubemap(i, CameraPos, ViewMatrix));
 			}
 
 			for (int i = 0; i < ObjectsCount; i++)
 			{
 				Objects[i].Render(CameraPos, ProjectionMatrix, ViewMatrix);
-				if (Objects[i].Material == 3)
+				if (Objects[i].getMaterial() == 3)
 				{
-					glDeleteTextures(1, &(Objects[i].CubemapTexture));
+					GLuint tex = Objects[i].getCubeMapTexture();
+					glDeleteTextures(1, &tex);
 				}
 			}
 
@@ -1367,27 +1390,31 @@ public:
 	}
 };
 
-/* ќбработка ошибок */
+/* Обработка ошибок */
 void error_callback(int error, const char* description)
 {
 	fputs(description, stderr);
 }
 
-/* ќбработка клавиатуры */
+/* Обработка клавиатуры */
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	/* Клавиши для выхода из приложения */
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 	if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 
+	/* Переключение камер №1 и №2 */
 	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 	{
 		CameraMode++;
 		if (CameraMode > 2) CameraMode = 1;
 	}
 
+	/* Включение камеры №3 */
 	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) CameraMode = 3;
 
+	/* Переключение отображения полигональной сетки */
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
 	{
 		if (Wireframe)
@@ -1403,28 +1430,64 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-/* ¬ывод ошибок в консоль */
+/* Вывод ошибок в консоль */
 void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
 	printf("OpenGL Debug Output message : ");
 
-	if (source == GL_DEBUG_SOURCE_API_ARB)					printf("Source : API; ");
-	else if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB)	printf("Source : WINDOW_SYSTEM; ");
-	else if (source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB)	printf("Source : SHADER_COMPILER; ");
-	else if (source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB)		printf("Source : THIRD_PARTY; ");
-	else if (source == GL_DEBUG_SOURCE_APPLICATION_ARB)		printf("Source : APPLICATION; ");
-	else if (source == GL_DEBUG_SOURCE_OTHER_ARB)			printf("Source : OTHER; ");
+	if (source == GL_DEBUG_SOURCE_API_ARB) printf("Source : API; ");
+	else
+	{
+		if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB) printf("Source : WINDOW_SYSTEM; ");
+		else
+		{
+			if (source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB) printf("Source : SHADER_COMPILER; ");
+			else
+			{
+				if (source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB) printf("Source : THIRD_PARTY; ");
+				else
+				{
+					if (source == GL_DEBUG_SOURCE_APPLICATION_ARB) printf("Source : APPLICATION; ");
+					else
+					{
+						if (source == GL_DEBUG_SOURCE_OTHER_ARB) printf("Source : OTHER; ");
+					}
+				}
+			}
+		}
+	}
 
-	if (type == GL_DEBUG_TYPE_ERROR_ARB)					printf("Type : ERROR; ");
-	else if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB)	printf("Type : DEPRECATED_BEHAVIOR; ");
-	else if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB)	printf("Type : UNDEFINED_BEHAVIOR; ");
-	else if (type == GL_DEBUG_TYPE_PORTABILITY_ARB)			printf("Type : PORTABILITY; ");
-	else if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB)			printf("Type : PERFORMANCE; ");
-	else if (type == GL_DEBUG_TYPE_OTHER_ARB)				printf("Type : OTHER; ");
+	if (type == GL_DEBUG_TYPE_ERROR_ARB) printf("Type : ERROR; ");
+	else
+	{
+		if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB) printf("Type : DEPRECATED_BEHAVIOR; ");
+		else
+		{
+			if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB) printf("Type : UNDEFINED_BEHAVIOR; ");
+			else
+			{
+				if (type == GL_DEBUG_TYPE_PORTABILITY_ARB) printf("Type : PORTABILITY; ");
+				else
+				{
+					if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB) printf("Type : PERFORMANCE; ");
+					else
+					{
+						if (type == GL_DEBUG_TYPE_OTHER_ARB) printf("Type : OTHER; ");
+					}
+				}
+			}
+		}
+	}
 
-	if (severity == GL_DEBUG_SEVERITY_HIGH_ARB)				printf("Severity : HIGH; ");
-	else if (severity == GL_DEBUG_SEVERITY_MEDIUM_ARB)		printf("Severity : MEDIUM; ");
-	else if (severity == GL_DEBUG_SEVERITY_LOW_ARB)			printf("Severity : LOW; ");
+	if (severity == GL_DEBUG_SEVERITY_HIGH_ARB) printf("Severity : HIGH; ");
+	else
+	{
+		if (severity == GL_DEBUG_SEVERITY_MEDIUM_ARB) printf("Severity : MEDIUM; ");
+		else
+		{
+			if (severity == GL_DEBUG_SEVERITY_LOW_ARB) printf("Severity : LOW; ");
+		}
+	}
 
 	printf("Message : %s\n", message);
 }
@@ -1433,9 +1496,9 @@ void main()
 {
 	int nbFrames = 0;
 	double currentTime, lastTime;
-	char text[100];
+	char text[30], text2[30];
 
-	glfwSetErrorCallback(error_callback);								//ќбработка ошибок
+	glfwSetErrorCallback(error_callback);
 
 	if (!glfwInit())
 	{
@@ -1443,17 +1506,33 @@ void main()
 		getchar();
 	}
 
-	glfwWindowHint(GLFW_SAMPLES, 4);									// 4x сглаживание
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);						// OpenGL 3.3
+	/* 4x сглаживание, OpenGL 3.3 */
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 
-	window = glfwCreateWindow(WindowWidth, WindowHeight, "Diploma", NULL, NULL);	// Ўирина, высота, название окна, монитор (Fullscrean, NUll - оконный, обмен ресурсами с окном (NULL - нет такого))
 
-	const GLFWvidmode *Screen = glfwGetVideoMode(glfwGetPrimaryMonitor());						// »нформаци€ об экране, разрешение
+	GLFWmonitor *Screen = glfwGetPrimaryMonitor();
 
-	glfwSetWindowPos(window, Screen->width / 2 - WindowWidth / 2, Screen->height / 2 - WindowHeight / 2);	// ќкно в центр экрана
+	if (FullSceen)
+	{
+		WindowWidth = 1920; WindowHeight = 1080;
+
+		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
+		window = glfwCreateWindow(WindowWidth, WindowHeight, "Diploma", Screen, NULL);
+	}
+	else
+	{
+		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
+		window = glfwCreateWindow(WindowWidth, WindowHeight, "Diploma", NULL, NULL);
+
+		/* Информация об экране, разрешение */
+		const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
+		/* Окно в центр экрана */
+		glfwSetWindowPos(window, VidMode->width / 2 - WindowWidth / 2, VidMode->height / 2 - WindowHeight / 2);
+	}
 
 	if (!window)
 	{
@@ -1464,7 +1543,7 @@ void main()
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
-	glfwSetKeyCallback(window, key_callback);							// ќбработка клавиатуры
+	glfwSetKeyCallback(window, key_callback);
 
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK)
@@ -1487,14 +1566,20 @@ void main()
 
 	glViewport(0, 0, WindowWidth, WindowHeight);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);		//—крыть курсор
+	/* Скрыть курсор */
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);		
 	glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
-	glClearColor(0.0f, 0.6f, 0.8f, 0.0f);								// ?вет фона, RGBA		
-	glEnable(GL_DEPTH_TEST);											// ¬ключаем буфер глубины	
-	glDepthFunc(GL_LESS);												// ¬ыбираем фрагмент, ближайший к камере						  
-																		//glEnable(GL_CULL_FACE);
-																		//glEnable(GL_BLEND);												
-																		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+	/* Цвет фона, RGBA */
+	glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
+	/* Включаем буфер глубины */
+	glEnable(GL_DEPTH_TEST);
+	/* Выбираем фрагмент, ближайший к камере */
+	glDepthFunc(GL_LESS);																		  
+	//glEnable(GL_CULL_FACE);
+	/*
+	glEnable(GL_BLEND);												
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+	*/
 
 	SCENE Scene = SCENE();
 
@@ -1506,7 +1591,6 @@ void main()
 	{
 		currentTime = glfwGetTime();
 		nbFrames++;
-		char text2[30];
 
 		if (currentTime - lastTime >= 0.01)
 		{
@@ -1524,11 +1608,9 @@ void main()
 		Scene.Render();
 		printText2D(text, 0, 568, 20);
 
-		glfwSwapBuffers(window); // ћен€ем буферы															  
+		glfwSwapBuffers(window);														  
 	}
 
-	// „истка
 	cleanupText2D();
-
-	glfwTerminate(); // «акрываем OpenGL окно и убиваем GLFW
+	glfwTerminate();
 }
