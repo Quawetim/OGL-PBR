@@ -19,7 +19,7 @@ GLFWwindow* window;
 
 #include "TextureLoader.h"
 #include "VboIndexer.h"
-#include "Text2D.h"
+#include "Text.h"
 
 /* WindowWidth, WindowHeight - ширина и высота окна */
 /* FOV - field of view */
@@ -32,8 +32,8 @@ float FOV = 90.0;
 int CameraMode = 2;
 int GenTextureSize = 512;
 bool Wireframe = false;
-bool MirrorExample = true;
-bool FullSceen = true;
+bool MirrorExample = false;
+bool FullSceen = false;
 
 class CAMERA
 {
@@ -325,9 +325,9 @@ private:
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		ModelView3x3MatrixID = glGetUniformLocation(ShaderID, "MV3x3");
 
-		DiffuseTexture = loadDDS("diffuse.DDS");
-		NormalTexture = loadBMP_custom("normal.bmp");
-		SpecularTexture = loadDDS("specular.DDS");
+		DiffuseTexture = LoadDDS("diffuse.DDS");
+		NormalTexture = LoadBMP("normal.bmp");
+		SpecularTexture = LoadDDS("specular.DDS");
 
 		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
 		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
@@ -536,6 +536,103 @@ private:
 		return true;
 	}
 
+	/* Загрузка вершинного и фрагментного шейдеров */
+	/* VertexShader - путь к вершинному шейдеру */
+	/* FragmentShader - путь к фрагментному (пиксельному) шейдеру */
+	bool LoadShaders(const char *VertexShader, const char *FragmentShader)
+	{
+		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+		string VertexShaderCode;
+		ifstream VertexShaderStream(VertexShader, ios::in);
+
+		if (VertexShaderStream.is_open())
+		{
+			string Line = "";
+			while (getline(VertexShaderStream, Line)) VertexShaderCode += "\n" + Line;
+			VertexShaderStream.close();
+		}
+		else
+		{
+			printf("File %s not found.\n", VertexShader);
+			return false;
+		}
+
+		string FragmentShaderCode;
+		ifstream FragmentShaderStream(FragmentShader, ios::in);
+
+		if (FragmentShaderStream.is_open())
+		{
+			string Line = "";
+			while (getline(FragmentShaderStream, Line)) FragmentShaderCode += "\n" + Line;
+			FragmentShaderStream.close();
+		}
+		else
+		{
+			printf("File %s not found.\n", FragmentShader);
+			return false;
+		}
+
+		GLint Result = GL_FALSE;
+		int InfoLogLength;
+
+		printf("Compiling vertex shader: %s...\n", VertexShader);
+		char const * VertexSourcePointer = VertexShaderCode.c_str();
+		glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
+		glCompileShader(VertexShaderID);
+
+		glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+		glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+		if (InfoLogLength > 0)
+		{
+			vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
+			glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+			printf("\nError: %s\n", &VertexShaderErrorMessage[0]);
+		}
+
+		printf("Compiling fragment shader: %s...\n", FragmentShader);
+		char const * FragmentSourcePointer = FragmentShaderCode.c_str();
+		glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
+		glCompileShader(FragmentShaderID);
+
+		glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+		glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+		if (InfoLogLength > 0)
+		{
+			vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
+			glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+			printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
+		}
+
+		printf("Linking program...\n");
+
+		ShaderID = glCreateProgram();
+		glAttachShader(ShaderID, VertexShaderID);
+		glAttachShader(ShaderID, FragmentShaderID);
+		glLinkProgram(ShaderID);
+
+		glGetProgramiv(ShaderID, GL_LINK_STATUS, &Result);
+		glGetProgramiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+		if (InfoLogLength > 0)
+		{
+			vector<char> ProgramErrorMessage(InfoLogLength + 1);
+			glGetProgramInfoLog(ShaderID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+			printf("\nError: %s\n", &ProgramErrorMessage[0]);
+		}
+
+		glDetachShader(ShaderID, VertexShaderID);
+		glDetachShader(ShaderID, FragmentShaderID);
+
+		glDeleteShader(VertexShaderID);
+		glDeleteShader(FragmentShaderID);
+
+		return true;
+	}
+
 	/* Вычисление касательных и бикасательных */
 	/* Vertices - список координат вершин */
 	/* UVs - список текстурных координат вершин */
@@ -665,106 +762,16 @@ public:
 	/* Задаёт CubeMap-текстуру */
 	void setCubeMapTexture(GLuint value){ CubeMapTexture = value; }
 
-	/* Загрузка вершинного и фрагментного шейдеров */
-	bool LoadShaders(const char *VertexShader, const char *FragmentShader)
-	{
-		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-		string VertexShaderCode;
-		ifstream VertexShaderStream(VertexShader, ios::in);
-
-		if (VertexShaderStream.is_open())
-		{
-			string Line = "";
-			while (getline(VertexShaderStream, Line)) VertexShaderCode += "\n" + Line;
-			VertexShaderStream.close();
-		}
-		else
-		{
-			printf("File %s not found.\n", VertexShader);
-			return false;
-		}
-
-		string FragmentShaderCode;
-		ifstream FragmentShaderStream(FragmentShader, ios::in);
-
-		if (FragmentShaderStream.is_open())
-		{
-			string Line = "";
-			while (getline(FragmentShaderStream, Line)) FragmentShaderCode += "\n" + Line;
-			FragmentShaderStream.close();
-		}
-		else
-		{
-			printf("File %s not found.\n", FragmentShader);
-			return false;
-		}
-
-		GLint Result = GL_FALSE;
-		int InfoLogLength;
-
-		printf("Compiling vertex shader: %s...\n", VertexShader);
-		char const * VertexSourcePointer = VertexShaderCode.c_str();
-		glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
-		glCompileShader(VertexShaderID);
-
-		glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-		glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-
-		if (InfoLogLength > 0)
-		{
-			vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
-			glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-			printf("\nError: %s\n", &VertexShaderErrorMessage[0]);
-		}
-
-		printf("Compiling fragment shader: %s...\n", FragmentShader);
-		char const * FragmentSourcePointer = FragmentShaderCode.c_str();
-		glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
-		glCompileShader(FragmentShaderID);
-
-		glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-		glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-
-		if (InfoLogLength > 0)
-		{
-			vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
-			glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-			printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
-		}
-
-		printf("Linking program...\n");
-
-		ShaderID = glCreateProgram();
-		glAttachShader(ShaderID, VertexShaderID);
-		glAttachShader(ShaderID, FragmentShaderID);
-		glLinkProgram(ShaderID);
-
-		glGetProgramiv(ShaderID, GL_LINK_STATUS, &Result);
-		glGetProgramiv(ShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-
-		if (InfoLogLength > 0)
-		{
-			vector<char> ProgramErrorMessage(InfoLogLength + 1);
-			glGetProgramInfoLog(ShaderID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-			printf("\nError: %s\n", &ProgramErrorMessage[0]);
-		}
-
-		glDetachShader(ShaderID, VertexShaderID);
-		glDetachShader(ShaderID, FragmentShaderID);
-
-		glDeleteShader(VertexShaderID);
-		glDeleteShader(FragmentShaderID);
-
-		return true;
-	}
-
 	/* Задаёт размер объекта */
 	void setScale(float size)
 	{
 		/* Если умножить, то радиус сферы -> 0 */
-		ModelMatrix = scale(vec3(size, size, size));
+		vec3 pos = getPosition();
+		ModelMatrix = mat4(1.0);
+		ModelMatrix *= scale(vec3(size, size, size));
+		ModelMatrix[3].x = pos.x;
+		ModelMatrix[3].y = pos.y;
+		ModelMatrix[3].z = pos.z;
 	}
 
 	/* Вращение объекта */
@@ -1239,8 +1246,8 @@ public:
 
 			Objects[0] = OBJECT(0, "3dmodels//cube.obj");
 			Objects[0].Prepare();
-			Objects[0].setSolidColor(0.9, 0.0, 0.5);
-			Objects[0].setPosition(0.0, 6.0, 3.0);
+			Objects[0].setSolidColor(0.9, 0.0, 0.5);		
+			Objects[0].setPosition(0.0, 6.0, 3.0);	
 
 			Objects[1] = OBJECT(1, "3dmodels//cube.obj");
 			Objects[1].Prepare();
@@ -1256,8 +1263,8 @@ public:
 
 			Objects[4] = OBJECT(0, "3dmodels//sphere.obj");
 			Objects[4].Prepare();
-			Objects[4].setSolidColor(0.6, 0.3, 0.9);
-			Objects[4].setPosition(0.0, 6.0, 0.0);
+			Objects[4].setSolidColor(0.6, 0.3, 0.9);			
+			Objects[4].setPosition(0.0, 6.0, 0.0);	
 
 			Objects[5] = OBJECT(1, "3dmodels//sphere.obj");
 			Objects[5].Prepare();
@@ -1365,7 +1372,10 @@ public:
 			Objects[2].setRotation(-CUBEangle, vec3(1.0, 0.0, 0.0));
 			Objects[3].setRotation(CUBEangle, vec3(1.0, 0.0, 0.0));
 
+			Objects[4].setScale(SPHEREsize);
+			Objects[5].setScale(SPHEREsize);
 			Objects[6].setScale(SPHEREsize);
+			Objects[7].setScale(SPHEREsize);
 
 			Objects[8].setRotation(CYLINDERangle, vec3(0.0, 1.0, 0.0));
 			Objects[9].setRotation(CYLINDERangle, vec3(0.0, 1.0, 0.0));
@@ -1576,14 +1586,12 @@ void main()
 	/* Выбираем фрагмент, ближайший к камере */
 	glDepthFunc(GL_LESS);																		  
 	//glEnable(GL_CULL_FACE);
-	/*
-	glEnable(GL_BLEND);												
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
-	*/
+	/*glEnable(GL_BLEND);												
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
 	SCENE Scene = SCENE();
 
-	initText2D("Text.DDS");
+	InitText("Text.DDS");
 
 	lastTime = glfwGetTime();
 
@@ -1595,7 +1603,7 @@ void main()
 		if (currentTime - lastTime >= 0.01)
 		{
 			//sprintf(text, "%.3f ms for frame. %d frames\n", 1000.0 / double(nbFrames), nbFrames);
-			sprintf(text, "%d", nbFrames);
+			sprintf(text, "%d FPS", nbFrames);
 			sprintf(text2, "Diploma at %d FPS", nbFrames);
 			nbFrames = 0;
 			lastTime += 1.0;
@@ -1606,11 +1614,11 @@ void main()
 		glfwPollEvents();
 
 		Scene.Render();
-		printText2D(text, 0, 568, 20);
+		PrintText(text, 0, 580, 12);
 
 		glfwSwapBuffers(window);														  
 	}
 
-	cleanupText2D();
+	DeleteText();
 	glfwTerminate();
 }

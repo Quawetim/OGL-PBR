@@ -3,32 +3,29 @@
 #include <fstream>
 
 #include <GL/glew.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
 using namespace std;
 using namespace glm;
 
-//#include "Shader.h"
 #include "TextureLoader.h"
+#include "Text.h"
 
-#include "Text2D.h"
+GLuint VAO;
+unsigned int TextShaderID, TextID, TextTextureID, TextVertexBufferID, TextUVBufferID;
 
-unsigned int Text2DTextureID;
-unsigned int Text2DVertexBufferID;
-unsigned int Text2DUVBufferID;
-unsigned int Text2DShaderID;
-unsigned int Text2DUniformID;
-
-GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path)
+/* Загрузка вершинного и фрагментного шейдеров */
+/* VertexShader - путь к вершинному шейдеру */
+/* FragmentShader - путь к фрагментному (пиксельному) шейдеру */
+GLuint LoadShaders(const char *VertexShader, const char *FragmentShader)
 {
-	// Создание шейдеров
-	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);		// Вершинный
-	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);	// Фрагментный
+	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);		
+	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);	
 
-																	// Читаем код вершинного шейдера из файла vertex_file_path
+																	
 	string VertexShaderCode;
-	ifstream VertexShaderStream(vertex_file_path, ios::in);
+	ifstream VertexShaderStream(VertexShader, ios::in);
 
 	if (VertexShaderStream.is_open())
 	{
@@ -38,14 +35,12 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	}
 	else
 	{
-		printf("File %s not found.\n", vertex_file_path);
-		getchar();
+		printf("File %s not found.\n", VertexShader);
 		return 0;
 	}
 
-	// Читаем код фрагментного шейдера из файла fragment_file_path
 	string FragmentShaderCode;
-	ifstream FragmentShaderStream(fragment_file_path, ios::in);
+	ifstream FragmentShaderStream(FragmentShader, ios::in);
 
 	if (FragmentShaderStream.is_open())
 	{
@@ -53,17 +48,20 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 		while (getline(FragmentShaderStream, Line)) FragmentShaderCode += "\n" + Line;
 		FragmentShaderStream.close();
 	}
+	else
+	{
+		printf("File %s not found.\n", FragmentShader);
+		return 0;
+	}
 
 	GLint Result = GL_FALSE;
 	int InfoLogLength;
 
-	// Компилируем вершинный шейдер
-	printf("Compiling vertex shader: %s...", vertex_file_path);
+	printf("Compiling vertex shader: %s...", VertexShader);
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
 	glCompileShader(VertexShaderID);
 
-	// Проверка
 	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
 	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 
@@ -74,13 +72,11 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 		printf("\nError: %s\n", &VertexShaderErrorMessage[0]);
 	}
 
-	// Компилируем фрагментный шейдер
-	printf("Compiling fragment shader: %s...", fragment_file_path);
+	printf("Compiling fragment shader: %s...", FragmentShader);
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
 	glCompileShader(FragmentShaderID);
 
-	// Проверка
 	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
 	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 
@@ -91,14 +87,12 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 		printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
 	}
 
-	// Линкуем
 	printf("Linking program...");
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
 	glLinkProgram(ProgramID);
 
-	// Проверка
 	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
 	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 
@@ -118,27 +112,28 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	return ProgramID;
 }
 
-GLuint VAO;
-
-void initText2D(const char * texturePath)
+/* Инициализация */
+/* TexturePath - путь к текстуре */
+void InitText(const char *TexturePath)
 {
-	// загрузка текстуры
-	Text2DTextureID = loadDDS(texturePath);
+	TextTextureID = LoadDDS(TexturePath);
 
-	// VBO
-	glGenBuffers(1, &Text2DVertexBufferID);
-	glGenBuffers(1, &Text2DUVBufferID);
+	glGenBuffers(1, &TextVertexBufferID);
+	glGenBuffers(1, &TextUVBufferID);
 
-	// Загрузка шейдера
-	Text2DShaderID = LoadShaders( "shaders//Text.vertexshader", "shaders//Text.fragmentshader" );
+	TextShaderID = LoadShaders("shaders//Text.vertexshader", "shaders//Text.fragmentshader");
 
 	// Связываем шейдер и данные
-	Text2DUniformID = glGetUniformLocation( Text2DShaderID, "Texture" );
+	TextID = glGetUniformLocation(TextShaderID, "Texture");
 }
 
-void printText2D(const char * text, int x, int y, int size)
+/* Выводит текст на экран */
+/* Text - буфер */
+/* X, Y - координаты положения на экране */
+/* Size - размер */
+void PrintText(const char *Text, int X, int Y, int Size)
 {
-	int i, length = strlen(text);
+	int i, length = strlen(Text);
 	float uv_x, uv_y;
 	char character;
 
@@ -147,10 +142,10 @@ void printText2D(const char * text, int x, int y, int size)
 
 	for (i = 0; i < length; i++)
 	{		
-		vertex_up_left = vec2(x + i*size, y + size);
-		vertex_up_right = vec2(x + i*size + size, y + size);
-		vertex_down_right = vec2(x + i*size + size, y);
-		vertex_down_left = vec2(x + i*size, y);
+		vertex_up_left = vec2(X + i*Size, Y + Size);
+		vertex_up_right = vec2(X + i*Size + Size, Y + Size);
+		vertex_down_right = vec2(X + i*Size + Size, Y);
+		vertex_down_left = vec2(X + i*Size, Y);
 
 		vertices.push_back(vertex_up_left);
 		vertices.push_back(vertex_down_left);
@@ -160,7 +155,7 @@ void printText2D(const char * text, int x, int y, int size)
 		vertices.push_back(vertex_up_right);
 		vertices.push_back(vertex_down_left);
 
-		character = text[i];
+		character = Text[i];
 		uv_x = (character % 16) / 16.0f;
 		uv_y = (character / 16) / 16.0f;
 
@@ -181,23 +176,23 @@ void printText2D(const char * text, int x, int y, int size)
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, TextVertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec2), &vertices[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, TextUVBufferID);
 	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(vec2), &UVs[0], GL_STATIC_DRAW);
 
-	glUseProgram(Text2DShaderID);
+	glUseProgram(TextShaderID);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, Text2DTextureID);
-	glUniform1i(Text2DUniformID, 0);
+	glBindTexture(GL_TEXTURE_2D, TextTextureID);
+	glUniform1i(TextID, 0);
 
 	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, TextVertexBufferID);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
 	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, Text2DUVBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, TextUVBufferID);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0 );
 
 	glEnable(GL_BLEND);
@@ -208,15 +203,13 @@ void printText2D(const char * text, int x, int y, int size)
 	glDisable(GL_BLEND);
 
 	glBindVertexArray(0);
-
-	//glDisableVertexAttribArray(0);
-	//glDisableVertexAttribArray(1);
 }
 
-void cleanupText2D()
+/* Чистка */
+void DeleteText()
 {
-	glDeleteBuffers(1, &Text2DVertexBufferID);
-	glDeleteBuffers(1, &Text2DUVBufferID);
-	glDeleteTextures(1, &Text2DTextureID);
-	glDeleteProgram(Text2DShaderID);
+	glDeleteBuffers(1, &TextVertexBufferID);
+	glDeleteBuffers(1, &TextUVBufferID);
+	glDeleteTextures(1, &TextTextureID);
+	glDeleteProgram(TextShaderID);
 }

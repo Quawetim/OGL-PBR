@@ -1,8 +1,12 @@
 #ifndef TextureLoader_H
 #define TextureLoader_H
 
-GLuint loadBMP_custom(const char * imagepath);
+/* Загрузка BMP-текстуры */
+/* Image - путь к текстуре */
+GLuint LoadBMP(const char *Image);
 
-GLuint loadDDS(const char * imagepath);
+/* Загрузка DDS-текстуры */
+/* Image - путь к текстуре */
+GLuint LoadDDS(const char *Image);
 
 #endif

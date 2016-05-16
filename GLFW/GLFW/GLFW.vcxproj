@@ -148,12 +148,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Text2D.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="VboIndexer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Text2D.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="VboIndexer.h" />
   </ItemGroup>
