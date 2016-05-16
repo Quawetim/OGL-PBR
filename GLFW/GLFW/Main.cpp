@@ -32,7 +32,7 @@ float FOV = 90.0;
 int CameraMode = 2;
 int GenTextureSize = 512;
 bool Wireframe = false;
-bool MirrorExample = false;
+bool MirrorExample = true;
 bool FullSceen = false;
 
 class CAMERA
@@ -765,7 +765,6 @@ public:
 	/* Задаёт размер объекта */
 	void setScale(float size)
 	{
-		/* Если умножить, то радиус сферы -> 0 */
 		vec3 pos = getPosition();
 		ModelMatrix = mat4(1.0);
 		ModelMatrix *= scale(vec3(size, size, size));
@@ -774,6 +773,9 @@ public:
 		ModelMatrix[3].z = pos.z;
 	}
 
+	/* Возвращает размер объекта */
+	vec3 getScale() { return vec3(ModelMatrix[0].x, ModelMatrix[1].y, ModelMatrix[2].z); }
+
 	/* Вращение объекта */
 	void setRotation(float angle, vec3 axis) { ModelMatrix *= rotate(angle, axis); }
 
@@ -781,7 +783,15 @@ public:
 	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
 	/* Задаёт позицию объекта */
-	void setPosition(float X, float Y, float Z) { ModelMatrix *= translate(vec3(X, Y, Z)); }	
+	void setPosition(float X, float Y, float Z) 
+	{ 
+		vec3 scale = getScale();
+		ModelMatrix = mat4(1.0);
+		ModelMatrix *= translate(vec3(X, Y, Z)); 
+		ModelMatrix[0].x = scale.x;
+		ModelMatrix[1].y = scale.y;
+		ModelMatrix[2].z = scale.z;
+	}	
 
 	/* Задаёт сплошной цвет объекта */
 	void setSolidColor(float R, float G, float B)
@@ -1066,6 +1076,8 @@ private:
 	bool SPHEREdecreaseSize = true, SPHEREincreaseSize = false;
 	float SPHEREsize = 1.0, SPHEREsizeDelta = 0.006, SPHEREsizeMin = 0.8, SPHEREsizeMax = 1.0;
 	float CUBEangle = 0.05, CYLINDERangle = -0.01;
+	float Angle = 90.0, Angle2 = 90.0, AngleDelta = 2.0, AngleDelta2 = 5.0;
+	vec3 Position, NewPosition;
 
 	/* Пзиция камеры */
 	vec3 CameraPos;
@@ -1205,7 +1217,7 @@ public:
 			ObjectsCount = 7;
 			Objects = new OBJECT[ObjectsCount];
 
-			Objects[0] = OBJECT(1, "3dmodels//cube.obj");
+			Objects[0] = OBJECT(0, "3dmodels//cube.obj");
 			Objects[0].Prepare();
 			Objects[0].setSolidColor(0.9, 0.0, 0.5);
 			Objects[0].setPosition(0.0, 0.0, 10.0);
@@ -1233,7 +1245,9 @@ public:
 			Objects[5] = OBJECT(0, "3dmodels//cube.obj");
 			Objects[5].Prepare();
 			Objects[5].setSolidColor(0.5, 0.8, 0.9);
+			Objects[5].setScale(2.0);
 			Objects[5].setPosition(0.0, -15.0, 0.0);
+			
 			
 			Objects[6] = OBJECT(3, "3dmodels//sphere.obj");
 			Objects[6].Prepare();
@@ -1246,7 +1260,7 @@ public:
 
 			Objects[0] = OBJECT(0, "3dmodels//cube.obj");
 			Objects[0].Prepare();
-			Objects[0].setSolidColor(0.9, 0.0, 0.5);		
+			Objects[0].setSolidColor(0.9, 0.0, 0.5);
 			Objects[0].setPosition(0.0, 6.0, 3.0);	
 
 			Objects[1] = OBJECT(1, "3dmodels//cube.obj");
@@ -1320,7 +1334,7 @@ public:
 		glDeleteProgram(Skybox.getShaderID());
 		glDeleteProgram(Axes.getShaderID());
 	};
-
+	
 	/* Рендеринг сцены */
 	void Render()
 	{
@@ -1349,13 +1363,30 @@ public:
 
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
 			Axes.RenderAxes(ViewMatrix);
+						
+			Position = Objects[0].getPosition();
+			NewPosition = vec3(10.0 * cos(radians(Angle)), 0.0, 10.0 * sin(radians(Angle)));
+			Objects[0].setPosition(NewPosition.x, Position.y, NewPosition.z);
 
-			Objects[0].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));
-			Objects[1].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
+			Position = Objects[1].getPosition();
+			NewPosition = vec3(-10.0 * cos(radians(Angle)), 0.0, -10.0 * sin(radians(Angle)));
+			Objects[1].setPosition(NewPosition.x, Position.y, NewPosition.z);
+
+			Position = Objects[4].getPosition();
+			NewPosition = vec3(15.0 * cos(radians(Angle2)), 15.0 * sin(radians(Angle2)), 0.0);
+			Objects[4].setPosition(NewPosition.x, NewPosition.y, Position.z);
+
+			Position = Objects[5].getPosition();
+			NewPosition = vec3(-15.0 * cos(radians(Angle2)), -15.0 * sin(radians(Angle2)), 0.0);
+			Objects[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
+
+			Angle += AngleDelta;
+			Angle2 += AngleDelta2;
+			if (Angle > 360) Angle = 0.0;
+			if (Angle2 > 360) Angle2 = 0.0;
+
 			Objects[2].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));
 			Objects[3].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
-			Objects[4].setRotation(CUBEangle, vec3(0.0, 1.0, 1.0));
-			Objects[5].setRotation(-CUBEangle, vec3(0.0, 1.0, 1.0));
 		}
 		else
 		{
