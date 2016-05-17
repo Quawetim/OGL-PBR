@@ -24,7 +24,7 @@ GLFWwindow* window;
 
 /* WindowWidth, WindowHeight - ширина и высота окна */
 /* FOV - field of view */
-/* CameraMode - выбранная камера */
+/* CameraMode - выбранная камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированная */
 /* GenTextureSize - размер генерируемой текстуры */
 /* Wireframe - отображение сетки объектов, переключение по F1 */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
@@ -47,10 +47,10 @@ private:
 	/* Radius, RadiusMin, RadiusMax - радиус полёта камеры от начала координат для камеры №2 и его минимальное и максимальное значения */
 	/* Speed, Speed2 - скорость движения камер №1 и №2  */
 	/* MouseSpeed - скорость движения мышки */
-	vec3 CameraPosition, CameraLookTo = vec3(0.0f, 0.0f, 0.0f), CameraUp = vec3(0.0f, 1.0f, 0.0f), CameraStaticPosition = vec3(5.0f, 3.0f, 4.0f);
+	vec3 CameraPosition, CameraLookTo = vec3(0.0f, 0.0f, 0.0f), CameraUp = vec3(0.0f, 1.0f, 0.0f), CameraStaticPosition = vec3(8.0f, 3.0f, 6.0f);
 	float Pi = pi<float>();
 	float DeltaTime, Radius = 20.0f, RadiusMin = 2.0f, RadiusMax = 100.0f;
-	float Speed = 6.0f, Speed2 = 6.0f, MouseSpeed = 0.003f;
+	float Speed = 12.0f, MouseSpeed = 0.003f;
 
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
@@ -71,14 +71,12 @@ private:
 	/* right - вектор "вправо" для камеры */
 	void checkmove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 Right)
 	{
-		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (Speed2 < 20.0) Speed2 += DeltaTime * 0.2f; }
-		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (Speed2 > 1.0) Speed2 -= DeltaTime * 0.2f; }
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += normalize(Direction) * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= normalize(Direction) * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { Position += normalize(Right) * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= normalize(Right) * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { Position.y += DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { Position.y -= DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += normalize(Direction) * DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= normalize(Direction) * DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { Position += normalize(Right) * DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= normalize(Right) * DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { Position.y += DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { Position.y -= DeltaTime * Speed; }
 	}
 
 public:
@@ -103,59 +101,68 @@ public:
 		glfwGetCursorPos(window, &MouseX, &MouseY);
 		glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
 
-		if (CameraMode == 1)
+		switch (CameraMode)
 		{
-			static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
-			static float HorizontalAngle = radians(180.0f), VerticalAngle = radians(0.0f);
+			/* От первого лица */
+			case 1:
+			{
+				static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
+				static float HorizontalAngle = radians(180.0f), VerticalAngle = radians(0.0f);
 
-			if (degrees(VerticalAngle) > 90.0f) VerticalAngle = radians(89.9f);
-			if (degrees(VerticalAngle) < -90.0f) VerticalAngle = radians(-89.9f);
+				if (degrees(VerticalAngle) > 90.0f) VerticalAngle = radians(89.9f);
+				if (degrees(VerticalAngle) < -90.0f) VerticalAngle = radians(-89.9f);
 
-			Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));	
-			Right = cross(Direction, CameraUp);
+				Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));
+				Right = cross(Direction, CameraUp);
 
-			checkmove(window, Position, Direction, Right);
+				checkmove(window, Position, Direction, Right);
 
-			ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
+				ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
 
-			ViewMatrixAxes = lookAt(vec3(-5 * cos(HorizontalAngle), Position.y, 5 * sin(HorizontalAngle)), vec3(0.0f, 0.0f, 0.0f), CameraUp);
+				ViewMatrixAxes = lookAt(vec3(-5.0f * cos(HorizontalAngle), Position.y, 5.0f * sin(HorizontalAngle)), CameraLookTo, CameraUp);
 
-			CameraPosition = Position;
+				CameraPosition = Position;
 
-			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
-		}
+				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+				break;
+			}
+			/* От третьего лица */
+			case 2:
+			{
+				static vec3 Position;
+				static float HorizontalAngle = radians(0.0f), VerticalAngle = radians(-90.0f);
 
-		if (CameraMode == 2)
-		{
-			static vec3 Position;
-			static float HorizontalAngle = radians(0.0f), VerticalAngle = radians(-90.0f);
+				if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
+				if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
 
-			if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
-			if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
+				/* Переход из сферической системы в декартову */
+				Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
 
-			/* Переход из сферической системы в декартову */
-			Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
+				checkmove(window);
 
-			checkmove(window);
+				ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
 
-			ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
+				ViewMatrixAxes = lookAt(vec3(5.0f * cos(HorizontalAngle), 5.0f * cos(VerticalAngle), 5.0 * sin(HorizontalAngle)), CameraLookTo, CameraUp);
 
-			ViewMatrixAxes = lookAt(vec3(5.0f * cos(HorizontalAngle), 5.0f * cos(VerticalAngle), 5.0 * sin(HorizontalAngle)), vec3(0.0f, 0.0f, 0.0f), CameraUp);
+				CameraPosition = Position;
 
-			CameraPosition = Position;
+				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+				break;
+			}
+			/* Фиксированная */
+			case 3:
+			{
+				ViewMatrix = lookAt(CameraStaticPosition, CameraLookTo, CameraUp);
 
-			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
-		}
+				ViewMatrixAxes = ViewMatrix;
 
-		if (CameraMode == 3)
-		{
-			ViewMatrix = lookAt(CameraStaticPosition, CameraLookTo, CameraUp);
-
-			ViewMatrixAxes = ViewMatrix;
-
-			CameraPosition = CameraStaticPosition;
+				CameraPosition = CameraStaticPosition;
+				break;
+			}
+			default:
+				break;
 		}
 
 		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
@@ -1555,6 +1562,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (glfwGetKey(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) FOV = 90.0f;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (yoffset > 0)
+	{
+		if (FOV > 10.0f) FOV -= yoffset * 10.0f;
+		else FOV = 10.0f;
+	}
+	else
+	{
+		if (FOV < 90.0f) FOV -= yoffset * 10.0f;
+		else FOV = 90.0f;
+	}
+}
+
 /* Вывод ошибок в консоль */
 void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
@@ -1669,6 +1695,8 @@ void main()
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK)
