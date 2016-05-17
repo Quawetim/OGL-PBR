@@ -29,7 +29,7 @@ GLFWwindow* window;
 /* Wireframe - отображение сетки объектов, переключение по F1 */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
 int WindowWidth = 1280, WindowHeight = 800;
-float FOV = 90.0;
+float FOV = 90.0f;
 int CameraMode = 2;
 int GenTextureSize = 512;
 bool Wireframe = false;
@@ -59,7 +59,7 @@ private:
 
 	/* Обработка клавиатуры для движения камеры №2 */
 	/* window - указатель на окно */
-	void checkmove(GLFWwindow* window)
+	void CheckMove(GLFWwindow* window)
 	{
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius > RadiusMin) Radius -= DeltaTime * Speed; }
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius < RadiusMax) Radius += DeltaTime * Speed; }
@@ -69,7 +69,7 @@ private:
 	/* window - указатель на окно */
 	/* direction - направление камеры */
 	/* right - вектор "вправо" для камеры */
-	void checkmove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 Right)
+	void CheckMove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 Right)
 	{
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += normalize(Direction) * DeltaTime * Speed; }
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= normalize(Direction) * DeltaTime * Speed; }
@@ -115,7 +115,7 @@ public:
 				Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));
 				Right = cross(Direction, CameraUp);
 
-				checkmove(window, Position, Direction, Right);
+				CheckMove(window, Position, Direction, Right);
 
 				ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
 
@@ -139,7 +139,7 @@ public:
 				/* Переход из сферической системы в декартову */
 				Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
 
-				checkmove(window);
+				CheckMove(window);
 
 				ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
 
