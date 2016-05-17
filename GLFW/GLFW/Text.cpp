@@ -123,7 +123,6 @@ void InitText(const char *TexturePath)
 
 	TextShaderID = LoadShaders("shaders//Text.vertexshader", "shaders//Text.fragmentshader");
 
-	// Связываем шейдер и данные
 	TextID = glGetUniformLocation(TextShaderID, "Texture");
 }
 

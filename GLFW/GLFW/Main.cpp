@@ -29,13 +29,161 @@ GLFWwindow* window;
 /* Wireframe - отображение сетки объектов, переключение по F1 */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
 int WindowWidth = 1280, WindowHeight = 800;
-float FOV = 90.0f;
 int CameraMode = 2;
 int GenTextureSize = 512;
+float FOV = 90.0f;
+float SkyBoxSide = 500.0f;
 bool Wireframe = false;
 bool MirrorExample = false;
 bool StopRotations = true;
 bool FullSceen = false;
+
+/* Обработка ошибок */
+void error_callback(int error, const char* description)
+{
+	fputs(description, stderr);
+}
+
+/* Обработка клавиатуры */
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	/* Клавиши для выхода из приложения */
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+	if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+
+	/* Переключение камер №1 и №2 */
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
+	{
+		CameraMode++;
+		if (CameraMode > 2) CameraMode = 1;
+	}
+
+	/* Включение камеры №3 */
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) CameraMode = 3;
+
+	/* Переключение отображения полигональной сетки */
+	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+	{
+		if (Wireframe)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			Wireframe = false;
+		}
+		else
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			Wireframe = true;
+		}
+	}
+
+	/* Переключение примеров работы */
+	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
+	{
+		if (MirrorExample)
+		{
+			MirrorExample = false;
+		}
+		else
+		{
+			MirrorExample = true;
+		}
+	}
+
+	/* Включение/отключение вращений */
+	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
+	{
+		if (StopRotations)
+		{
+			StopRotations = false;
+		}
+		else
+		{
+			StopRotations = true;
+		}
+	}
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (glfwGetKey(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) FOV = 90.0f;
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (yoffset > 0)
+	{
+		if (FOV > 10.0f) FOV -= yoffset * 10.0f;
+		else FOV = 10.0f;
+	}
+	else
+	{
+		if (FOV < 90.0f) FOV -= yoffset * 10.0f;
+		else FOV = 90.0f;
+	}
+}
+
+/* Вывод ошибок в консоль */
+void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	printf("OpenGL Debug Output message : ");
+
+	if (source == GL_DEBUG_SOURCE_API_ARB) printf("Source : API; ");
+	else
+	{
+		if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB) printf("Source : WINDOW_SYSTEM; ");
+		else
+		{
+			if (source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB) printf("Source : SHADER_COMPILER; ");
+			else
+			{
+				if (source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB) printf("Source : THIRD_PARTY; ");
+				else
+				{
+					if (source == GL_DEBUG_SOURCE_APPLICATION_ARB) printf("Source : APPLICATION; ");
+					else
+					{
+						if (source == GL_DEBUG_SOURCE_OTHER_ARB) printf("Source : OTHER; ");
+					}
+				}
+			}
+		}
+	}
+
+	if (type == GL_DEBUG_TYPE_ERROR_ARB) printf("Type : ERROR; ");
+	else
+	{
+		if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB) printf("Type : DEPRECATED_BEHAVIOR; ");
+		else
+		{
+			if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB) printf("Type : UNDEFINED_BEHAVIOR; ");
+			else
+			{
+				if (type == GL_DEBUG_TYPE_PORTABILITY_ARB) printf("Type : PORTABILITY; ");
+				else
+				{
+					if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB) printf("Type : PERFORMANCE; ");
+					else
+					{
+						if (type == GL_DEBUG_TYPE_OTHER_ARB) printf("Type : OTHER; ");
+					}
+				}
+			}
+		}
+	}
+
+	if (severity == GL_DEBUG_SEVERITY_HIGH_ARB) printf("Severity : HIGH; ");
+	else
+	{
+		if (severity == GL_DEBUG_SEVERITY_MEDIUM_ARB) printf("Severity : MEDIUM; ");
+		else
+		{
+			if (severity == GL_DEBUG_SEVERITY_LOW_ARB) printf("Severity : LOW; ");
+		}
+	}
+
+	printf("Message : %s\n", message);
+}
 
 class CAMERA
 {
@@ -50,7 +198,7 @@ private:
 	vec3 CameraPosition, CameraLookTo = vec3(0.0f, 0.0f, 0.0f), CameraUp = vec3(0.0f, 1.0f, 0.0f), CameraStaticPosition = vec3(8.0f, 3.0f, 6.0f);
 	float Pi = pi<float>();
 	float DeltaTime, Radius = 20.0f, RadiusMin = 2.0f, RadiusMax = 100.0f;
-	float Speed = 12.0f, MouseSpeed = 0.003f;
+	float Speed = 15.0f, MouseSpeed = 0.003f;
 
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
@@ -77,6 +225,18 @@ private:
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= normalize(Right) * DeltaTime * Speed; }
 		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { Position.y += DeltaTime * Speed; }
 		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { Position.y -= DeltaTime * Speed; }
+
+		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) Speed += 1.0f;
+		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) Speed -= 1.0f;
+
+		if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
+
+		if (Position.x > SkyBoxSide) Position.x = SkyBoxSide - 0.1f;
+		if (Position.x < -SkyBoxSide) Position.x = -SkyBoxSide + 0.1f;
+		if (Position.y > SkyBoxSide) Position.y = SkyBoxSide - 0.1f;
+		if (Position.y < -SkyBoxSide) Position.y = -SkyBoxSide + 0.1f;
+		if (Position.z > SkyBoxSide) Position.z = SkyBoxSide - 0.1f;
+		if (Position.z < -SkyBoxSide) Position.z = -SkyBoxSide + 0.1f;
 	}
 
 public:
@@ -176,8 +336,12 @@ public:
 class OBJECT
 {
 private:
-	/* Material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
+	/* Material - материал */
+	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
 	int Material;
+	/* RefractionIndex - индекс преломления */
+	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
+	float RefractiveIndex = 1.52;
 
 	/* Vertex Array Object */
 	GLuint VAO;
@@ -187,7 +351,7 @@ private:
 	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
-	GLuint ShaderID, CameraPosID, LightID, UserSolidColorID;
+	GLuint ShaderID, CameraPositionID, LightID, UserSolidColorID, RefractiveIndexID;
 	GLuint MatrixID, ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
@@ -207,7 +371,7 @@ private:
 		LoadShaders("shaders//SolidColor.vertexshader", "shaders//SolidColor.fragmentshader");
 
 		MatrixID = glGetUniformLocation(ShaderID, "MVP");
-		UserSolidColorID = glGetUniformLocation(ShaderID, "userColor");
+		UserSolidColorID = glGetUniformLocation(ShaderID, "UserColor");
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
@@ -304,7 +468,8 @@ private:
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
-		CameraPosID = glGetUniformLocation(ShaderID, "cameraPos");
+		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		RefractiveIndexID = glGetUniformLocation(ShaderID, "RefractiveIndex");
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
@@ -336,7 +501,8 @@ private:
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
-		glUniform3f(CameraPosID, Camera.x, Camera.y, Camera.z);
+		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
+		glUniform1f(RefractiveIndexID, RefractiveIndex);
 
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, CubeMapTexture);
@@ -354,9 +520,9 @@ private:
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		ModelView3x3MatrixID = glGetUniformLocation(ShaderID, "MV3x3");
 
-		DiffuseTexture = LoadDDS("diffuse.DDS");
-		NormalTexture = LoadBMP("normal.bmp");
-		SpecularTexture = LoadDDS("specular.DDS");
+		DiffuseTexture = LoadDDS("textures//diffuse.DDS");
+		NormalTexture = LoadBMP("textures//normal.bmp");
+		SpecularTexture = LoadDDS("textures//specular.DDS");
 
 		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
 		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
@@ -779,24 +945,39 @@ public:
 	/* Возвращает указатель на шейдер */
 	GLuint getShaderID() { return ShaderID; }
 
+	/* Задаёт материал */
+	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
+	void setMaterial(int value) { Material = value; }
+		
 	/* Возвращает материал */
 	int getMaterial() { return Material; }
 
-	/* Задаёт материал */
-	void setMaterial(int value) { Material = value; }
-	
-	/* Возврщает указатель на CubeMap-текстуру */
-	GLuint getCubeMapTexture() { return CubeMapTexture; }
+	/* Задаёт индекс преломления */
+	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
+	void setRefractiveIndex(float value)
+	{
+		if (value < 1.0f) value = 1.0f;
+		RefractiveIndex = value;
+	}
+
+	/* Возвращает индекс преломления */
+	float getRefractiveIndex()
+	{
+		return RefractiveIndex;
+	}
 
 	/* Задаёт CubeMap-текстуру */
 	void setCubeMapTexture(GLuint value){ CubeMapTexture = value; }
 
+	/* Возврщает указатель на CubeMap-текстуру */
+	GLuint getCubeMapTexture() { return CubeMapTexture; }
+
 	/* Задаёт размер объекта */
-	void setScale(float size)
+	void setScale(float value)
 	{
 		vec3 pos = getPosition();
 		ModelMatrix = mat4(1.0);
-		ModelMatrix *= scale(vec3(size, size, size));
+		ModelMatrix *= scale(vec3(value, value, value));
 		ModelMatrix[3].x = pos.x;
 		ModelMatrix[3].y = pos.y;
 		ModelMatrix[3].z = pos.z;
@@ -807,7 +988,7 @@ public:
 
 	/* Вращение объекта */
 	/* angle - угол в градусах */
-	/* Ось вращения: X, Y, Z, XY, XZ, YZ*/
+	/* axis - ось вращения: X, Y, Z, XY, XZ, YZ, XYZ */
 	void setRotation(float angle, char axis[]) 
 	{ 
 		vec3 Axis;
@@ -828,7 +1009,13 @@ public:
 						else
 						{
 							if ((strcmp(axis, "YZ") == 0) || (strcmp(axis, "ZY") == 0)) Axis = vec3(0.0f, 1.0f, 1.0f);
-							else return;
+							else
+							{
+								if ((strcmp(axis, "XYZ") == 0) || (strcmp(axis, "XZY") == 0) || 
+									(strcmp(axis, "YXZ") == 0) || (strcmp(axis, "YZX") == 0) || 
+									(strcmp(axis, "ZXY") == 0) || (strcmp(axis, "ZYX") == 0)) Axis = vec3(1.0f, 1.0f, 1.0f);
+								else return;
+							}
 						}
 					}
 				}
@@ -836,9 +1023,6 @@ public:
 		}
 		ModelMatrix *= rotate(radians(angle), Axis); 
 	}
-
-	/* Возвращает позицию объекта */
-	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
 	/* Задаёт позицию объекта */
 	void setPosition(float X, float Y, float Z) 
@@ -850,6 +1034,9 @@ public:
 		ModelMatrix[1].y = scale;
 		ModelMatrix[2].z = scale;
 	}	
+
+	/* Возвращает позицию объекта */
+	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
 	/* Задаёт сплошной цвет объекта */
 	void setSolidColor(float R, float G, float B)
@@ -1036,49 +1223,48 @@ public:
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		cubemapTextureID = glGetUniformLocation(ShaderID, "cubemap");
 
-		GLfloat skyboxSide = 100.0f;
 		GLfloat skyboxVertices[] = {
-			-skyboxSide,  skyboxSide, -skyboxSide,
-			-skyboxSide, -skyboxSide, -skyboxSide,
-			skyboxSide, -skyboxSide, -skyboxSide,
-			skyboxSide, -skyboxSide, -skyboxSide,
-			skyboxSide,  skyboxSide, -skyboxSide,
-			-skyboxSide,  skyboxSide, -skyboxSide,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
 
-			-skyboxSide, -skyboxSide,  skyboxSide,
-			-skyboxSide, -skyboxSide, -skyboxSide,
-			-skyboxSide,  skyboxSide, -skyboxSide,
-			-skyboxSide,  skyboxSide, -skyboxSide,
-			-skyboxSide,  skyboxSide,  skyboxSide,
-			-skyboxSide, -skyboxSide,  skyboxSide,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
+			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
 
-			skyboxSide, -skyboxSide, -skyboxSide,
-			skyboxSide, -skyboxSide,  skyboxSide,
-			skyboxSide,  skyboxSide,  skyboxSide,
-			skyboxSide,  skyboxSide,  skyboxSide,
-			skyboxSide,  skyboxSide, -skyboxSide,
-			skyboxSide, -skyboxSide, -skyboxSide,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
 
-			-skyboxSide, -skyboxSide,  skyboxSide,
-			-skyboxSide,  skyboxSide,  skyboxSide,
-			skyboxSide,  skyboxSide,  skyboxSide,
-			skyboxSide,  skyboxSide,  skyboxSide,
-			skyboxSide, -skyboxSide,  skyboxSide,
-			-skyboxSide, -skyboxSide,  skyboxSide,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
 
-			-skyboxSide,  skyboxSide, -skyboxSide,
-			skyboxSide,  skyboxSide, -skyboxSide,
-			skyboxSide,  skyboxSide,  skyboxSide,
-			skyboxSide,  skyboxSide,  skyboxSide,
-			-skyboxSide,  skyboxSide,  skyboxSide,
-			-skyboxSide,  skyboxSide, -skyboxSide,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
 
-			-skyboxSide, -skyboxSide, -skyboxSide,
-			-skyboxSide, -skyboxSide,  skyboxSide,
-			skyboxSide, -skyboxSide, -skyboxSide,
-			skyboxSide, -skyboxSide, -skyboxSide,
-			-skyboxSide, -skyboxSide,  skyboxSide,
-			skyboxSide, -skyboxSide,  skyboxSide
+			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
+			SkyBoxSide, -SkyBoxSide,  SkyBoxSide
 		};
 
 		glGenVertexArrays(1, &VAO);
@@ -1282,6 +1468,7 @@ public:
 
 		Objects[2] = OBJECT(2, "3dmodels//cube.obj");
 		Objects[2].Prepare();
+		Objects[2].setRefractiveIndex(1.1f);
 		Objects[2].setPosition(0.0f, 0.0f, 3.0f);
 
 		Objects[3] = OBJECT(3, "3dmodels//cube.obj");
@@ -1299,6 +1486,7 @@ public:
 
 		Objects[6] = OBJECT(2, "3dmodels//sphere.obj");
 		Objects[6].Prepare();
+		Objects[6].setRefractiveIndex(2.42f);
 
 		Objects[7] = OBJECT(3, "3dmodels//sphere.obj");
 		Objects[7].Prepare();
@@ -1319,6 +1507,7 @@ public:
 
 		Objects[11] = OBJECT(2, "3dmodels//cylinder.obj");
 		Objects[11].Prepare();
+		Objects[11].setRefractiveIndex(1.33f);
 		Objects[11].setPosition(0.0f, -1.0f, -3.0f);
 
 		Objects[12] = OBJECT(3, "3dmodels//cylinder.obj");
@@ -1462,7 +1651,7 @@ public:
 
 			if (!StopRotations)
 			{
-				Objects[0].setRotation(-CubeAngle, "YZ");
+				Objects[0].setRotation(-CubeAngle, "XYZ");
 				Objects[1].setRotation(CubeAngle, "XY");
 				Objects[2].setRotation(-CubeAngle, "X");
 				Objects[3].setRotation(CubeAngle, "X");
@@ -1495,153 +1684,6 @@ public:
 		}
 	}
 };
-
-/* Обработка ошибок */
-void error_callback(int error, const char* description)
-{
-	fputs(description, stderr);
-}
-
-/* Обработка клавиатуры */
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	/* Клавиши для выхода из приложения */
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-
-	/* Переключение камер №1 и №2 */
-	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-	{
-		CameraMode++;
-		if (CameraMode > 2) CameraMode = 1;
-	}
-
-	/* Включение камеры №3 */
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) CameraMode = 3;
-
-	/* Переключение отображения полигональной сетки */
-	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
-	{
-		if (Wireframe)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			Wireframe = false;
-		}
-		else
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			Wireframe = true;
-		}
-	}
-
-	/* Переключение примеров работы */
-	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
-	{
-		if (MirrorExample)
-		{
-			MirrorExample = false;
-		}
-		else
-		{
-			MirrorExample = true;
-		}
-	}
-
-	/* Включение/отключение вращений */
-	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
-	{
-		if (StopRotations)
-		{
-			StopRotations = false;
-		}
-		else
-		{
-			StopRotations = true;
-		}
-	}
-}
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-	if (glfwGetKey(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) FOV = 90.0f;
-}
-
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	if (yoffset > 0)
-	{
-		if (FOV > 10.0f) FOV -= yoffset * 10.0f;
-		else FOV = 10.0f;
-	}
-	else
-	{
-		if (FOV < 90.0f) FOV -= yoffset * 10.0f;
-		else FOV = 90.0f;
-	}
-}
-
-/* Вывод ошибок в консоль */
-void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
-{
-	printf("OpenGL Debug Output message : ");
-
-	if (source == GL_DEBUG_SOURCE_API_ARB) printf("Source : API; ");
-	else
-	{
-		if (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB) printf("Source : WINDOW_SYSTEM; ");
-		else
-		{
-			if (source == GL_DEBUG_SOURCE_SHADER_COMPILER_ARB) printf("Source : SHADER_COMPILER; ");
-			else
-			{
-				if (source == GL_DEBUG_SOURCE_THIRD_PARTY_ARB) printf("Source : THIRD_PARTY; ");
-				else
-				{
-					if (source == GL_DEBUG_SOURCE_APPLICATION_ARB) printf("Source : APPLICATION; ");
-					else
-					{
-						if (source == GL_DEBUG_SOURCE_OTHER_ARB) printf("Source : OTHER; ");
-					}
-				}
-			}
-		}
-	}
-
-	if (type == GL_DEBUG_TYPE_ERROR_ARB) printf("Type : ERROR; ");
-	else
-	{
-		if (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB) printf("Type : DEPRECATED_BEHAVIOR; ");
-		else
-		{
-			if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB) printf("Type : UNDEFINED_BEHAVIOR; ");
-			else
-			{
-				if (type == GL_DEBUG_TYPE_PORTABILITY_ARB) printf("Type : PORTABILITY; ");
-				else
-				{
-					if (type == GL_DEBUG_TYPE_PERFORMANCE_ARB) printf("Type : PERFORMANCE; ");
-					else
-					{
-						if (type == GL_DEBUG_TYPE_OTHER_ARB) printf("Type : OTHER; ");
-					}
-				}
-			}
-		}
-	}
-
-	if (severity == GL_DEBUG_SEVERITY_HIGH_ARB) printf("Severity : HIGH; ");
-	else
-	{
-		if (severity == GL_DEBUG_SEVERITY_MEDIUM_ARB) printf("Severity : MEDIUM; ");
-		else
-		{
-			if (severity == GL_DEBUG_SEVERITY_LOW_ARB) printf("Severity : LOW; ");
-		}
-	}
-
-	printf("Message : %s\n", message);
-}
 
 void main()
 {
@@ -1734,7 +1776,7 @@ void main()
 
 	SCENE Scene = SCENE();
 
-	InitText("Text.DDS");
+	InitText("textures//Text.DDS");
 
 	lastTime = glfwGetTime();
 
@@ -1748,11 +1790,10 @@ void main()
 			//sprintf(text, "%.3f ms for frame. %d frames\n", 1000.0 / double(nbFrames), nbFrames);
 			sprintf(text, "%d FPS", nbFrames);
 			sprintf(text2, "Diploma at %d FPS", nbFrames);
+			glfwSetWindowTitle(window, text2);
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
-
-		glfwSetWindowTitle(window, text2);
 
 		glfwPollEvents();
 

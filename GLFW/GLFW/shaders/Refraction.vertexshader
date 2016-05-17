@@ -1,6 +1,6 @@
 #version 330 core
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
+layout (location = 0) in vec3 VertexPosition;
+layout (location = 1) in vec3 VertexNormal;
 
 out vec3 Normal;
 out vec3 Position;
@@ -11,10 +11,10 @@ uniform mat4 P;
 
 void main()
 {
-    gl_Position = P * V * M * vec4(position, 1.0f);
+    gl_Position = P * V * M * vec4(VertexPosition, 1.0f);
 
-    Normal = mat3(transpose(inverse(M))) * normal;
+    Normal = mat3(transpose(inverse(M))) * VertexNormal;
 
-    Position = vec3(M * vec4(position, 1.0f));
+    Position = vec3(M * vec4(VertexPosition, 1.0f));
 }
 
