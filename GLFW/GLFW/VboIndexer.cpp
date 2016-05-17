@@ -14,9 +14,7 @@ bool is_near(float v1, float v2)
 /* Одинаковые, если одни позиции, одни UV, одни нормали */
 bool getSimilarVertexIndex(vec3 vertex, vec2 uv, vec3 normal, vector<vec3> &out_vertices, vector<vec2> &out_uvs, vector<vec3> &out_normals, unsigned short &result)
 {
-	int i;
-
-	for (i = 0; i < out_vertices.size(); i++)
+	for (unsigned int i = 0; i < out_vertices.size(); i++)
 	{
 		if (is_near(vertex.x, out_vertices[i].x) && is_near(vertex.y, out_vertices[i].y) && is_near(vertex.z, out_vertices[i].z) && is_near(uv.x, out_uvs[i].x) && is_near(uv.y, out_uvs[i].y) && is_near(normal.x, out_normals[i].x) && is_near(normal.y, out_normals[i].y) && is_near(normal.z, out_normals[i].z))
 		{
@@ -81,7 +79,7 @@ void indexVBO_fast(vector<vec3> &in_vertices, vector<vec2> &in_uvs, vector<vec3>
 /* Индексация вершин */
 void IndexVBO(vector<vec3> vertices, vector<vec2> uvs, vector<vec3> normals, vector<vec3> tangents, vector<vec3> bitangents, vector<unsigned short> &out_indices, vector<vec3> &out_vertices, vector<vec2> &out_uvs, vector<vec3> &out_normals, vector<vec3> &out_tangents, vector<vec3> &out_bitangents)
 {
-	for (int i = 0; i < vertices.size(); i++)
+	for (unsigned int i = 0; i < vertices.size(); i++)
 	{
 		/* Для каждой новой вершины ищем одинаковую в out */
 		unsigned short index;

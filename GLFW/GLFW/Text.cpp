@@ -133,14 +133,14 @@ void InitText(const char *TexturePath)
 /* Size - размер */
 void PrintText(const char *Text, int X, int Y, int Size)
 {
-	int i, length = strlen(Text);
+	int length = strlen(Text);
 	float uv_x, uv_y;
 	char character;
 
 	vector<vec2> vertices, UVs;
 	vec2 vertex_up_left, vertex_up_right, vertex_down_right, vertex_down_left, uv_up_left, uv_up_right, uv_down_right, uv_down_left;
 
-	for (i = 0; i < length; i++)
+	for (int i = 0; i < length; i++)
 	{		
 		vertex_up_left = vec2(X + i*Size, Y + Size);
 		vertex_up_right = vec2(X + i*Size + Size, Y + Size);

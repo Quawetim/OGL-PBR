@@ -23,17 +23,17 @@ uniform vec3 LightPosition_worldspace;
 void main()
 {	
 	// Output position of the vertex, in clip (object) space : MVP * position
-	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
+	gl_Position =  MVP * vec4(vertexPosition_modelspace, 1.0f);
 	
 	// Position of vertex, in worldspace : M * position
-	Position_worldspace = (M * vec4(vertexPosition_modelspace,1)).xyz;
+	Position_worldspace = (M * vec4(vertexPosition_modelspace, 1.0f)).xyz;
 	
 	// Vector from vertex to camera, in camera space. In camera space, camera at (0, 0, 0).
-	vec3 vertexPosition_cameraspace = ( V * M * vec4(vertexPosition_modelspace,1)).xyz;
-	EyeDirection_cameraspace = vec3(0, 0, 0) - vertexPosition_cameraspace;
+	vec3 vertexPosition_cameraspace = ( V * M * vec4(vertexPosition_modelspace, 1.0f)).xyz;
+	EyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;
 
 	// Vector from vertex to light, in camera space. M is identity.
-	vec3 LightPosition_cameraspace = ( V * vec4(LightPosition_worldspace,1)).xyz;
+	vec3 LightPosition_cameraspace = ( V * vec4(LightPosition_worldspace, 1.0f)).xyz;
 	LightDirection_cameraspace = LightPosition_cameraspace + EyeDirection_cameraspace;
 	
 	// UV of the vertex.

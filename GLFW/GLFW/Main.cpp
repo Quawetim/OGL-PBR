@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -39,17 +40,17 @@ bool FullSceen = false;
 class CAMERA
 {
 private:
-	/* Position - позиция камеры */
+	/* CameraPosition - позиция камеры */
+	/* CameraLookTo - точка, на которую направлена камера */
+	/* CameraUp - направление верха камеры */
+	/* CameraStaticPosition - позиция статической камеры */
 	/* Radius, RadiusMin, RadiusMax - радиус полёта камеры от начала координат для камеры №2 и его минимальное и максимальное значения */
-	/* CameraHeight - высота полёта камеры №2 */
-	/* HorizontalAngle, VerticalAngle - uоризонтальный и вертикальный углы для камеры №2 */
 	/* Speed, Speed2 - скорость движения камер №1 и №2  */
 	/* MouseSpeed - скорость движения мышки */
-	vec3 Position;
+	vec3 CameraPosition, CameraLookTo = vec3(0.0f, 0.0f, 0.0f), CameraUp = vec3(0.0f, 1.0f, 0.0f), CameraStaticPosition = vec3(5.0f, 3.0f, 4.0f);
 	float Pi = pi<float>();
-	float DeltaTime, Radius = 20.0, RadiusMin = 2.0, RadiusMax = 100.0, CameraHeight = 1.0;
-	float HorizontalAngle = 0.0, VerticalAngle = 0.0;
-	float Speed = 6.0, Speed2 = 6.0, MouseSpeed = 0.005;
+	float DeltaTime, Radius = 20.0f, RadiusMin = 2.0f, RadiusMax = 100.0f;
+	float Speed = 6.0f, Speed2 = 6.0f, MouseSpeed = 0.003f;
 
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
@@ -60,24 +61,24 @@ private:
 	/* window - указатель на окно */
 	void checkmove(GLFWwindow* window)
 	{
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius >= RadiusMin) Radius -= DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius <= RadiusMax) Radius += DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { if (CameraHeight <= 10.0) CameraHeight += DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { if (CameraHeight >= -10.0) CameraHeight -= DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius > RadiusMin) Radius -= DeltaTime * Speed; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius < RadiusMax) Radius += DeltaTime * Speed; }
 	}
 
 	/* Обработка клавиатуры для движения камеры №1 */
 	/* window - указатель на окно */
 	/* direction - направление камеры */
 	/* right - вектор "вправо" для камеры */
-	void checkmove(GLFWwindow* window, vec3 Direction, vec3 Right)
+	void checkmove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 Right)
 	{
-		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (Speed2 < 20.0) Speed2 += 0.2; }
-		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (Speed2 > 1.0) Speed2 -= 0.2; }
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += Direction * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= Direction * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { Position += Right * DeltaTime * Speed2; }
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= Right * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) { if (Speed2 < 20.0) Speed2 += DeltaTime * 0.2f; }
+		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) { if (Speed2 > 1.0) Speed2 -= DeltaTime * 0.2f; }
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += normalize(Direction) * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= normalize(Direction) * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { Position += normalize(Right) * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= normalize(Right) * DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { Position.y += DeltaTime * Speed2; }
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { Position.y -= DeltaTime * Speed2; }
 	}
 
 public:
@@ -100,48 +101,68 @@ public:
 		DeltaTime = float(CurrentTime - LastTime);
 
 		glfwGetCursorPos(window, &MouseX, &MouseY);
-		glfwSetCursorPos(window, WindowWidth / 2.0, WindowHeight / 2.0);
-
-		HorizontalAngle += MouseSpeed * float(WindowWidth / 2.0 - MouseX);
-		VerticalAngle += MouseSpeed * float(WindowHeight / 2.0 - MouseY);
+		glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
 
 		if (CameraMode == 1)
 		{
-			vec3 Direction, Right;
+			static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
+			static float HorizontalAngle = radians(180.0f), VerticalAngle = radians(0.0f);
 
-			// Direction : Spherical coordinates to Cartesian coordinates conversion
-			Direction = vec3(cos(VerticalAngle) * sin(HorizontalAngle), sin(VerticalAngle), cos(VerticalAngle) * cos(HorizontalAngle));
-			Right = vec3(sin(HorizontalAngle - Pi / 2.0), 0, cos(HorizontalAngle - Pi / 2.0));
+			if (degrees(VerticalAngle) > 90.0f) VerticalAngle = radians(89.9f);
+			if (degrees(VerticalAngle) < -90.0f) VerticalAngle = radians(-89.9f);
 
-			checkmove(window, Direction, Right);
+			Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));	
+			Right = cross(Direction, CameraUp);
 
-			ViewMatrix = lookAt(Position, Position + Direction, vec3(0.0, 1.0, 0.0));
+			checkmove(window, Position, Direction, Right);
 
-			ViewMatrixAxes = ViewMatrix;
+			ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
+
+			ViewMatrixAxes = lookAt(vec3(-5 * cos(HorizontalAngle), Position.y, 5 * sin(HorizontalAngle)), vec3(0.0f, 0.0f, 0.0f), CameraUp);
+
+			CameraPosition = Position;
+
+			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
 		}
 
 		if (CameraMode == 2)
 		{
-			Position = vec3(Radius*cos(HorizontalAngle), CameraHeight, Radius*sin(HorizontalAngle));
+			static vec3 Position;
+			static float HorizontalAngle = radians(0.0f), VerticalAngle = radians(-90.0f);
+
+			if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
+			if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
+
+			/* Переход из сферической системы в декартову */
+			Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
 
 			checkmove(window);
 
-			ViewMatrix = lookAt(Position, vec3(0.0, -1.5, 0.0), vec3(0.0, 1.0, 0.0));
+			ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
 
-			ViewMatrixAxes = lookAt(vec3(5 * cos(HorizontalAngle), CameraHeight, 5 * sin(HorizontalAngle)), vec3(0.0, -1.5, 0.0), vec3(0.0, 1.0, 0.0));
+			ViewMatrixAxes = lookAt(vec3(5.0f * cos(HorizontalAngle), 5.0f * cos(VerticalAngle), 5.0 * sin(HorizontalAngle)), vec3(0.0f, 0.0f, 0.0f), CameraUp);
+
+			CameraPosition = Position;
+
+			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
 		}
 
 		if (CameraMode == 3)
 		{
-			ViewMatrix = lookAt(vec3(5.0, 3.0, 4.0), vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+			ViewMatrix = lookAt(CameraStaticPosition, CameraLookTo, CameraUp);
 
 			ViewMatrixAxes = ViewMatrix;
+
+			CameraPosition = CameraStaticPosition;
 		}
 
-		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f); 	
+		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
+			
 		LastTime = CurrentTime;
 
-		return Position;
+		return CameraPosition;
 	}
 };
 
@@ -155,7 +176,7 @@ private:
 	GLuint VAO;
 
 	/* ModelMatrix - матрица модели */
-	mat4 ModelMatrix = mat4(1.0), ModelViewMatrix, MVP;
+	mat4 ModelMatrix = mat4(1.0f), ModelViewMatrix, MVP;
 	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
@@ -218,21 +239,21 @@ private:
 		MatrixID = glGetUniformLocation(ShaderID, "MVP");
 		UserSolidColorID = glGetUniformLocation(ShaderID, "userColor");
 
-		GLfloat *colorbuffer_data = new GLfloat[vertices.size() * sizeof(vec3) * 3];
+		float *colorbuffer_data = new float[vertices.size() * sizeof(vec3) * 3];
 
-		for (int i = 0; i < vertices.size() * sizeof(vec3) * 3; i += 3)
+		for (unsigned int i = 0; i < vertices.size() * sizeof(vec3) * 3; i += 3)
 		{
 			if (i % 2 == 0)
 			{
-				colorbuffer_data[i] = 0.33;
-				colorbuffer_data[i + 1] = 0.66;
-				colorbuffer_data[i + 2] = 0.99;
+				colorbuffer_data[i] = 0.33f;
+				colorbuffer_data[i + 1] = 0.66f;
+				colorbuffer_data[i + 2] = 0.99f;
 			}
 			else
 			{
-				colorbuffer_data[i] = 0.24;
-				colorbuffer_data[i + 1] = 0.16;
-				colorbuffer_data[i + 2] = 0.71;
+				colorbuffer_data[i] = 0.24f;
+				colorbuffer_data[i + 1] = 0.16f;
+				colorbuffer_data[i + 2] = 0.71f;
 			}
 		}
 
@@ -402,7 +423,7 @@ private:
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
 
-		vec3 LightPos = vec3(0.0, -7.0, 0.0);
+		vec3 LightPos = vec3(0.0f, -7.0f, 0.0f);
 		glUniform3f(LightID, LightPos.x, LightPos.y, LightPos.z);
 
 		glBindVertexArray(VAO);
@@ -520,7 +541,7 @@ private:
 		}
 
 		/* Для каждой вершины в каждом треугольнике достаём данные на выход */
-		for (int i = 0; i < VertexIndices.size(); i++)
+		for (unsigned int i = 0; i < VertexIndices.size(); i++)
 		{
 			int vertexIndex = VertexIndices[i];
 			int uvIndex = UVIndices[i];
@@ -646,7 +667,7 @@ private:
 		vec3 V0, V1, V2, DeltaPos1, DeltaPos2, Tangent, Bitangent, Normal;
 		vec2 UV0, UV1, UV2, DeltaUV1, DeltaUV2;
 
-		for (int i = 0; i < vertices.size(); i += 3)
+		for (unsigned int i = 0; i < vertices.size(); i += 3)
 		{
 			V0 = Vertices[i + 0];
 			V1 = Vertices[i + 1];
@@ -676,7 +697,7 @@ private:
 			Bitangents.push_back(Bitangent);
 		}
 
-		for (int i = 0; i < vertices.size(); i++)
+		for (unsigned int i = 0; i < vertices.size(); i++)
 		{
 			Normal = Normals[i];
 			Tangent = Tangents[i];
@@ -703,7 +724,7 @@ private:
 
 		glBindTexture(GL_TEXTURE_CUBE_MAP, TextureID);
 
-		for (int i = 0; i < faces.size(); i++)
+		for (unsigned int i = 0; i < faces.size(); i++)
 		{
 			Image = SOIL_load_image(faces[i], &Width, &Height, 0, SOIL_LOAD_RGB);
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Image);
@@ -778,7 +799,36 @@ public:
 	float getScale() { return ModelMatrix[0].x; }
 
 	/* Вращение объекта */
-	void setRotation(float angle, vec3 axis) { ModelMatrix *= rotate(angle, axis); }
+	/* angle - угол в градусах */
+	/* Ось вращения: X, Y, Z, XY, XZ, YZ*/
+	void setRotation(float angle, char axis[]) 
+	{ 
+		vec3 Axis;
+		
+		if (strcmp(axis, "X") == 0) Axis = vec3(1.0f, 0.0f, 0.0f);
+		else
+		{
+			if (strcmp(axis, "Y") == 0) Axis = vec3(0.0f, 1.0f, 0.0f);
+			else
+			{
+				if (strcmp(axis, "Z") == 0) Axis = vec3(0.0f, 0.0f, 1.0f);
+				else
+				{
+					if ((strcmp(axis, "XY") == 0) || (strcmp(axis, "YX") == 0)) Axis = vec3(1.0f, 1.0f, 0.0f);
+					else
+					{
+						if ((strcmp(axis, "XZ") == 0) || (strcmp(axis, "ZX") == 0)) Axis = vec3(1.0f, 0.0f, 1.0f);
+						else
+						{
+							if ((strcmp(axis, "YZ") == 0) || (strcmp(axis, "ZY") == 0)) Axis = vec3(0.0f, 1.0f, 1.0f);
+							else return;
+						}
+					}
+				}
+			}
+		}
+		ModelMatrix *= rotate(radians(angle), Axis); 
+	}
 
 	/* Возвращает позицию объекта */
 	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
@@ -979,7 +1029,7 @@ public:
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		cubemapTextureID = glGetUniformLocation(ShaderID, "cubemap");
 
-		GLfloat skyboxSide = 100.0;
+		GLfloat skyboxSide = 100.0f;
 		GLfloat skyboxVertices[] = {
 			-skyboxSide,  skyboxSide, -skyboxSide,
 			-skyboxSide, -skyboxSide, -skyboxSide,
@@ -1075,15 +1125,15 @@ private:
 	CAMERA Camera;
 
 	bool SphereDecrease = true, SphereIncrease = false;
-	float SpheresSize = 1.0, SpheresSizeDelta = 0.006, SpheresSizeMin = 0.8, SpheresSizeMax = 1.0;
-	float CubeAngle = 0.06, CylinderAngle = -0.01;
-	float Angle = 90.0, Angle2 = 90.0, AngleDelta = 2.0, AngleDelta2 = 5.0;
+	float SpheresSize = 1.0f, SpheresSizeDelta = 0.004f, SpheresSizeMin = 0.8f, SpheresSizeMax = 1.0f;
+	float CubeAngle = 3.0f, CylinderAngle = -1.0f;
+	float Radius, Angle = 90.0f, Angle2 = 90.0f, AngleDelta = 2.0f, AngleDelta2 = 5.0f;
 	vec3 Position, NewPosition;
 
 	/* Пзиция камеры */
-	vec3 CameraPos;
+	vec3 CameraPosition;
 	/* Матрицы проекции и вида */
-	mat4 ProjectionMatrix, ViewMatrix;
+	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
 
 	/* Генерирует CubeMap-текстуру для зеркального объекта */
 	/* id - идентификатор объекта, позиция в массиве всех объектов */
@@ -1091,9 +1141,7 @@ private:
 	/* ViewMatrix - матрица вида */
 	GLuint MakeCubemap(int id, vec3 camera, mat4 ViewMatrix)
 	{
-		GLuint VAO;
-		GLuint cubemap;
-		GLuint framebuffer, renderedTexture, depthbuffer;
+		GLuint cubemap, framebuffer, depthbuffer;
 		mat4 ProjectionMatrix = perspective(radians(90.0f), 1.0f, 0.1f, 100.0f);
 		//glEnable(GL_CULL_FACE);
 		//glDepthFunc(GL_LEQUAL);
@@ -1152,32 +1200,32 @@ private:
 			{
 			case 0:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			case 1:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(-1.0, 0.0, 0.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			case 2:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f));
 				break;
 			}
 			case 3:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f));
 				break;
 			}
 			case 4:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, 0.0, 1.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			case 5:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0));
+				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			default:
@@ -1218,57 +1266,57 @@ public:
 
 		Objects[0] = OBJECT(0, "3dmodels//cube.obj");
 		Objects[0].Prepare();
-		Objects[0].setSolidColor(0.9, 0.0, 0.5);
-		Objects[0].setPosition(0.0, 6.0, 3.0);	
+		Objects[0].setSolidColor(0.9f, 0.0f, 0.5f);
+		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
 
 		Objects[1] = OBJECT(1, "3dmodels//cube.obj");
 		Objects[1].Prepare();
-		Objects[1].setPosition(0.0, 3.0, 3.0);
+		Objects[1].setPosition(0.0f, 3.0f, 3.0f);
 
 		Objects[2] = OBJECT(2, "3dmodels//cube.obj");
 		Objects[2].Prepare();
-		Objects[2].setPosition(0.0, 0.0, 3.0);
+		Objects[2].setPosition(0.0f, 0.0f, 3.0f);
 
 		Objects[3] = OBJECT(3, "3dmodels//cube.obj");
 		Objects[3].Prepare();
-		Objects[3].setPosition(0.0, -3.0, 3.0);
+		Objects[3].setPosition(0.0f, -3.0f, 3.0f);
 
 		Objects[4] = OBJECT(0, "3dmodels//sphere.obj");
 		Objects[4].Prepare();
-		Objects[4].setSolidColor(0.6, 0.3, 0.9);			
-		Objects[4].setPosition(0.0, 6.0, 0.0);	
+		Objects[4].setSolidColor(0.6f, 0.3f, 0.9f);			
+		Objects[4].setPosition(0.0f, 6.0f, 0.0f);	
 
 		Objects[5] = OBJECT(1, "3dmodels//sphere.obj");
 		Objects[5].Prepare();
-		Objects[5].setPosition(0.0, 3.0, 0.0);
+		Objects[5].setPosition(0.0f, 3.0f, 0.0f);
 
 		Objects[6] = OBJECT(2, "3dmodels//sphere.obj");
 		Objects[6].Prepare();
 
 		Objects[7] = OBJECT(3, "3dmodels//sphere.obj");
 		Objects[7].Prepare();
-		Objects[7].setPosition(0.0, -3.0, 0.0);
+		Objects[7].setPosition(0.0f, -3.0f, 0.0f);
 
 		Objects[8] = OBJECT(4, "3dmodels//cylinder.obj");
 		Objects[8].Prepare();
-		Objects[8].setPosition(0.0, -7.0, -3.0);
+		Objects[8].setPosition(0.0f, -7.0f, -3.0f);
 
 		Objects[9] = OBJECT(0, "3dmodels//cylinder.obj");
 		Objects[9].Prepare();
-		Objects[9].setSolidColor(0.1, 0.9, 0.8);
-		Objects[9].setPosition(0.0, 5.0, -3.0);
+		Objects[9].setSolidColor(0.1f, 0.9f, 0.8f);
+		Objects[9].setPosition(0.0f, 5.0f, -3.0f);
 
 		Objects[10] = OBJECT(1, "3dmodels//cylinder.obj");
 		Objects[10].Prepare();
-		Objects[10].setPosition(0.0, 2.0, -3.0);
+		Objects[10].setPosition(0.0f, 2.0f, -3.0f);
 
 		Objects[11] = OBJECT(2, "3dmodels//cylinder.obj");
 		Objects[11].Prepare();
-		Objects[11].setPosition(0.0, -1.0, -3.0);
+		Objects[11].setPosition(0.0f, -1.0f, -3.0f);
 
 		Objects[12] = OBJECT(3, "3dmodels//cylinder.obj");
 		Objects[12].Prepare();
-		Objects[12].setPosition(0.0, -4.0, -3.0);
+		Objects[12].setPosition(0.0f, -4.0f, -3.0f);
 
 		Objects[2].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[3].setCubeMapTexture(Skybox.getCubeMapTexture());
@@ -1284,34 +1332,34 @@ public:
 
 		ObjectsMirror[0] = OBJECT(0, "3dmodels//cube.obj");
 		ObjectsMirror[0].Prepare();
-		ObjectsMirror[0].setSolidColor(0.9, 0.0, 0.5);
-		ObjectsMirror[0].setPosition(0.0, 0.0, 10.0);
+		ObjectsMirror[0].setSolidColor(0.9f, 0.0f, 0.5f);
+		ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
 
 		ObjectsMirror[1] = OBJECT(1, "3dmodels//cube.obj");
 		ObjectsMirror[1].Prepare();
-		ObjectsMirror[1].setSolidColor(1.0, 0.6, 0.5);
-		ObjectsMirror[1].setPosition(0.0, 0.0, -10.0);
+		//ObjectsMirror[1].setSolidColor(1.0f, 0.6f, 0.5f);
+		ObjectsMirror[1].setPosition(0.0f, 0.0f, -10.0f);
 
 		ObjectsMirror[2] = OBJECT(0, "3dmodels//cube.obj");
 		ObjectsMirror[2].Prepare();
-		ObjectsMirror[2].setSolidColor(0.3, 0.8, 0.5);
-		ObjectsMirror[2].setPosition(5.0, 0.0, 0.0);
+		ObjectsMirror[2].setSolidColor(0.3f, 0.8f, 0.5f);
+		ObjectsMirror[2].setPosition(5.0f, 0.0f, 0.0f);
 
 		ObjectsMirror[3] = OBJECT(0, "3dmodels//cube.obj");
 		ObjectsMirror[3].Prepare();
-		ObjectsMirror[3].setSolidColor(0.5, 0.0, 0.9);
-		ObjectsMirror[3].setPosition(-5.0, 0.0, 0.0);
+		ObjectsMirror[3].setSolidColor(0.5f, 0.0f, 0.9f);
+		ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
 
 		ObjectsMirror[4] = OBJECT(0, "3dmodels//cube.obj");
 		ObjectsMirror[4].Prepare();
-		ObjectsMirror[4].setSolidColor(0.1, 0.3, 0.5);
-		ObjectsMirror[4].setPosition(0.0, 15.0, 0.0);
+		ObjectsMirror[4].setSolidColor(0.1f, 0.3f, 0.5f);
+		ObjectsMirror[4].setPosition(0.0f, 15.0f, 0.0f);
 
 		ObjectsMirror[5] = OBJECT(0, "3dmodels//cube.obj");
 		ObjectsMirror[5].Prepare();
-		ObjectsMirror[5].setSolidColor(0.5, 0.8, 0.9);
-		ObjectsMirror[5].setScale(2.0);
-		ObjectsMirror[5].setPosition(0.0, -15.0, 0.0);
+		ObjectsMirror[5].setSolidColor(0.5f, 0.8f, 0.9f);
+		ObjectsMirror[5].setScale(2.0f);
+		ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
 
 		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere.obj");
 		ObjectsMirror[6].Prepare();
@@ -1337,9 +1385,10 @@ public:
 	/* Рендеринг сцены */
 	void Render()
 	{
-		CameraPos = Camera.ComputeViewMatrix(window, CameraMode);
+		CameraPosition = Camera.ComputeViewMatrix(window, CameraMode);
 		ProjectionMatrix = Camera.getProjectionMatrix();
 		ViewMatrix = Camera.getViewMatrix();
+		ViewMatrixAxes = Camera.getViewMatrixAxes();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1347,12 +1396,12 @@ public:
 		{
 			for (int i = 0; i < ObjectsCountMirror; i++)
 			{
-				if (ObjectsMirror[i].getMaterial() == 3) ObjectsMirror[i].setCubeMapTexture(MakeCubemap(i, CameraPos, ViewMatrix));
+				if (ObjectsMirror[i].getMaterial() == 3) ObjectsMirror[i].setCubeMapTexture(MakeCubemap(i, CameraPosition, ViewMatrix));
 			}
 
 			for (int i = 0; i < ObjectsCountMirror; i++)
 			{
-				ObjectsMirror[i].Render(CameraPos, ProjectionMatrix, ViewMatrix);
+				ObjectsMirror[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 				if (ObjectsMirror[i].getMaterial() == 3)
 				{
 					GLuint tex = ObjectsMirror[i].getCubeMapTexture();
@@ -1361,62 +1410,66 @@ public:
 			}
 
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
-			Axes.RenderAxes(ViewMatrix);
+			Axes.RenderAxes(ViewMatrixAxes);
 					
 			if (!StopRotations)
 			{
 				Position = ObjectsMirror[0].getPosition();
-				NewPosition = vec3(10.0 * cos(radians(Angle)), 0.0, 10.0 * sin(radians(Angle)));
+				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				NewPosition = vec3(Radius * cos(radians(Angle)), 0.0f, Radius * sin(radians(Angle)));
 				ObjectsMirror[0].setPosition(NewPosition.x, Position.y, NewPosition.z);
 
 				Position = ObjectsMirror[1].getPosition();
-				NewPosition = vec3(-10.0 * cos(radians(Angle)), 0.0, -10.0 * sin(radians(Angle)));
+				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				NewPosition = vec3(-Radius * cos(radians(Angle)), 0.0f, -Radius * sin(radians(Angle)));
 				ObjectsMirror[1].setPosition(NewPosition.x, Position.y, NewPosition.z);
 
-				ObjectsMirror[2].setRotation(CubeAngle, vec3(0.0, 1.0, 1.0));
-				ObjectsMirror[3].setRotation(-CubeAngle, vec3(0.0, 1.0, 1.0));
+				ObjectsMirror[2].setRotation(CubeAngle, "YZ");
+				ObjectsMirror[3].setRotation(-CubeAngle, "XZ");
 
 				Position = ObjectsMirror[4].getPosition();
-				NewPosition = vec3(15.0 * cos(radians(Angle2)), 15.0 * sin(radians(Angle2)), 0.0);
+				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				NewPosition = vec3(Radius * cos(radians(Angle2)), Radius * sin(radians(Angle2)), 0.0f);
 				ObjectsMirror[4].setPosition(NewPosition.x, NewPosition.y, Position.z);
 
 				Position = ObjectsMirror[5].getPosition();
-				NewPosition = vec3(-15.0 * cos(radians(Angle2)), -15.0 * sin(radians(Angle2)), 0.0);
+				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				NewPosition = vec3(-Radius * cos(radians(Angle2)), -Radius * sin(radians(Angle2)), 0.0f);
 				ObjectsMirror[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
 
 				Angle += AngleDelta;
 				Angle2 += AngleDelta2;
-				if (Angle > 360) Angle = 0.0;
-				if (Angle2 > 360) Angle2 = 0.0;
+				if (Angle > 360.0f) Angle = 0.0f;
+				if (Angle2 > 360.0f) Angle2 = 0.0f;
 			}
 		}
 		else
 		{
 			for (int i = 0; i < ObjectsCount; i++)
 			{
-				Objects[i].Render(CameraPos, ProjectionMatrix, ViewMatrix);
+				Objects[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
-			Axes.RenderAxes(ViewMatrix);
+			Axes.RenderAxes(ViewMatrixAxes);
 
 			if (!StopRotations)
 			{
-				Objects[0].setRotation(-CubeAngle, vec3(0.0, 1.0, 1.0));
-				Objects[1].setRotation(CubeAngle, vec3(1.0, 1.0, 0.0));
-				Objects[2].setRotation(-CubeAngle, vec3(1.0, 0.0, 0.0));
-				Objects[3].setRotation(CubeAngle, vec3(1.0, 0.0, 0.0));
+				Objects[0].setRotation(-CubeAngle, "YZ");
+				Objects[1].setRotation(CubeAngle, "XY");
+				Objects[2].setRotation(-CubeAngle, "X");
+				Objects[3].setRotation(CubeAngle, "X");
 
 				Objects[4].setScale(SpheresSize);
 				Objects[5].setScale(SpheresSize);
 				Objects[6].setScale(SpheresSize);
 				Objects[7].setScale(SpheresSize);
 
-				Objects[8].setRotation(-CylinderAngle, vec3(0.0, 1.0, 0.0));
-				Objects[9].setRotation(CylinderAngle, vec3(0.0, 1.0, 0.0));
-				Objects[10].setRotation(-CylinderAngle, vec3(0.0, 1.0, 0.0));
-				Objects[11].setRotation(CylinderAngle, vec3(0.0, 1.0, 0.0));
-				Objects[12].setRotation(-CylinderAngle, vec3(0.0, 1.0, 0.0));
+				Objects[8].setRotation(-CylinderAngle, "Y");
+				Objects[9].setRotation(CylinderAngle, "Y");
+				Objects[10].setRotation(-CylinderAngle, "Y");
+				Objects[11].setRotation(CylinderAngle, "Y");
+				Objects[12].setRotation(-CylinderAngle, "Y");
 
 				if ((SpheresSize > SpheresSizeMin) && SphereDecrease) SpheresSize -= SpheresSizeDelta;
 				else

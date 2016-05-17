@@ -12,7 +12,7 @@ uniform mat4 V;
 
 void main()
 {		
-	gl_Position =  (P * V * vec4(vertexPosition, 1.0)).xyww;
+	gl_Position =  (P * V * vec4(vertexPosition, 1.0f)).xyww;
 	TexCoords = vertexPosition;
 }
 
