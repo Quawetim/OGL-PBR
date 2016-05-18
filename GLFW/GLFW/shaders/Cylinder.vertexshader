@@ -14,7 +14,7 @@ out vec3 LightDirection_cameraspace;
 out vec3 LightDirection_tangentspace;
 out vec3 EyeDirection_tangentspace;
 
-uniform mat4 MVP;
+uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
 uniform mat3 MV3x3;
@@ -23,7 +23,7 @@ uniform vec3 LightPosition_worldspace;
 void main()
 {	
 	// Output position of the vertex, in clip (object) space : MVP * position
-	gl_Position =  MVP * vec4(vertexPosition_modelspace, 1.0f);
+	gl_Position =  P * V * M * vec4(vertexPosition_modelspace, 1.0f);
 	
 	// Position of vertex, in worldspace : M * position
 	Position_worldspace = (M * vec4(vertexPosition_modelspace, 1.0f)).xyz;

@@ -47,6 +47,7 @@ void error_callback(int error, const char* description)
 /* Обработка клавиатуры */
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+	static int PrevCamera;
 	/* Клавиши для выхода из приложения */
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
@@ -60,7 +61,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 
 	/* Включение камеры №3 */
-	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) CameraMode = 3;
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
+	{
+		if (CameraMode != 3)
+		{
+			PrevCamera = CameraMode;
+			CameraMode = 3;
+		}
+		else CameraMode = PrevCamera;
+	}
 
 	/* Переключение отображения полигональной сетки */
 	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
@@ -78,7 +87,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 
 	/* Переключение примеров работы */
-	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
 	{
 		if (MirrorExample)
 		{
@@ -91,7 +100,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 
 	/* Включение/отключение вращений */
-	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
 	{
 		if (StopRotations)
 		{
@@ -104,11 +113,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
+/* Обработка кнопок мышки */
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (glfwGetKey(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) FOV = 90.0f;
 }
 
+/* Обработка колёсика мышки */
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	if (yoffset > 0)
@@ -347,12 +358,12 @@ private:
 	GLuint VAO;
 
 	/* ModelMatrix - матрица модели */
-	mat4 ModelMatrix = mat4(1.0f), ModelViewMatrix, MVP;
+	mat4 ModelMatrix = mat4(1.0f);
 	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
 	GLuint ShaderID, CameraPositionID, LightID, UserSolidColorID, RefractiveIndexID;
-	GLuint MatrixID, ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
+	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
 	GLuint DiffuseTexture, SpecularTexture, NormalTexture, CubeMapTexture;
@@ -360,7 +371,7 @@ private:
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
 	/* UserSolidColor - пользовательский цвет объекта */
-	vec3 UserSolidColor;
+	vec3 UserSolidColor, LightPosition;
 	vector<vec3> vertices, normals, tangents, bitangents;
 	vector<vec2> uvs;
 	vector<unsigned short> indices;
@@ -369,8 +380,9 @@ private:
 	void PrepareSolidColor()
 	{
 		LoadShaders("shaders//SolidColor.vertexshader", "shaders//SolidColor.fragmentshader");
-
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		UserSolidColorID = glGetUniformLocation(ShaderID, "UserColor");
 
 		glGenVertexArrays(1, &VAO);
@@ -392,9 +404,9 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 		glUniform3f(UserSolidColorID, UserSolidColor.x, UserSolidColor.y, UserSolidColor.z);
 
 		glBindVertexArray(VAO);
@@ -407,7 +419,9 @@ private:
 	{
 		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
 
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		UserSolidColorID = glGetUniformLocation(ShaderID, "userColor");
 
 		float *colorbuffer_data = new float[vertices.size() * sizeof(vec3) * 3];
@@ -453,9 +467,9 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
@@ -465,9 +479,9 @@ private:
 	/* Подготовка данных для стекла/зеркала */
 	void PrepareReflectionRefraction()
 	{
-		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
-		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");	
 		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
 		RefractiveIndexID = glGetUniformLocation(ShaderID, "RefractiveIndex");
 
@@ -498,9 +512,9 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));			
 		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
 		glUniform1f(RefractiveIndexID, RefractiveIndex);
 
@@ -515,19 +529,18 @@ private:
 	{
 		LoadShaders("shaders//Cylinder.vertexshader", "shaders//Cylinder.fragmentshader");
 
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		ModelView3x3MatrixID = glGetUniformLocation(ShaderID, "MV3x3");
-
-		DiffuseTexture = LoadDDS("textures//diffuse.DDS");
-		NormalTexture = LoadBMP("textures//normal.bmp");
-		SpecularTexture = LoadDDS("textures//specular.DDS");
-
 		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
 		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
 		SpecularTextureID = glGetUniformLocation(ShaderID, "SpecularTexture");
 		LightID = glGetUniformLocation(ShaderID, "LightPosition_worldspace");
+
+		DiffuseTexture = LoadDDS("textures//diffuse.DDS");
+		NormalTexture = LoadBMP("textures//normal.bmp");
+		SpecularTexture = LoadDDS("textures//specular.DDS");	
 
 		ComputeTBT(vertices, uvs, normals, tangents, bitangents);
 
@@ -587,17 +600,14 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		ModelViewMatrix = ViewMatrix * ModelMatrix;
-		ModelView3x3Matrix = mat3(ModelViewMatrix);
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+		ModelView3x3Matrix = mat3(ViewMatrix * ModelMatrix);
 
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));	
 		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
 
-		vec3 LightPos = vec3(0.0f, -7.0f, 0.0f);
-		glUniform3f(LightID, LightPos.x, LightPos.y, LightPos.z);
+		glUniform3f(LightID, LightPosition.x, LightPosition.y, LightPosition.z);
 
 		glBindVertexArray(VAO);
 
@@ -1025,11 +1035,11 @@ public:
 	}
 
 	/* Задаёт позицию объекта */
-	void setPosition(float X, float Y, float Z) 
+	void setPosition(float x, float y, float z) 
 	{ 
 		float scale = getScale();
 		ModelMatrix = mat4(1.0);
-		ModelMatrix *= translate(vec3(X, Y, Z)); 
+		ModelMatrix *= translate(vec3(x, y, z)); 
 		ModelMatrix[0].x = scale;
 		ModelMatrix[1].y = scale;
 		ModelMatrix[2].z = scale;
@@ -1039,12 +1049,16 @@ public:
 	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
 	/* Задаёт сплошной цвет объекта */
-	void setSolidColor(float R, float G, float B)
-	{
-		UserSolidColor.x = R;
-		UserSolidColor.y = G;
-		UserSolidColor.z = B;
-	}
+	void setSolidColor(float r, float g, float b) { UserSolidColor = vec3(r, g, b); }
+
+	/* Возвращает сплошной цвет объекта */
+	vec3 getSolidColor() { return UserSolidColor; }
+
+	/* Задаёт позицию источника света */
+	void setLightPosition(float x, float y, float z) { LightPosition = vec3(x, y, z); }
+
+	/* Возвращает позицию источника света */
+	vec3 getLightPosition() { return LightPosition; }
 
 	/* Выполняет инициализацию объекта */
 	void Prepare()
@@ -1126,7 +1140,9 @@ public:
 	{
 		LoadShaders("shaders//GradientColor.vertexshader", "shaders//GradientColor.fragmentshader");
 
-		MatrixID = glGetUniformLocation(ShaderID, "MVP");
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 
 		static const GLfloat vertexbuffer_data[] = {
 			0.0f, 0.0f, 0.0f,
@@ -1202,9 +1218,9 @@ public:
 		glViewport(5, 5, 60, 60);
 
 		mat4 ProjectionMatrix = perspective(radians(45.0f), 1.0f, 0.1f, 100.0f);
-		MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, value_ptr(MVP));
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 
 		glBindVertexArray(VAO);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -1495,6 +1511,7 @@ public:
 		Objects[8] = OBJECT(4, "3dmodels//cylinder.obj");
 		Objects[8].Prepare();
 		Objects[8].setPosition(0.0f, -7.0f, -3.0f);
+		Objects[8].setLightPosition(0.0f, -7.0f, 0.0f);
 
 		Objects[9] = OBJECT(0, "3dmodels//cylinder.obj");
 		Objects[9].Prepare();
@@ -1559,6 +1576,8 @@ public:
 
 		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere.obj");
 		ObjectsMirror[6].Prepare();
+		ObjectsMirror[6].setRefractiveIndex(1.1f);
+		ObjectsMirror[6].setScale(2.0f);
 	};
 
 	/* Деструктор, удаляет шейдеры */
@@ -1592,13 +1611,15 @@ public:
 		{
 			for (int i = 0; i < ObjectsCountMirror; i++)
 			{
-				if (ObjectsMirror[i].getMaterial() == 3) ObjectsMirror[i].setCubeMapTexture(MakeCubemap(i, CameraPosition, ViewMatrix));
+				int mat = ObjectsMirror[i].getMaterial();
+				if ((mat == 2) || (mat == 3)) ObjectsMirror[i].setCubeMapTexture(MakeCubemap(i, CameraPosition, ViewMatrix));
 			}
 
 			for (int i = 0; i < ObjectsCountMirror; i++)
 			{
 				ObjectsMirror[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
-				if (ObjectsMirror[i].getMaterial() == 3)
+				int mat = ObjectsMirror[i].getMaterial();
+				if ((mat == 2) || (mat == 3))
 				{
 					GLuint tex = ObjectsMirror[i].getCubeMapTexture();
 					glDeleteTextures(1, &tex);
