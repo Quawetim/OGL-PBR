@@ -43,50 +43,50 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\Text.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Text.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Cylinder.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Cylinder.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SkyBox.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SkyBox.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Reflection.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Reflection.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Refraction.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Refraction.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SolidColor.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SolidColor.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\GradientColor.fragmentshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\GradientColor.vertexshader">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
     <None Include="..\..\README.md">
       <Filter>Файлы исходного кода</Filter>
+    </None>
+    <None Include="shaders\SolidColor.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\SolidColor.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Cylinder.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Cylinder.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\GradientColor.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\GradientColor.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Reflection.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Reflection.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Refraction.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Refraction.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\SkyBox.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\SkyBox.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Text.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\Text.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

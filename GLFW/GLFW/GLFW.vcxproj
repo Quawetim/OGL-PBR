@@ -159,20 +159,20 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
-    <None Include="shaders\SolidColor.fragmentshader" />
-    <None Include="shaders\SolidColor.vertexshader" />
-    <None Include="shaders\Reflection.fragmentshader" />
-    <None Include="shaders\Reflection.vertexshader" />
-    <None Include="shaders\Refraction.fragmentshader" />
-    <None Include="shaders\Refraction.vertexshader" />
-    <None Include="shaders\SkyBox.fragmentshader" />
-    <None Include="shaders\SkyBox.vertexshader" />
-    <None Include="shaders\GradientColor.fragmentshader" />
-    <None Include="shaders\GradientColor.vertexshader" />
-    <None Include="shaders\Text.fragmentshader" />
-    <None Include="shaders\Text.vertexshader" />
-    <None Include="shaders\Cylinder.fragmentshader" />
-    <None Include="shaders\Cylinder.vertexshader" />
+    <None Include="shaders\SolidColor.fs" />
+    <None Include="shaders\SolidColor.vs" />
+    <None Include="shaders\Reflection.fs" />
+    <None Include="shaders\Reflection.vs" />
+    <None Include="shaders\Refraction.fs" />
+    <None Include="shaders\Refraction.vs" />
+    <None Include="shaders\SkyBox.fs" />
+    <None Include="shaders\SkyBox.vs" />
+    <None Include="shaders\GradientColor.fs" />
+    <None Include="shaders\GradientColor.vs" />
+    <None Include="shaders\Text.fs" />
+    <None Include="shaders\Text.vs" />
+    <None Include="shaders\Cylinder.fs" />
+    <None Include="shaders\Cylinder.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

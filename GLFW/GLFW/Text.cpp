@@ -121,7 +121,7 @@ void InitText(const char *TexturePath)
 	glGenBuffers(1, &TextVertexBufferID);
 	glGenBuffers(1, &TextUVBufferID);
 
-	TextShaderID = LoadShaders("shaders//Text.vertexshader", "shaders//Text.fragmentshader");
+	TextShaderID = LoadShaders("shaders//Text.vs", "shaders//Text.fs");
 
 	TextID = glGetUniformLocation(TextShaderID, "Texture");
 }
