@@ -20,7 +20,7 @@ struct pointLight
 	float Quadratic;
 };
 
-in vec3 Normal;
+in vec3 FragmentNormal;
 in vec3 FragmentPosition;
 in vec3 FragmentColor;
 
@@ -59,10 +59,10 @@ void main()
 {	
 	if (LightsCount > 0)
 	{	
-		vec3 Norm = normalize(Normal);
+		vec3 Normal = normalize(FragmentNormal);
 		vec3 ViewDirection = normalize(CameraPosition - FragmentPosition);
 
-		for (int i = 0; i < LightsCount && i <= MAX_POINT_LIGHTS; i++)  Color += ComputePointLight(i, Norm, FragmentPosition, ViewDirection);
+		for (int i = 0; i < LightsCount && i <= MAX_POINT_LIGHTS; i++)  Color += ComputePointLight(i, Normal, FragmentPosition, ViewDirection);
 	}
 	else
 	{

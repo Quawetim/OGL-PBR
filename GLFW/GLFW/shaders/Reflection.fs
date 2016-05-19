@@ -1,15 +1,17 @@
 #version 330 core
-in vec3 Normal;
-in vec3 Position;
+
+in vec3 FragmentNormal;
+in vec3 FragmentPosition;
 
 out vec4 Color;
 
-uniform vec3 CameraPosition;
 uniform samplerCube SkyBox;
+uniform vec3 CameraPosition;
 
 void main()
-{             
-    vec3 I = normalize(Position - CameraPosition);
-    vec3 R = reflect(I, normalize(Normal));
-    Color = texture(SkyBox, R);
+{      
+	vec3 I = normalize(FragmentPosition - CameraPosition);
+	vec3 R = reflect(I, normalize(FragmentNormal));  
+    
+	Color = texture(SkyBox, R);
 }

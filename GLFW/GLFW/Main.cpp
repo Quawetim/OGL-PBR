@@ -34,7 +34,7 @@ int WindowWidth = 1280, WindowHeight = 800;
 int CameraMode = 2;
 int GenTextureSize = 512;
 float FOV = 90.0f;
-float SkyBoxSide = 500.0f;
+float SkyBoxSide = 100.0f;
 bool Wireframe = false;
 bool StopRotations = true;
 bool ShowLights = false;
@@ -318,7 +318,7 @@ public:
 		case 2:
 		{
 			static vec3 Position;
-			static float HorizontalAngle = radians(0.0f), VerticalAngle = radians(-90.0f);
+			static float HorizontalAngle = radians(30.0f), VerticalAngle = radians(-90.0f);
 
 			if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
 			if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
@@ -408,8 +408,10 @@ private:
 	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
-	GLuint ShaderID, CameraPositionID, LightID, LightsCountID, RefractiveIndexID;
 	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
+	GLuint MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID;
+	GLuint *PointLightPositionsIDs, *PointLightColorsIDs, *PointLightPowersIDs, *PointLightConstantsIDs, *PointLightLinearsIDs, *PointLightQuadraticsIDs;
+	GLuint ShaderID, CameraPositionID, LightID, LightsCountID, RefractiveIndexID;	
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
 	GLuint DiffuseTexture, SpecularTexture, NormalTexture, CubeMapTexture;
@@ -426,6 +428,40 @@ private:
 	void PrepareSolidColor()
 	{
 		LoadShaders("shaders//SolidColor.vs", "shaders//SolidColor.fs");
+
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
+		LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
+		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		MaterialAmbientColorID = glGetUniformLocation(ShaderID, "Material.AmbientColor");
+		MaterialDiffuseColorID = glGetUniformLocation(ShaderID, "Material.DiffuseColor");
+		MaterialSpecularColorID = glGetUniformLocation(ShaderID, "Material.SpecularColor");
+		MaterialShineID = glGetUniformLocation(ShaderID, "Material.Shine");
+
+		PointLightPositionsIDs = new GLuint[LightsCount];
+		PointLightColorsIDs = new GLuint[LightsCount];
+		PointLightPowersIDs = new GLuint[LightsCount];
+		PointLightConstantsIDs = new GLuint[LightsCount];
+		PointLightLinearsIDs = new GLuint[LightsCount];
+		PointLightQuadraticsIDs = new GLuint[LightsCount];
+
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[30];
+			sprintf(buf, "PointLight[%d].Position", i);
+			PointLightPositionsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Color", i);
+			PointLightColorsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Power", i);
+			PointLightPowersIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			PointLightConstantsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			PointLightLinearsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			PointLightQuadraticsIDs[i] = glGetUniformLocation(ShaderID, buf);
+		}
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
@@ -452,30 +488,30 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, value_ptr(ProjectionMatrix));
-		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "V"), 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "M"), 1, GL_FALSE, value_ptr(ModelMatrix));
-		glUniform3f(glGetUniformLocation(ShaderID, "Material.AmbientColor"), Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
-		glUniform3f(glGetUniformLocation(ShaderID, "Material.DiffuseColor"), Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
-		glUniform3f(glGetUniformLocation(ShaderID, "Material.SpecularColor"), Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
-		glUniform1f(glGetUniformLocation(ShaderID, "Material.Shine"), Material.Shine);
-		glUniform1i(glGetUniformLocation(ShaderID, "LightsCount"), LightsCount);
-		glUniform3f(glGetUniformLocation(ShaderID, "CameraPosition"), Camera.x, Camera.y, Camera.z);
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniform3f(MaterialAmbientColorID, Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
+		glUniform3f(MaterialDiffuseColorID, Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
+		glUniform3f(MaterialSpecularColorID, Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
+		glUniform1f(MaterialShineID, Material.Shine);
+		glUniform1i(LightsCountID, LightsCount);
+		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
 		for (int i = 0; i < LightsCount; i++)
 		{
 			char buf[30];
 			sprintf(buf, "PointLight[%d].Position", i);
-			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
+			glUniform3f(PointLightPositionsIDs[i], PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
 			sprintf(buf, "PointLight[%d].Color", i);
-			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
+			glUniform3f(PointLightColorsIDs[i], PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
 			sprintf(buf, "PointLight[%d].Power", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Power);
+			glUniform1f(PointLightPowersIDs[i], PointLight[i].Power);
 			sprintf(buf, "PointLight[%d].Constant", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Constant);
+			glUniform1f(PointLightConstantsIDs[i], PointLight[i].Constant);
 			sprintf(buf, "PointLight[%d].Linear", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Linear);
+			glUniform1f(PointLightLinearsIDs[i], PointLight[i].Linear);
 			sprintf(buf, "PointLight[%d].Quadratic", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Quadratic);
+			glUniform1f(PointLightQuadraticsIDs[i], PointLight[i].Quadratic);
 		}
 
 		glBindVertexArray(VAO);
@@ -504,6 +540,40 @@ private:
 				colorbuffer_data[i + 1] = 0.16f;
 				colorbuffer_data[i + 2] = 0.71f;
 			}
+		}
+
+		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
+		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");	
+		LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
+		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		MaterialAmbientColorID = glGetUniformLocation(ShaderID, "Material.AmbientColor");
+		//MaterialDiffuseColorID = glGetUniformLocation(ShaderID, "Material.DiffuseColor");
+		MaterialSpecularColorID = glGetUniformLocation(ShaderID, "Material.SpecularColor");
+		MaterialShineID = glGetUniformLocation(ShaderID, "Material.Shine");
+
+		PointLightPositionsIDs = new GLuint[LightsCount];
+		PointLightColorsIDs = new GLuint[LightsCount];
+		PointLightPowersIDs = new GLuint[LightsCount];
+		PointLightConstantsIDs = new GLuint[LightsCount];
+		PointLightLinearsIDs = new GLuint[LightsCount];
+		PointLightQuadraticsIDs = new GLuint[LightsCount];
+
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[30];
+			sprintf(buf, "PointLight[%d].Position", i);
+			PointLightPositionsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Color", i);
+			PointLightColorsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Power", i);
+			PointLightPowersIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			PointLightConstantsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			PointLightLinearsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			PointLightQuadraticsIDs[i] = glGetUniformLocation(ShaderID, buf);
 		}
 
 		glGenVertexArrays(1, &VAO);
@@ -537,30 +607,30 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, value_ptr(ProjectionMatrix));
-		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "V"), 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "M"), 1, GL_FALSE, value_ptr(ModelMatrix));
-		glUniform3f(glGetUniformLocation(ShaderID, "Material.AmbientColor"), Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
-		//glUniform3f(glGetUniformLocation(ShaderID, "Material.DiffuseColor"), Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
-		glUniform3f(glGetUniformLocation(ShaderID, "Material.SpecularColor"), Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
-		glUniform1f(glGetUniformLocation(ShaderID, "Material.Shine"), Material.Shine);
-		glUniform1i(glGetUniformLocation(ShaderID, "LightsCount"), LightsCount);
-		glUniform3f(glGetUniformLocation(ShaderID, "CameraPosition"), Camera.x, Camera.y, Camera.z);
+		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniform3f(MaterialAmbientColorID, Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
+		//glUniform3f(MaterialDiffuseColorID, Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
+		glUniform3f(MaterialSpecularColorID, Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
+		glUniform1f(MaterialShineID, Material.Shine);
+		glUniform1i(LightsCountID, LightsCount);
+		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
 		for (int i = 0; i < LightsCount; i++)
 		{
 			char buf[30];
 			sprintf(buf, "PointLight[%d].Position", i);
-			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
+			glUniform3f(PointLightPositionsIDs[i], PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
 			sprintf(buf, "PointLight[%d].Color", i);
-			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
+			glUniform3f(PointLightColorsIDs[i], PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
 			sprintf(buf, "PointLight[%d].Power", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Power);
+			glUniform1f(PointLightPowersIDs[i], PointLight[i].Power);
 			sprintf(buf, "PointLight[%d].Constant", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Constant);
+			glUniform1f(PointLightConstantsIDs[i], PointLight[i].Constant);
 			sprintf(buf, "PointLight[%d].Linear", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Linear);
+			glUniform1f(PointLightLinearsIDs[i], PointLight[i].Linear);
 			sprintf(buf, "PointLight[%d].Quadratic", i);
-			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Quadratic);
+			glUniform1f(PointLightQuadraticsIDs[i], PointLight[i].Quadratic);
 		}
 
 		glBindVertexArray(VAO);
@@ -1020,6 +1090,12 @@ public:
 	/* Пустой конструктор для Скайбокса и координтных осей */
 	OBJECT() {};
 
+	OBJECT(int lightscount) 
+	{ 
+		LightsCount = lightscount; 
+		PointLight = new pointLight[LightsCount];
+	};
+
 	/* Конструктор для объектов*/
 	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр" */
 	OBJECT(int materialID, const char *path)
@@ -1464,15 +1540,71 @@ public:
 			SkyBoxSide, -SkyBoxSide,  SkyBoxSide
 		};
 
+		GLfloat skyboxVerticesNormals[] = {
+			/* Право */
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,	//или -
+			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
+			SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
+
+			/* Зад */
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 1.0f, 0.0f, 0.0f,
+
+			/* Перед */
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxSide, -SkyBoxSide,  SkyBoxSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxSide,  SkyBoxSide, -SkyBoxSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, -1.0f, 0.0f, 0.0f,
+
+			/* Лево */
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+			SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+
+			/* Верх */
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, -1.0f, 0.0f,
+			SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, -1.0f, 0.0f,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, -1.0f, 0.0f,
+			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, -1.0f, 0.0f,
+			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, -1.0f, 0.0f,
+			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, -1.0f, 0.0f,
+
+			/* Низ */
+			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 1.0f, 0.0f,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 1.0f, 0.0f,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 1.0f, 0.0f,
+			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 1.0f, 0.0f,
+			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 1.0f, 0.0f,
+			SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 1.0f, 0.0f,
+		};
+
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
 
 		glGenBuffers(1, &vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVerticesNormals), skyboxVerticesNormals, GL_STATIC_DRAW);
+
+		//glEnableVertexAttribArray(0);
+		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 		glBindVertexArray(0);
 
 		vector<const GLchar*> faces;
@@ -1488,7 +1620,7 @@ public:
 	/* Рендеринг Скайбокса */
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
-	void RenderSkyBox(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	void RenderSkyBox(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glDepthFunc(GL_LEQUAL);
 
@@ -1496,6 +1628,24 @@ public:
 
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniform1i(glGetUniformLocation(ShaderID, "LightsCount"), LightsCount);
+		glUniform3f(glGetUniformLocation(ShaderID, "CameraPosition"), Camera.x, Camera.y, Camera.z);
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[30];
+			sprintf(buf, "PointLight[%d].Position", i);
+			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
+			sprintf(buf, "PointLight[%d].Color", i);
+			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
+			sprintf(buf, "PointLight[%d].Power", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Power);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Constant);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Linear);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Quadratic);
+		}
 
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, CubeMapTexture);
@@ -1518,7 +1668,7 @@ private:
 	bool SphereDecrease = true, SphereIncrease = false;
 	float SpheresSize = 1.0f, SpheresSizeDelta = 0.004f, SpheresSizeMin = 0.8f, SpheresSizeMax = 1.0f;
 	float CubeAngle = 3.0f, CylinderAngle = -1.0f;
-	float Radius, Angle = 90.0f, Angle2 = 90.0f, AngleDelta = 2.0f, AngleDelta2 = 5.0f;
+	float Radius, Angle = 90.0f, Angle2 = 90.0f, AngleDelta = 2.0f, AngleDelta2 = 1.0f;
 	vec3 Position, NewPosition;
 
 	/* Позиция камеры */
@@ -1632,7 +1782,7 @@ private:
 					ObjectsMirror[j].Render(camera, ProjectionMatrix, ViewMatrix);
 				}
 			}
-			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+			Skybox.RenderSkyBox(camera, ProjectionMatrix, ViewMatrix);
 		}
 		glViewport(0, 0, WindowWidth, WindowHeight);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1649,27 +1799,33 @@ public:
 		Axes = OBJECT();
 		Axes.PrepareAxes();
 
-		Skybox = OBJECT();
-		Skybox.PrepareSkyBox();
-
-		LightsCount = 2;
+		LightsCount = 3;
 		vec3 LightsPositions[] =
 		{
-			vec3(5.0f, 6.0f, 2.0f),
-			vec3(-50.0f, 6.0f, 4.0f)
+			vec3(-60.0f, 50.0f, -80.0f),
+			vec3(-60.0f, -60.0f, -80.0f),
+			vec3(60.0f, 6.0f, 60.0f)
 		};
 
 		vec3 LightsColors[] =
 		{
 			vec3(1.0f, 1.0f, 1.0f),
-			vec3(0.0f, 0.0f, 1.0f)
+			vec3(1.0f, 1.0f, 1.0f),
+			vec3(1.0f, 1.0f, 1.0f)
 		};
 
 		vec4 LightsProperties[] =
 		{
-			vec4(2.0f, 1.0f, 0.09f, 0.032f),
-			vec4(8.0f, 1.0f, 0.01f, 0.008f)
-		};
+			vec4(100.0f, 1.0f, 0.8f, 0.002f),
+			vec4(100.0f, 1.0f, 0.7f, 0.008f),
+			vec4(50.0f, 1.0f, 0.2f, 0.03f)
+		};	
+
+		Skybox = OBJECT(0);
+		Skybox.setLightsPositions(LightsPositions);
+		Skybox.setLightsColors(LightsColors);
+		Skybox.setLightsProperties(LightsProperties);
+		Skybox.PrepareSkyBox();
 
 		if (LightsCount > 0)
 		{
@@ -1880,7 +2036,7 @@ public:
 				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
-			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+			Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
 			Axes.RenderAxes(ViewMatrixAxes);
 					
 			if (!StopRotations)
@@ -1926,7 +2082,7 @@ public:
 				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
-			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
+			Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
 			Axes.RenderAxes(ViewMatrixAxes);
 
 			if (!StopRotations)
