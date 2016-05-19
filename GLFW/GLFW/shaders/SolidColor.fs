@@ -30,8 +30,9 @@ uniform vec3 CameraPosition;
 uniform int LightsCount;
 uniform pointLight PointLight[MAX_POINT_LIGHTS];
 
-vec3 ComputePointLight(vec3 position, vec3 normal, vec3 fragpos, vec3 viewdir)
+vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 {
+	vec3 position = PointLight[id].Position;
 	vec3 LightDirection = normalize(position - fragpos);
 
 	float diff = max(dot(normal, LightDirection), 0.0f);
@@ -40,11 +41,11 @@ vec3 ComputePointLight(vec3 position, vec3 normal, vec3 fragpos, vec3 viewdir)
 	float spec = pow(max(dot(viewdir, ReflectionDirection), 0.0f), Material.Shine);
 	float Distance = length(position - fragpos);
 
-	float Attenuation = 1.0f / (1.0f + 0.09f * Distance + 0.032f * (Distance * Distance));
+	float Attenuation = 1.0f / (PointLight[id].Constant + PointLight[id].Linear * Distance + PointLight[id].Quadratic * (Distance * Distance));
 	
 	vec3 Ambient = Material.AmbientColor * Material.DiffuseColor;
-	vec3 Diffuse =  Material.DiffuseColor * diff;
-	vec3 Specular = Material.SpecularColor * spec;
+	vec3 Diffuse = PointLight[id].Color * PointLight[id].Power * Material.DiffuseColor * diff;
+	vec3 Specular = PointLight[id].Color * PointLight[id].Power * Material.SpecularColor * spec;
 
 	Ambient *= Attenuation;
 	Diffuse *= Attenuation;
@@ -60,7 +61,7 @@ void main()
 		vec3 Norm = normalize(Normal);
 		vec3 ViewDirection = normalize(CameraPosition - FragmentPosition);
 
-		for (int i = 0; i < LightsCount && i <= MAX_POINT_LIGHTS; i++) Color += ComputePointLight(PointLight[i].Position, Norm, FragmentPosition, ViewDirection);
+		for (int i = 0; i < LightsCount && i <= MAX_POINT_LIGHTS; i++) Color += ComputePointLight(i, Norm, FragmentPosition, ViewDirection);
 	}
 	else
 	{

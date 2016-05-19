@@ -140,12 +140,12 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	if (yoffset > 0)
 	{
-		if (FOV > 10.0f) FOV -= yoffset * 10.0f;
+		if (FOV > 10.0f) FOV -= (float)yoffset * 10.0f;
 		else FOV = 10.0f;
 	}
 	else
 	{
-		if (FOV < 90.0f) FOV -= yoffset * 10.0f;
+		if (FOV < 90.0f) FOV -= (float)yoffset * 10.0f;
 		else FOV = 90.0f;
 	}
 }
@@ -291,69 +291,69 @@ public:
 		switch (CameraMode)
 		{
 			/* От первого лица */
-			case 1:
-			{
-				static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
-				static float HorizontalAngle = radians(180.0f), VerticalAngle = radians(0.0f);
+		case 1:
+		{
+			static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
+			static float HorizontalAngle = radians(180.0f), VerticalAngle = radians(0.0f);
 
-				if (degrees(VerticalAngle) > 90.0f) VerticalAngle = radians(89.9f);
-				if (degrees(VerticalAngle) < -90.0f) VerticalAngle = radians(-89.9f);
+			if (degrees(VerticalAngle) > 90.0f) VerticalAngle = radians(89.9f);
+			if (degrees(VerticalAngle) < -90.0f) VerticalAngle = radians(-89.9f);
 
-				Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));
-				Right = cross(Direction, CameraUp);
+			Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));
+			Right = cross(Direction, CameraUp);
 
-				CheckMove(window, Position, Direction, Right);
+			CheckMove(window, Position, Direction, Right);
 
-				ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
+			ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
 
-				ViewMatrixAxes = lookAt(vec3(-5.0f * cos(HorizontalAngle), Position.y, 5.0f * sin(HorizontalAngle)), CameraLookTo, CameraUp);
+			ViewMatrixAxes = lookAt(vec3(-5.0f * cos(HorizontalAngle), Position.y, 5.0f * sin(HorizontalAngle)), CameraLookTo, CameraUp);
 
-				CameraPosition = Position;
+			CameraPosition = Position;
 
-				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
-				break;
-			}
-			/* От третьего лица */
-			case 2:
-			{
-				static vec3 Position;
-				static float HorizontalAngle = radians(0.0f), VerticalAngle = radians(-90.0f);
+			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+			break;
+		}
+		/* От третьего лица */
+		case 2:
+		{
+			static vec3 Position;
+			static float HorizontalAngle = radians(0.0f), VerticalAngle = radians(-90.0f);
 
-				if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
-				if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
+			if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
+			if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
 
-				/* Переход из сферической системы в декартову */
-				Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
+			/* Переход из сферической системы в декартову */
+			Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
 
-				CheckMove(window);
+			CheckMove(window);
 
-				ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
+			ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
 
-				ViewMatrixAxes = lookAt(vec3(5.0f * cos(HorizontalAngle), 5.0f * cos(VerticalAngle), 5.0 * sin(HorizontalAngle)), CameraLookTo, CameraUp);
+			ViewMatrixAxes = lookAt(vec3(5.0f * cos(HorizontalAngle), 5.0f * cos(VerticalAngle), 5.0 * sin(HorizontalAngle)), CameraLookTo, CameraUp);
 
-				CameraPosition = Position;
+			CameraPosition = Position;
 
-				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
-				break;
-			}
-			/* Фиксированная */
-			case 3:
-			{
-				ViewMatrix = lookAt(CameraStaticPosition, CameraLookTo, CameraUp);
+			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+			break;
+		}
+		/* Фиксированная */
+		case 3:
+		{
+			ViewMatrix = lookAt(CameraStaticPosition, CameraLookTo, CameraUp);
 
-				ViewMatrixAxes = ViewMatrix;
+			ViewMatrixAxes = ViewMatrix;
 
-				CameraPosition = CameraStaticPosition;
-				break;
-			}
-			default:
-				break;
+			CameraPosition = CameraStaticPosition;
+			break;
+		}
+		default:
+			break;
 		}
 
 		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
-			
+
 		LastTime = CurrentTime;
 
 		return CameraPosition;
@@ -379,8 +379,10 @@ private:
 		float Shine = 8.0f;
 		float RefractiveIndex = 1.52f;
 	} Material;
+
 	/* LightsCount - число источников освещения */
 	int LightsCount = 0;	
+
 	/* PointLight - точечный источник света */
 	/* Position - позиция */
 	/* Color - цвет */
@@ -390,9 +392,9 @@ private:
 	/* Quadratic - квадратичный коэффициент затухания */
 	struct pointLight
 	{
-		vec3 Position;
+		vec3 Position = vec3(5.0f, 0.0f, 0.0f);
 		vec3 Color = vec3(1.0f, 1.0f, 1.0f);
-		float Power = 8.0f;
+		float Power = 2.0f;
 		float Constant = 1.0f;
 		float Linear = 0.09f;
 		float Quadratic = 0.032f;
@@ -464,6 +466,16 @@ private:
 			char buf[30];
 			sprintf(buf, "PointLight[%d].Position", i);
 			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
+			sprintf(buf, "PointLight[%d].Color", i);
+			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
+			sprintf(buf, "PointLight[%d].Power", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Power);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Constant);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Linear);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Quadratic);
 		}
 
 		glBindVertexArray(VAO);
@@ -475,10 +487,6 @@ private:
 	void PrepareGradientColor()
 	{
 		LoadShaders("shaders//GradientColor.vs", "shaders//GradientColor.fs");
-
-		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
-		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
-		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 
 		float *colorbuffer_data = new float[vertices.size() * sizeof(vec3) * 3];
 
@@ -523,9 +531,9 @@ private:
 	{
 		glUseProgram(ShaderID);
 
-		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, value_ptr(ProjectionMatrix));
+		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "V"), 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "M"), 1, GL_FALSE, value_ptr(ModelMatrix));
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
@@ -1160,6 +1168,51 @@ public:
 	/* Возвращает позицию источника света по его ID */
 	vec3 getLightPosition(int id) { return PointLight[id].Position; }
 
+	/* Задаёт цвет источника света по его ID */
+	void setLightColor(int id, float r, float g, float b) { PointLight[id].Color = vec3(r, g, b); }
+
+	/* Задаёт цвет источника света по его ID */
+	void setLightColor(int id, vec3 color) { PointLight[id].Color = color; }
+
+	/* Задаёт цвета всех источников света */
+	void setLightsColors(vec3 color[]) { for (int i = 0; i < LightsCount; i++) PointLight[i].Color = color[i]; }
+
+	/* Возвращает цвет источника света по его ID */
+	vec3 getLightColor(int id) { return PointLight[id].Color; }
+
+	/* Задаёт свойства источника освещения по его ID */
+	void setLightProperties(int id, float power, float constcoeff, float lincoeff, float quadcoeff) 
+	{ 
+		PointLight[id].Power = power; 
+		PointLight[id].Constant = constcoeff;
+		PointLight[id].Linear = lincoeff;
+		PointLight[id].Quadratic = quadcoeff;
+	}
+
+	/* Задаёт свойства источника освещения по его ID */
+	void setLightProperties(int id, vec4 properties)
+	{
+		PointLight[id].Power = properties.x;
+		PointLight[id].Constant = properties.y;
+		PointLight[id].Linear = properties.z;
+		PointLight[id].Quadratic = properties.w;
+	}
+
+	/* Задаёт свойства всех источников освещения */
+	void setLightsProperties(vec4 properties[])
+	{
+		for (int i = 0; i < LightsCount; i++)
+		{
+			PointLight[i].Power = properties[i].x;
+			PointLight[i].Constant = properties[i].y;
+			PointLight[i].Linear = properties[i].z;
+			PointLight[i].Quadratic = properties[i].w;
+		}
+	}
+
+	/* Возвращает свойства источника освещения по его ID */
+	vec4 getlightProperties(int id) { return vec4(PointLight[id].Power, PointLight[id].Constant, PointLight[id].Linear, PointLight[id].Quadratic); }
+
 	/* Выполняет инициализацию объекта */
 	void Prepare()
 	{
@@ -1574,8 +1627,20 @@ public:
 		LightsCount = 2;
 		vec3 LightsPositions[] =
 		{
-			vec3(5.0f, 6.0f, 3.0f),
-			vec3(-10.0f, 0.0f, 0.0f)
+			vec3(5.0f, 6.0f, 2.0f),
+			vec3(-50.0f, 6.0f, 4.0f)
+		};
+
+		vec3 LightsColors[] =
+		{
+			vec3(1.0f, 1.0f, 1.0f),
+			vec3(0.0f, 0.0f, 1.0f)
+		};
+
+		vec4 LightsProperties[] =
+		{
+			vec4(2.0f, 1.0f, 0.09f, 0.032f),
+			vec4(8.0f, 1.0f, 0.01f, 0.008f)
 		};
 
 		if (LightsCount > 0)
@@ -1585,7 +1650,7 @@ public:
 			{
 				Lights[i] = OBJECT(0, "3dmodels//sphere.obj");
 				Lights[i].Prepare();
-				Lights[i].setDiffuseColor(1.0f, 1.0f, 1.0f);
+				Lights[i].setDiffuseColor(LightsColors[i]);
 				Lights[i].setPosition(LightsPositions[i]);
 				Lights[i].setScale(0.5f);
 			}
@@ -1596,8 +1661,10 @@ public:
 
 		Objects[0] = OBJECT(0, LightsCount,"3dmodels//cube.obj");
 		Objects[0].setLightsPositions(LightsPositions);
+		Objects[0].setLightsColors(LightsColors);
+		Objects[0].setLightsProperties(LightsProperties);
 		Objects[0].Prepare();
-		//Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
+		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
 
 		Objects[1] = OBJECT(1, "3dmodels//cube.obj");
@@ -1615,6 +1682,8 @@ public:
 
 		Objects[4] = OBJECT(0, LightsCount, "3dmodels//sphere.obj");
 		Objects[4].setLightsPositions(LightsPositions);
+		Objects[4].setLightsColors(LightsColors);
+		Objects[4].setLightsProperties(LightsProperties);
 		Objects[4].Prepare();
 		Objects[4].setDiffuseColor(0.6f, 0.3f, 0.9f);
 		Objects[4].setPosition(0.0f, 6.0f, 0.0f);	
@@ -1638,6 +1707,8 @@ public:
 
 		Objects[9] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
 		Objects[9].setLightsPositions(LightsPositions);
+		Objects[9].setLightsColors(LightsColors);
+		Objects[9].setLightsProperties(LightsProperties);
 		Objects[9].Prepare();
 		Objects[9].setDiffuseColor(0.1f, 0.9f, 0.8f);
 		Objects[9].setPosition(0.0f, 5.0f, -3.0f);
@@ -1669,6 +1740,8 @@ public:
 
 		ObjectsMirror[0] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[0].setLightsPositions(LightsPositions);
+		ObjectsMirror[0].setLightsColors(LightsColors);
+		ObjectsMirror[0].setLightsProperties(LightsProperties);
 		ObjectsMirror[0].Prepare();
 		ObjectsMirror[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
@@ -1679,24 +1752,32 @@ public:
 
 		ObjectsMirror[2] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[2].setLightsPositions(LightsPositions);
+		ObjectsMirror[2].setLightsColors(LightsColors);
+		ObjectsMirror[2].setLightsProperties(LightsProperties);
 		ObjectsMirror[2].Prepare();
 		ObjectsMirror[2].setDiffuseColor(0.3f, 0.8f, 0.5f);
 		ObjectsMirror[2].setPosition(5.0f, 0.0f, 0.0f);
 
 		ObjectsMirror[3] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[3].setLightsPositions(LightsPositions);
+		ObjectsMirror[3].setLightsColors(LightsColors);
+		ObjectsMirror[3].setLightsProperties(LightsProperties);
 		ObjectsMirror[3].Prepare();
 		ObjectsMirror[3].setDiffuseColor(0.5f, 0.0f, 0.9f);
 		ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
 
 		ObjectsMirror[4] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[4].setLightsPositions(LightsPositions);
+		ObjectsMirror[4].setLightsColors(LightsColors);
+		ObjectsMirror[4].setLightsProperties(LightsProperties);
 		ObjectsMirror[4].Prepare();
 		ObjectsMirror[4].setDiffuseColor(0.1f, 0.3f, 0.5f);
 		ObjectsMirror[4].setPosition(0.0f, 15.0f, 0.0f);
 
 		ObjectsMirror[5] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[5].setLightsPositions(LightsPositions);
+		ObjectsMirror[5].setLightsColors(LightsColors);
+		ObjectsMirror[5].setLightsProperties(LightsProperties);
 		ObjectsMirror[5].Prepare();
 		ObjectsMirror[5].setDiffuseColor(0.5f, 0.8f, 0.9f);
 		ObjectsMirror[5].setScale(2.0f);
