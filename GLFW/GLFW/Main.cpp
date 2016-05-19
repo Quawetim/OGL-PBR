@@ -519,21 +519,49 @@ private:
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertices.size() * sizeof(vec3) * 3, colorbuffer_data, GL_STATIC_DRAW);
 
+		glGenBuffers(1, &normalbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
+
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 		glBindVertexArray(0);
 	}
 
 	/* Рендеринг объекта градиентного цвета */
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
-	void RenderGradientColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	void RenderGradientColor(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
 		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "P"), 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "V"), 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(ShaderID, "M"), 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniform3f(glGetUniformLocation(ShaderID, "Material.AmbientColor"), Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
+		//glUniform3f(glGetUniformLocation(ShaderID, "Material.DiffuseColor"), Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
+		glUniform3f(glGetUniformLocation(ShaderID, "Material.SpecularColor"), Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
+		glUniform1f(glGetUniformLocation(ShaderID, "Material.Shine"), Material.Shine);
+		glUniform1i(glGetUniformLocation(ShaderID, "LightsCount"), LightsCount);
+		glUniform3f(glGetUniformLocation(ShaderID, "CameraPosition"), Camera.x, Camera.y, Camera.z);
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[30];
+			sprintf(buf, "PointLight[%d].Position", i);
+			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
+			sprintf(buf, "PointLight[%d].Color", i);
+			glUniform3f(glGetUniformLocation(ShaderID, buf), PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
+			sprintf(buf, "PointLight[%d].Power", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Power);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Constant);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Linear);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			glUniform1f(glGetUniformLocation(ShaderID, buf), PointLight[i].Quadratic);
+		}
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
@@ -1265,7 +1293,7 @@ public:
 		}
 		case 1:
 		{
-			RenderGradientColor(ProjectionMatrix, ViewMatrix);
+			RenderGradientColor(CameraPosition, ProjectionMatrix, ViewMatrix);
 			break;
 		}
 		case 2:
@@ -1667,7 +1695,10 @@ public:
 		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
 
-		Objects[1] = OBJECT(1, "3dmodels//cube.obj");
+		Objects[1] = OBJECT(1, LightsCount, "3dmodels//cube.obj");
+		Objects[1].setLightsPositions(LightsPositions);
+		Objects[1].setLightsColors(LightsColors);
+		Objects[1].setLightsProperties(LightsProperties);
 		Objects[1].Prepare();
 		Objects[1].setPosition(0.0f, 3.0f, 3.0f);
 
@@ -1688,7 +1719,10 @@ public:
 		Objects[4].setDiffuseColor(0.6f, 0.3f, 0.9f);
 		Objects[4].setPosition(0.0f, 6.0f, 0.0f);	
 
-		Objects[5] = OBJECT(1, "3dmodels//sphere.obj");
+		Objects[5] = OBJECT(1, LightsCount, "3dmodels//sphere.obj");
+		Objects[5].setLightsPositions(LightsPositions);
+		Objects[5].setLightsColors(LightsColors);
+		Objects[5].setLightsProperties(LightsProperties);
 		Objects[5].Prepare();
 		Objects[5].setPosition(0.0f, 3.0f, 0.0f);
 
@@ -1713,7 +1747,10 @@ public:
 		Objects[9].setDiffuseColor(0.1f, 0.9f, 0.8f);
 		Objects[9].setPosition(0.0f, 5.0f, -3.0f);
 
-		Objects[10] = OBJECT(1, "3dmodels//cylinder.obj");
+		Objects[10] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
+		Objects[10].setLightsPositions(LightsPositions);
+		Objects[10].setLightsColors(LightsColors);
+		Objects[10].setLightsProperties(LightsProperties);
 		Objects[10].Prepare();
 		Objects[10].setPosition(0.0f, 2.0f, -3.0f);
 
@@ -1746,7 +1783,10 @@ public:
 		ObjectsMirror[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
 
-		ObjectsMirror[1] = OBJECT(1, "3dmodels//cube.obj");
+		ObjectsMirror[1] = OBJECT(1, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[1].setLightsPositions(LightsPositions);
+		ObjectsMirror[1].setLightsColors(LightsColors);
+		ObjectsMirror[1].setLightsProperties(LightsProperties);
 		ObjectsMirror[1].Prepare();
 		ObjectsMirror[1].setPosition(0.0f, 0.0f, -10.0f);
 
