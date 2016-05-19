@@ -1,10 +1,49 @@
 #version 330 core
 
+in vec3 Normal;
+in vec3 FragmentPosition;
+
 out vec3 Color;
 
 uniform vec3 UserColor;
+uniform vec3 CameraPosition;
+uniform int LightsCount;
+uniform vec3 LightsPositions[2];
+
+vec3 ComputePointLight(vec3 position, vec3 normal, vec3 fragpos, vec3 viewdir)
+{
+	vec3 LightDirection = normalize(position - fragpos);
+
+	float diff = max(dot(normal, LightDirection), 0.0f);
+	vec3 ReflectionDirection = reflect(-LightDirection, normal);
+
+	float spec = pow(max(dot(viewdir, ReflectionDirection), 0.0f), 32.0f);
+	float Distance = length(position - fragpos);
+
+	float Attenuation = 1.0f / (1.0f + 0.09f * Distance + 0.032f * (Distance * Distance));
+	
+	vec3 Ambient = vec3(0.05f, 0.05f, 0.05f) * UserColor;
+	vec3 Diffuse = vec3(0.8f, 0.8f, 0.8f) * diff * UserColor;
+	vec3 Specular = vec3(1.0f, 1.0f, 1.0f) * spec;
+
+	Ambient *= Attenuation;
+	Diffuse *= Attenuation;
+	Specular *= Attenuation;
+	
+	return (Ambient + Diffuse + Specular);
+}
 
 void main()
 {	
-	Color = UserColor;
+	if (LightsCount > 0)
+	{
+		vec3 Norm = normalize(Normal);
+		vec3 ViewDirection = normalize(CameraPosition - FragmentPosition);
+
+		for (int i = 0; i < LightsCount; i++) Color += ComputePointLight(LightsPositions[i], Norm, FragmentPosition, ViewDirection);
+	}
+	else
+	{
+		Color = UserColor;
+	}
 }

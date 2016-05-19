@@ -347,12 +347,21 @@ public:
 class OBJECT
 {
 private:
-	/* Material - материал */
-	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
-	int Material;
+	/* Material - материал*/
+	/* ID - тип: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
 	/* RefractionIndex - индекс преломления */
 	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
-	float RefractiveIndex = 1.52;
+	struct Material
+	{
+		int ID;
+		vec3 AmbientColor;
+		vec3 DiffuseColor;
+		vec3 SpecularColor;
+		float Shine;
+		float RefractiveIndex = 1.52f;
+	} Material;
+	/* LightsCount - число источников освещения */
+	int LightsCount = 0;	
 
 	/* Vertex Array Object */
 	GLuint VAO;
@@ -362,7 +371,7 @@ private:
 	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
-	GLuint ShaderID, CameraPositionID, LightID, UserSolidColorID, RefractiveIndexID;
+	GLuint ShaderID, CameraPositionID, LightID, LightsCountID, UserSolidColorID, RefractiveIndexID;
 	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
@@ -371,7 +380,7 @@ private:
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
 	/* UserSolidColor - пользовательский цвет объекта */
-	vec3 UserSolidColor, LightPosition;
+	vec3 *LightsPositions, UserSolidColor, LightPosition;
 	vector<vec3> vertices, normals, tangents, bitangents;
 	vector<vec2> uvs;
 	vector<unsigned short> indices;
@@ -384,6 +393,8 @@ private:
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		UserSolidColorID = glGetUniformLocation(ShaderID, "UserColor");
+		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
@@ -393,14 +404,20 @@ private:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
 
+		glGenBuffers(1, &normalbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
+
 		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 		glBindVertexArray(0);
 	}
 
 	/* Рендеринг объекта сплошного цвета */
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
-	void RenderSolidColor(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	void RenderSolidColor(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
@@ -408,6 +425,14 @@ private:
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 		glUniform3f(UserSolidColorID, UserSolidColor.x, UserSolidColor.y, UserSolidColor.z);
+		glUniform1i(LightsCountID, LightsCount);
+		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[20];
+			sprintf(buf, "LightsPositions[%d]", i);
+			glUniform3f(glGetUniformLocation(ShaderID, buf), LightsPositions[i].x, LightsPositions[i].y, LightsPositions[i].z);
+		}
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
@@ -516,7 +541,7 @@ private:
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));			
 		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
-		glUniform1f(RefractiveIndexID, RefractiveIndex);
+		glUniform1f(RefractiveIndexID, Material.RefractiveIndex);
 
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, CubeMapTexture);
@@ -930,9 +955,19 @@ public:
 
 	/* Конструктор для объектов*/
 	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр" */
-	OBJECT(int material, const char *path)
+	OBJECT(int materialID, const char *path)
 	{
-		Material = material;
+		Material.ID = materialID;
+		LoadOBJ(path, vertices, uvs, normals);
+	}
+
+	/* Конструктор для объектов*/
+	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр" */
+	OBJECT(int materialID, int lightscount, const char *path)
+	{
+		Material.ID = materialID;
+		LightsCount = lightscount;
+		LightsPositions = new vec3[LightsCount];
 		LoadOBJ(path, vertices, uvs, normals);
 	}
 
@@ -957,23 +992,50 @@ public:
 
 	/* Задаёт материал */
 	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
-	void setMaterial(int value) { Material = value; }
+	void setMaterial(int value) { Material.ID = value; }
 		
 	/* Возвращает материал */
-	int getMaterial() { return Material; }
+	int getMaterial() { return Material.ID; }
+
+	/* Задаёт фоновый цвет */
+	void setAmbientColor(float r, float g, float b) { Material.AmbientColor = vec3(r, g, b); }
+
+	/* Задаёт фоновый цвет */
+	void setAmbientColor(vec3 color) { Material.AmbientColor = color; }
+
+	/* Возвращает фоновый */
+	vec3 getAmbientColor() {}
+
+	/* Задаёт диффузный цвет */
+	void setDiffuseColor() {}
+
+	/* Возвращает диффузный цвет */
+	vec3 getDiffuseColor() {}
+
+	/* Задаёт отражённый цвет */
+	void setSpecularColor() {}
+
+	/* Возвращает отражённый цвет */
+	vec3 getSpecularColor() {}
+
+	/* Задаёт силу блеска */
+	void setShineColor() {}
+
+	/* Возвращает силу блеска */
+	float getShineColor() {}
 
 	/* Задаёт индекс преломления */
 	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
 	void setRefractiveIndex(float value)
 	{
 		if (value < 1.0f) value = 1.0f;
-		RefractiveIndex = value;
+		Material.RefractiveIndex = value;
 	}
 
 	/* Возвращает индекс преломления */
 	float getRefractiveIndex()
 	{
-		return RefractiveIndex;
+		return Material.RefractiveIndex;
 	}
 
 	/* Задаёт CubeMap-текстуру */
@@ -1045,6 +1107,17 @@ public:
 		ModelMatrix[2].z = scale;
 	}	
 
+	/* Задаёт позицию объекта */
+	void setPosition(vec3 position)
+	{
+		float scale = getScale();
+		ModelMatrix = mat4(1.0);
+		ModelMatrix *= translate(vec3(position.x, position.y, position.z));
+		ModelMatrix[0].x = scale;
+		ModelMatrix[1].y = scale;
+		ModelMatrix[2].z = scale;
+	}
+
 	/* Возвращает позицию объекта */
 	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
@@ -1057,13 +1130,16 @@ public:
 	/* Задаёт позицию источника света */
 	void setLightPosition(float x, float y, float z) { LightPosition = vec3(x, y, z); }
 
+	/* Задаёт позицию источников света */
+	void setLightsPositions(vec3 positions[]) { for (int i = 0; i < LightsCount; i++) LightsPositions[i] = positions[i]; }
+
 	/* Возвращает позицию источника света */
 	vec3 getLightPosition() { return LightPosition; }
 
 	/* Выполняет инициализацию объекта */
 	void Prepare()
 	{
-		switch (Material)
+		switch (Material.ID)
 		{
 		case 0:
 		{
@@ -1103,11 +1179,11 @@ public:
 	/* ViewMatrix - матрица вида */
 	void Render(vec3 CameraPosition, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
-		switch (Material)
+		switch (Material.ID)
 		{
 		case 0:
 		{
-			RenderSolidColor(ProjectionMatrix, ViewMatrix);
+			RenderSolidColor(CameraPosition, ProjectionMatrix, ViewMatrix);
 			break;
 		}
 		case 1:
@@ -1328,9 +1404,12 @@ public:
 class SCENE
 {
 private:
-	/* Число объектов на сцене */
-	int ObjectsCount, ObjectsCountMirror;
-	OBJECT Axes, Skybox, *Objects, *ObjectsMirror;
+	/* ShowLights - переключение отображения источников света */
+	bool ShowLights = false;
+	/* LightsCount - число источников света */
+	/* ObjectsCount, ObjectsCountMirror - число объектов */
+	int LightsCount = 0, ObjectsCount = 0, ObjectsCountMirror = 0;
+	OBJECT *Lights, Axes, Skybox, *Objects, *ObjectsMirror;
 	CAMERA Camera;
 
 	bool SphereDecrease = true, SphereIncrease = false;
@@ -1339,7 +1418,7 @@ private:
 	float Radius, Angle = 90.0f, Angle2 = 90.0f, AngleDelta = 2.0f, AngleDelta2 = 5.0f;
 	vec3 Position, NewPosition;
 
-	/* Пзиция камеры */
+	/* Позиция камеры */
 	vec3 CameraPosition;
 	/* Матрицы проекции и вида */
 	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
@@ -1470,10 +1549,31 @@ public:
 		Skybox = OBJECT();
 		Skybox.PrepareSkyBox();
 
+		LightsCount = 2;
+		vec3 LightsPositions[] =
+		{
+			vec3(5.0f, 6.0f, 3.0f),
+			vec3(-10.0f, 0.0f, 0.0f)
+		};
+
+		if (LightsCount > 0)
+		{
+			Lights = new OBJECT[LightsCount];
+			for (int i = 0; i < LightsCount; i++)
+			{
+				Lights[i] = OBJECT(0, "3dmodels//sphere.obj");
+				Lights[i].Prepare();
+				Lights[i].setSolidColor(1.0f, 1.0f, 1.0f);
+				Lights[i].setPosition(LightsPositions[i]);
+				Lights[i].setScale(0.5f);
+			}
+		}
+
 		ObjectsCount = 13;
 		Objects = new OBJECT[ObjectsCount];
 
-		Objects[0] = OBJECT(0, "3dmodels//cube.obj");
+		Objects[0] = OBJECT(0, LightsCount,"3dmodels//cube.obj");
+		Objects[0].setLightsPositions(LightsPositions);
 		Objects[0].Prepare();
 		Objects[0].setSolidColor(0.9f, 0.0f, 0.5f);
 		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
@@ -1491,7 +1591,8 @@ public:
 		Objects[3].Prepare();
 		Objects[3].setPosition(0.0f, -3.0f, 3.0f);
 
-		Objects[4] = OBJECT(0, "3dmodels//sphere.obj");
+		Objects[4] = OBJECT(0, LightsCount, "3dmodels//sphere.obj");
+		Objects[4].setLightsPositions(LightsPositions);
 		Objects[4].Prepare();
 		Objects[4].setSolidColor(0.6f, 0.3f, 0.9f);			
 		Objects[4].setPosition(0.0f, 6.0f, 0.0f);	
@@ -1513,7 +1614,8 @@ public:
 		Objects[8].setPosition(0.0f, -7.0f, -3.0f);
 		Objects[8].setLightPosition(0.0f, -7.0f, 0.0f);
 
-		Objects[9] = OBJECT(0, "3dmodels//cylinder.obj");
+		Objects[9] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
+		Objects[9].setLightsPositions(LightsPositions);
 		Objects[9].Prepare();
 		Objects[9].setSolidColor(0.1f, 0.9f, 0.8f);
 		Objects[9].setPosition(0.0f, 5.0f, -3.0f);
@@ -1543,32 +1645,36 @@ public:
 		ObjectsCountMirror = 7;
 		ObjectsMirror = new OBJECT[ObjectsCountMirror];
 
-		ObjectsMirror[0] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[0] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[0].setLightsPositions(LightsPositions);
 		ObjectsMirror[0].Prepare();
 		ObjectsMirror[0].setSolidColor(0.9f, 0.0f, 0.5f);
 		ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
 
 		ObjectsMirror[1] = OBJECT(1, "3dmodels//cube.obj");
 		ObjectsMirror[1].Prepare();
-		//ObjectsMirror[1].setSolidColor(1.0f, 0.6f, 0.5f);
 		ObjectsMirror[1].setPosition(0.0f, 0.0f, -10.0f);
 
-		ObjectsMirror[2] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[2] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[2].setLightsPositions(LightsPositions);
 		ObjectsMirror[2].Prepare();
 		ObjectsMirror[2].setSolidColor(0.3f, 0.8f, 0.5f);
 		ObjectsMirror[2].setPosition(5.0f, 0.0f, 0.0f);
 
-		ObjectsMirror[3] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[3] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[3].setLightsPositions(LightsPositions);
 		ObjectsMirror[3].Prepare();
 		ObjectsMirror[3].setSolidColor(0.5f, 0.0f, 0.9f);
 		ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
 
-		ObjectsMirror[4] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[4] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[4].setLightsPositions(LightsPositions);
 		ObjectsMirror[4].Prepare();
 		ObjectsMirror[4].setSolidColor(0.1f, 0.3f, 0.5f);
 		ObjectsMirror[4].setPosition(0.0f, 15.0f, 0.0f);
 
-		ObjectsMirror[5] = OBJECT(0, "3dmodels//cube.obj");
+		ObjectsMirror[5] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[5].setLightsPositions(LightsPositions);
 		ObjectsMirror[5].Prepare();
 		ObjectsMirror[5].setSolidColor(0.5f, 0.8f, 0.9f);
 		ObjectsMirror[5].setScale(2.0f);
@@ -1626,6 +1732,11 @@ public:
 				}
 			}
 
+			if (LightsCount > 0)
+			{
+				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
+			}
+
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
 			Axes.RenderAxes(ViewMatrixAxes);
 					
@@ -1665,6 +1776,11 @@ public:
 			for (int i = 0; i < ObjectsCount; i++)
 			{
 				Objects[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
+			}
+
+			if (LightsCount > 0)
+			{
+				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
 			Skybox.RenderSkyBox(ProjectionMatrix, ViewMatrix);
