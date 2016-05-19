@@ -34,7 +34,7 @@ int WindowWidth = 1280, WindowHeight = 800;
 int CameraMode = 2;
 int GenTextureSize = 512;
 float FOV = 90.0f;
-float SkyBoxSide = 100.0f;
+float SkyBoxSide = 500.0f;
 bool Wireframe = false;
 bool StopRotations = true;
 bool ShowLights = false;
