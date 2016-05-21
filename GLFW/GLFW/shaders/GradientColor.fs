@@ -67,6 +67,8 @@ vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 
 void main()
 {	
+	float GammaCorrection = 1.0;
+
 	if (LightsCount > 0)
 	{	
 		vec3 Normal = normalize(FragmentNormal);
@@ -78,4 +80,6 @@ void main()
 	{
 		Color = FragmentColor;
 	}
+
+	Color = pow(Color, vec3(1.0/GammaCorrection));
 }

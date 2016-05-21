@@ -66,15 +66,19 @@ vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 
 void main()
 {	
+	float GammaCorrection = 1.0;
+
 	if (LightsCount > 0)
 	{
 		vec3 Normal = normalize(FragmentNormal);
 		vec3 ViewDirection = normalize(CameraPosition - FragmentPosition);
 
-		for (int i = 0; i < LightsCount && i <= MAX_POINT_LIGHTS; i++) Color += ComputePointLight(i, Normal, FragmentPosition, ViewDirection);
+		for (int i = 0; i < LightsCount && i <= MAX_POINT_LIGHTS; i++) Color += ComputePointLight(i, Normal, FragmentPosition, ViewDirection);		
 	}
 	else
 	{
 		Color = Material.DiffuseColor;
 	}
+
+	Color = pow(Color, vec3(1.0/GammaCorrection));
 }
