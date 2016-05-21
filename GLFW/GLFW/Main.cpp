@@ -29,6 +29,7 @@ GLFWwindow* window;
 /* Wireframe - отображение сетки объектов, переключение по F1 */
 /* StopRotations - переключение вращений по F2 */
 /* ShowLights - переключение отображения источников света по F3 */
+/* Blinn - переключение модели освещения по F4 */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
 int WindowWidth = 1280, WindowHeight = 800;
 int CameraMode = 2;
@@ -38,6 +39,7 @@ float SkyBoxSide = 500.0f;
 bool Wireframe = false;
 bool StopRotations = true;
 bool ShowLights = false;
+bool Blinn = false;
 bool MirrorExample = false;
 bool FullSceen = false;
 
@@ -89,19 +91,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		}
 	}
 
-	/* Переключение примеров работы */
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-	{
-		if (MirrorExample)
-		{
-			MirrorExample = false;
-		}
-		else
-		{
-			MirrorExample = true;
-		}
-	}
-
 	/* Включение/отключение вращений */
 	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
 	{
@@ -125,6 +114,32 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		else
 		{
 			ShowLights = true;
+		}
+	}
+
+	/* Переключение модели освещения */
+	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS)
+	{
+		if (Blinn)
+		{
+			Blinn = false;
+		}
+		else
+		{
+			Blinn = true;
+		}
+	}
+
+	/* Переключение сцен */
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+	{
+		if (MirrorExample)
+		{
+			MirrorExample = false;
+		}
+		else
+		{
+			MirrorExample = true;
 		}
 	}
 }
@@ -409,7 +424,7 @@ private:
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
 	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
-	GLuint MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID;
+	GLuint BlinnID, MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID;
 	GLuint *PointLightPositionsIDs, *PointLightColorsIDs, *PointLightPowersIDs, *PointLightConstantsIDs, *PointLightLinearsIDs, *PointLightQuadraticsIDs;
 	GLuint ShaderID, CameraPositionID, LightID, LightsCountID, RefractiveIndexID;	
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
@@ -434,6 +449,7 @@ private:
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
 		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		BlinnID = glGetUniformLocation(ShaderID, "Blinn");
 		MaterialAmbientColorID = glGetUniformLocation(ShaderID, "Material.AmbientColor");
 		MaterialDiffuseColorID = glGetUniformLocation(ShaderID, "Material.DiffuseColor");
 		MaterialSpecularColorID = glGetUniformLocation(ShaderID, "Material.SpecularColor");
@@ -491,6 +507,7 @@ private:
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniform1i(BlinnID, Blinn);
 		glUniform3f(MaterialAmbientColorID, Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
 		glUniform3f(MaterialDiffuseColorID, Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
 		glUniform3f(MaterialSpecularColorID, Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
@@ -547,6 +564,7 @@ private:
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");	
 		LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
 		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		BlinnID = glGetUniformLocation(ShaderID, "Blinn");
 		MaterialAmbientColorID = glGetUniformLocation(ShaderID, "Material.AmbientColor");
 		//MaterialDiffuseColorID = glGetUniformLocation(ShaderID, "Material.DiffuseColor");
 		MaterialSpecularColorID = glGetUniformLocation(ShaderID, "Material.SpecularColor");
@@ -610,6 +628,7 @@ private:
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+		glUniform1i(BlinnID, Blinn);
 		glUniform3f(MaterialAmbientColorID, Material.AmbientColor.x, Material.AmbientColor.y, Material.AmbientColor.z);
 		//glUniform3f(MaterialDiffuseColorID, Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
 		glUniform3f(MaterialSpecularColorID, Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);

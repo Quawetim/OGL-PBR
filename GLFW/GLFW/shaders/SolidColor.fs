@@ -25,6 +25,7 @@ in vec3 FragmentPosition;
 
 out vec3 Color;
 
+uniform bool Blinn;
 uniform material Material;
 uniform vec3 CameraPosition;
 uniform int LightsCount;
@@ -36,9 +37,18 @@ vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 	vec3 LightDirection = normalize(position - fragpos);
 
 	float diff = max(dot(normal, LightDirection), 0.0f);
-	vec3 ReflectionDirection = reflect(-LightDirection, normal);
 
-	float spec = pow(max(dot(viewdir, ReflectionDirection), 0.0f), Material.Shine);
+	float spec;
+	if (Blinn)
+	{
+		vec3 HalfwayDirection = normalize(LightDirection + viewdir);  
+        spec = pow(max(dot(normal, HalfwayDirection), 0.0), Material.Shine);
+	}
+	else
+	{
+		vec3 ReflectionDirection = reflect(-LightDirection, normal);
+		spec = pow(max(dot(viewdir, ReflectionDirection), 0.0f), Material.Shine);
+	}
 	float Distance = length(position - fragpos);
 
 	float Attenuation = 1.0f / (PointLight[id].Constant + PointLight[id].Linear * Distance + PointLight[id].Quadratic * (Distance * Distance));
