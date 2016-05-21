@@ -502,6 +502,9 @@ private:
 	/* ViewMatrix - матрица вида */
 	void RenderSolidColor(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
+		/*glEnable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 		glUseProgram(ShaderID);
 
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
@@ -534,6 +537,8 @@ private:
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
 		glBindVertexArray(0);
+		/*glDisable(GL_BLEND);
+		glDisable(GL_CULL_FACE);*/
 	}
 
 	/* Подготовка данных для объекта градиентного цвета */
@@ -660,6 +665,12 @@ private:
 	/* Подготовка данных для стекла/зеркала */
 	void PrepareReflectionRefraction()
 	{
+		if (Material.ID == 2)
+		{
+			glEnable(GL_CULL_FACE);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");	
@@ -683,6 +694,11 @@ private:
 		glEnableVertexAttribArray(1);
 
 		glBindVertexArray(0);
+		if (Material.ID == 2)
+		{
+			glDisable(GL_CULL_FACE);
+			glDisable(GL_BLEND);
+		}
 	}
 
 	/* Рендеринг стекла/зеркала */
@@ -2226,8 +2242,6 @@ void main()
 	/* Выбираем фрагмент, ближайший к камере */
 	glDepthFunc(GL_LESS);																		  
 	//glEnable(GL_CULL_FACE);
-	/*glEnable(GL_BLEND);												
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
 	SCENE Scene = SCENE();
 
