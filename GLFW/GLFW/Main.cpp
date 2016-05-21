@@ -398,6 +398,9 @@ private:
 	/* LightsCount - число источников освещения */
 	int LightsCount = 0;	
 
+	/**/
+	float Scale = 1.0f;
+
 	/* PointLight - точечный источник света */
 	/* Position - позиция */
 	/* Color - цвет */
@@ -848,6 +851,8 @@ private:
 			return false;
 		}
 
+		bool texcoords = false;
+
 		while (true)
 		{
 			if (fscanf(Fin, "%s", Buf) == EOF) break;
@@ -865,6 +870,7 @@ private:
 				if (strcmp(Buf, "vt") == 0)
 				{
 					/* Текстурные координаты */
+					texcoords = true;
 					vec2 uv;
 
 					fscanf(Fin, "%f %f\n", &uv.x, &uv.y);
@@ -886,27 +892,52 @@ private:
 						/* Грань (полигон) */
 						if (strcmp(Buf, "f") == 0)
 						{
-							int VertexIndex[3], UVIndex[3], NormalIndex[3];
+							int count, VertexIndex[3], UVIndex[3], NormalIndex[3];
 
-							int count = fscanf(Fin, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &VertexIndex[0], &UVIndex[0], &NormalIndex[0], &VertexIndex[1], &UVIndex[1], &NormalIndex[1], &VertexIndex[2], &UVIndex[2], &NormalIndex[2]);
+							if (texcoords)
+							{						
+								count = fscanf(Fin, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &VertexIndex[0], &UVIndex[0], &NormalIndex[0], &VertexIndex[1], &UVIndex[1], &NormalIndex[1], &VertexIndex[2], &UVIndex[2], &NormalIndex[2]);
 
-							if (count != 9)
-							{
-								printf("Can't read OBJ file.\n");
-								return false;
+								if (count != 9)
+								{
+									printf("Can't read OBJ file.\n");
+									return false;
+								}
+
+								VertexIndices.push_back(VertexIndex[0]);
+								VertexIndices.push_back(VertexIndex[1]);
+								VertexIndices.push_back(VertexIndex[2]);
+
+								UVIndices.push_back(UVIndex[0]);
+								UVIndices.push_back(UVIndex[1]);
+								UVIndices.push_back(UVIndex[2]);
+
+								NormalIndices.push_back(NormalIndex[0]);
+								NormalIndices.push_back(NormalIndex[1]);
+								NormalIndices.push_back(NormalIndex[2]);
 							}
+							else
+							{
+								count = fscanf(Fin, "%d//%d %d//%d %d//%d\n", &VertexIndex[0], &NormalIndex[0], &VertexIndex[1], &NormalIndex[1], &VertexIndex[2], &NormalIndex[2]);
 
-							VertexIndices.push_back(VertexIndex[0]);
-							VertexIndices.push_back(VertexIndex[1]);
-							VertexIndices.push_back(VertexIndex[2]);
+								if (count != 6)
+								{
+									printf("Can't read OBJ file.\n");
+									return false;
+								}
 
-							UVIndices.push_back(UVIndex[0]);
-							UVIndices.push_back(UVIndex[1]);
-							UVIndices.push_back(UVIndex[2]);
+								VertexIndices.push_back(VertexIndex[0]);
+								VertexIndices.push_back(VertexIndex[1]);
+								VertexIndices.push_back(VertexIndex[2]);
 
-							NormalIndices.push_back(NormalIndex[0]);
-							NormalIndices.push_back(NormalIndex[1]);
-							NormalIndices.push_back(NormalIndex[2]);
+								//UVIndices.push_back(0);
+								//UVIndices.push_back(0);
+								//UVIndices.push_back(0);
+
+								NormalIndices.push_back(NormalIndex[0]);
+								NormalIndices.push_back(NormalIndex[1]);
+								NormalIndices.push_back(NormalIndex[2]);
+							}
 						}
 						else
 						{
@@ -923,17 +954,25 @@ private:
 		/* Для каждой вершины в каждом треугольнике достаём данные на выход */
 		for (unsigned int i = 0; i < VertexIndices.size(); i++)
 		{
-			int vertexIndex = VertexIndices[i];
-			int uvIndex = UVIndices[i];
-			int normalIndex = NormalIndices[i];
+			int vertexIndex, uvIndex, normalIndex;
+			vec2 uv;
+			vec3 vertex, normal;
 
-			vec3 vertex = tmp_Vertices[vertexIndex - 1];
-			vec2 uv = tmp_UVs[uvIndex - 1];
-			vec3 normal = tmp_Normals[normalIndex - 1];
+			vertexIndex = VertexIndices[i];
+			normalIndex = NormalIndices[i];
+
+			vertex = tmp_Vertices[vertexIndex - 1];
+			normal = tmp_Normals[normalIndex - 1];
 
 			vertices.push_back(vertex);
-			uvs.push_back(uv);
 			normals.push_back(normal);
+
+			if (texcoords)
+			{
+				uvIndex = UVIndices[i];
+				uv = tmp_UVs[uvIndex - 1];
+				uvs.push_back(uv);
+			}
 		}
 		return true;
 	}
@@ -1224,23 +1263,30 @@ public:
 	/* Задаёт размер объекта */
 	void setScale(float value)
 	{
+		Scale = value;
 		vec3 pos = getPosition();
 		ModelMatrix = mat4(1.0);
-		ModelMatrix *= scale(vec3(value, value, value));
+		ModelMatrix *= scale(vec3(Scale, Scale, Scale));
 		ModelMatrix[3].x = pos.x;
 		ModelMatrix[3].y = pos.y;
 		ModelMatrix[3].z = pos.z;
 	}
 
 	/* Возвращает размер объекта */
-	float getScale() { return ModelMatrix[0].x; }
+	float getScale() 
+	{ 
+		return Scale;
+		//return ModelMatrix[0].x; 
+	}
 
 	/* Вращение объекта */
 	/* angle - угол в градусах */
 	/* axis - ось вращения: X, Y, Z, XY, XZ, YZ, XYZ */
 	void setRotation(float angle, char axis[]) 
 	{ 
-		vec3 Axis;
+		vec3 pos, Axis;
+
+		pos = getPosition();
 		
 		if (strcmp(axis, "X") == 0) Axis = vec3(1.0f, 0.0f, 0.0f);
 		else
@@ -1270,7 +1316,11 @@ public:
 				}
 			}
 		}
-		ModelMatrix *= rotate(radians(angle), Axis); 
+		//ModelMatrix = mat4(1.0);
+		//ModelMatrix[3].x = pos.x;
+		//ModelMatrix[3].y = pos.y;
+		//ModelMatrix[3].z = pos.z;
+		ModelMatrix *= rotate(radians(angle), Axis);			
 	}
 
 	/* Задаёт позицию объекта */
@@ -1925,34 +1975,34 @@ public:
 		Objects[7].Prepare();
 		Objects[7].setPosition(0.0f, -3.0f, 0.0f);
 
-		Objects[8] = OBJECT(4, "3dmodels//cylinder.obj");
+		Objects[8] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
+		Objects[8].setLightsPositions(LightsPositions);
+		Objects[8].setLightsColors(LightsColors);
+		Objects[8].setLightsProperties(LightsProperties);
 		Objects[8].Prepare();
-		Objects[8].setPosition(0.0f, -7.0f, -3.0f);
-		Objects[8].setLightPosition(0.0f, -7.0f, 0.0f);
+		Objects[8].setDiffuseColor(0.1f, 0.9f, 0.8f);
+		Objects[8].setPosition(0.0f, 5.0f, -3.0f);
 
-		Objects[9] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
+		Objects[9] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
 		Objects[9].setLightsPositions(LightsPositions);
 		Objects[9].setLightsColors(LightsColors);
 		Objects[9].setLightsProperties(LightsProperties);
 		Objects[9].Prepare();
-		Objects[9].setDiffuseColor(0.1f, 0.9f, 0.8f);
-		Objects[9].setPosition(0.0f, 5.0f, -3.0f);
+		Objects[9].setPosition(0.0f, 2.0f, -3.0f);
 
-		Objects[10] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
-		Objects[10].setLightsPositions(LightsPositions);
-		Objects[10].setLightsColors(LightsColors);
-		Objects[10].setLightsProperties(LightsProperties);
+		Objects[10] = OBJECT(2, "3dmodels//cylinder.obj");
 		Objects[10].Prepare();
-		Objects[10].setPosition(0.0f, 2.0f, -3.0f);
+		Objects[10].setRefractiveIndex(1.33f);
+		Objects[10].setPosition(0.0f, -1.0f, -3.0f);
 
-		Objects[11] = OBJECT(2, "3dmodels//cylinder.obj");
+		Objects[11] = OBJECT(3, "3dmodels//cylinder.obj");
 		Objects[11].Prepare();
-		Objects[11].setRefractiveIndex(1.33f);
-		Objects[11].setPosition(0.0f, -1.0f, -3.0f);
+		Objects[11].setPosition(0.0f, -4.0f, -3.0f);
 
-		Objects[12] = OBJECT(3, "3dmodels//cylinder.obj");
+		Objects[12] = OBJECT(4, "3dmodels//cylinder.obj");
 		Objects[12].Prepare();
-		Objects[12].setPosition(0.0f, -4.0f, -3.0f);
+		Objects[12].setPosition(0.0f, -7.0f, -3.0f);
+		Objects[12].setLightPosition(0.0f, -7.0f, 0.0f);
 
 		Objects[2].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[3].setCubeMapTexture(Skybox.getCubeMapTexture());
@@ -1960,8 +2010,8 @@ public:
 		Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[7].setCubeMapTexture(Skybox.getCubeMapTexture());
 
+		Objects[10].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[11].setCubeMapTexture(Skybox.getCubeMapTexture());
-		Objects[12].setCubeMapTexture(Skybox.getCubeMapTexture());
 
 		ObjectsCountMirror = 7;
 		ObjectsMirror = new OBJECT[ObjectsCountMirror];
@@ -2014,10 +2064,11 @@ public:
 		ObjectsMirror[5].setScale(2.0f);
 		ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
 
-		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere.obj");
+		ObjectsMirror[6] = OBJECT(3, "3dmodels//diamond.obj");
 		ObjectsMirror[6].Prepare();
 		ObjectsMirror[6].setRefractiveIndex(1.1f);
-		ObjectsMirror[6].setScale(2.0f);
+		//ObjectsMirror[6].setScale(2.0f);
+		//ObjectsMirror[6].setRotation(90.0f, "Y");
 	};
 
 	/* Деструктор, удаляет шейдеры */
@@ -2080,6 +2131,7 @@ public:
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(Radius * cos(radians(Angle)), 0.0f, Radius * sin(radians(Angle)));
 				ObjectsMirror[0].setPosition(NewPosition.x, Position.y, NewPosition.z);
+				ObjectsMirror[0].setRotation(-Angle, "Y");
 
 				Position = ObjectsMirror[1].getPosition();
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
@@ -2098,6 +2150,8 @@ public:
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(-Radius * cos(radians(Angle2)), -Radius * sin(radians(Angle2)), 0.0f);
 				ObjectsMirror[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
+
+				ObjectsMirror[6].setRotation(1.0f, "Y");
 
 				Angle += AngleDelta;
 				Angle2 += AngleDelta2;
