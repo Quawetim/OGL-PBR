@@ -49,13 +49,13 @@ vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 		vec3 ReflectionDirection = reflect(-LightDirection, normal);
 		spec = pow(max(dot(viewdir, ReflectionDirection), 0.0f), Material.Shine);
 	}
-	float Distance = length(position - fragpos);
-
-	float Attenuation = 1.0f / (PointLight[id].Constant + PointLight[id].Linear * Distance + PointLight[id].Quadratic * (Distance * Distance));
 	
 	vec3 Ambient = Material.AmbientColor * Material.DiffuseColor;
 	vec3 Diffuse = PointLight[id].Color * PointLight[id].Power * Material.DiffuseColor * diff;
 	vec3 Specular = PointLight[id].Color * PointLight[id].Power * Material.SpecularColor * spec;
+
+	float Distance = length(position - fragpos);
+	float Attenuation = 1.0f / (PointLight[id].Constant + PointLight[id].Linear * Distance + PointLight[id].Quadratic * (Distance * Distance));
 
 	Ambient *= Attenuation;
 	Diffuse *= Attenuation;

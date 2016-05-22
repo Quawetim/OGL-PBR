@@ -1,55 +1,47 @@
 #version 330 core
 
-layout(location = 0) in vec3 vertexPosition_modelspace;
-layout(location = 1) in vec2 vertexUV;
-layout(location = 2) in vec3 vertexNormal_modelspace;
-layout(location = 3) in vec3 vertexTangent_modelspace;
-layout(location = 4) in vec3 vertexBitangent_modelspace;
+struct pointLight
+{
+	vec3 Position;
+	vec3 Color;
+	float Power;
+	float Constant;
+	float Linear;
+	float Quadratic;
+};
 
+layout (location = 0) in vec3 VertexPosition;
+layout (location = 1) in vec3 VertexNormal;
+layout (location = 2) in vec2 VertexUV;
+layout (location = 3) in vec3 VertexTangent;
+layout (location = 4) in vec3 VertexBitangent;
+
+out vec3 FragmentPosition;
 out vec2 UV;
-out vec3 Position_worldspace;
-//out vec3 Normal_cameraspace;
-out vec3 EyeDirection_cameraspace;
-out vec3 LightDirection_cameraspace;
-out vec3 LightDirection_tangentspace;
-out vec3 EyeDirection_tangentspace;
+out vec3 TangentLightPos;
+out vec3 TangentViewPos;
+out vec3 TangentFragPos;
 
 uniform mat4 P;
 uniform mat4 V;
 uniform mat4 M;
-uniform mat3 MV3x3;
-uniform vec3 LightPosition_worldspace;
+uniform vec3 CameraPosition;
+uniform pointLight PointLight[1];
 
 void main()
 {	
-	// Output position of the vertex, in clip (object) space : MVP * position
-	gl_Position =  P * V * M * vec4(vertexPosition_modelspace, 1.0f);
-	
-	// Position of vertex, in worldspace : M * position
-	Position_worldspace = (M * vec4(vertexPosition_modelspace, 1.0f)).xyz;
-	
-	// Vector from vertex to camera, in camera space. In camera space, camera at (0, 0, 0).
-	vec3 vertexPosition_cameraspace = ( V * M * vec4(vertexPosition_modelspace, 1.0f)).xyz;
-	EyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;
+	gl_Position =  P * V * M * vec4(VertexPosition, 1.0f);	
+	FragmentPosition = vec3(M * vec4(VertexPosition, 1.0f));
+	UV = VertexUV;
 
-	// Vector from vertex to light, in camera space. M is identity.
-	vec3 LightPosition_cameraspace = ( V * vec4(LightPosition_worldspace, 1.0f)).xyz;
-	LightDirection_cameraspace = LightPosition_cameraspace + EyeDirection_cameraspace;
-	
-	// UV of the vertex.
-	UV = vertexUV;
+	mat3 NormalMatrix = transpose(inverse(mat3(M)));
+	vec3 Tangent = normalize(NormalMatrix * VertexTangent);
+	vec3 Bitangent = normalize(NormalMatrix * VertexBitangent);
+	vec3 Normal = normalize(NormalMatrix * VertexNormal);
 
-	// model to camera = ModelView
-	vec3 vertexTangent_cameraspace = MV3x3 * vertexTangent_modelspace;
-	vec3 vertexBitangent_cameraspace = MV3x3 * vertexBitangent_modelspace;
-	vec3 vertexNormal_cameraspace = MV3x3 * vertexNormal_modelspace;
+	mat3 TBN = transpose(mat3(Tangent, Bitangent, Normal));
 
-	// ->>[You can use dot products instead of building this matrix and transposing it. See References for details.]
-	mat3 TBN = transpose(mat3(vertexTangent_cameraspace, vertexBitangent_cameraspace, vertexNormal_cameraspace)); 
-
-	LightDirection_tangentspace = TBN * LightDirection_cameraspace;
-	EyeDirection_tangentspace =  TBN * EyeDirection_cameraspace;
-
-	// Normal of the the vertex, in camera space
-	// Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.		
+	TangentLightPos = TBN * PointLight[0].Position;
+	TangentViewPos = TBN * CameraPosition;
+	TangentFragPos = TBN * FragmentPosition;		
 }

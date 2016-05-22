@@ -1,58 +1,76 @@
 #version 330 core
 
+struct material
+{
+	float Shine;
+};
+
+struct pointLight
+{
+	vec3 Position;
+	vec3 Color;
+	float Power;
+	float Constant;
+	float Linear;
+	float Quadratic;
+};
+
+in vec3 FragmentPosition;
 in vec2 UV;
-in vec3 Position_worldspace;
-in vec3 Normal_cameraspace;
-in vec3 EyeDirection_cameraspace;
-in vec3 LightDirection_cameraspace;
-in vec3 LightDirection_tangentspace;
-in vec3 EyeDirection_tangentspace;
+in vec3 TangentLightPos;
+in vec3 TangentViewPos;
+in vec3 TangentFragPos;
 
-out vec3 color;
+out vec3 Color;
 
+uniform vec3 LightColor;
+uniform float LightConstant;
+uniform float LightLinear;
+uniform float LightQuadratic;
+uniform float MaterialShine;
+uniform bool Blinn;
 uniform sampler2D DiffuseTexture;
 uniform sampler2D NormalTexture;
 uniform sampler2D SpecularTexture;
-uniform vec3 LightPosition_worldspace;
+uniform material Material;
+uniform pointLight PointLight[1];
 
 void main()
 {
-	vec3 LightColor = vec3(1.0f, 1.0f, 1.0f);
-	float LightPower = 8.0f;
+	float GammaCorrection = 1.0;
+
+	vec3 Normal = texture(NormalTexture, UV).rgb;
+	Normal = normalize(Normal * 2.0 - 1.0);
+
+	vec3 LightDirection = normalize(TangentLightPos - TangentFragPos);
+	float diff = max(dot(LightDirection, Normal), 0.0f);
+
+	vec3 ViewDirection = normalize(TangentViewPos - TangentFragPos);
 	
-	// Material properties
-	vec3 MaterialDiffuseColor = texture(DiffuseTexture, UV).rgb;
-	vec3 MaterialAmbientColor = vec3(0.1f, 0.1f, 0.1f) * MaterialDiffuseColor;
-	//vec3 MaterialSpecularColor = vec3(0.8f, 0.8f, 0.8f);
-	vec3 MaterialSpecularColor = texture(SpecularTexture, UV).rgb;
+	float spec;
+	if (Blinn)
+	{
+		vec3 HalfwayDirection = normalize(LightDirection + ViewDirection);  
+		spec = pow(max(dot(Normal, HalfwayDirection), 0.0), Material.Shine);
+	}
+	else
+	{
+		vec3 ReflectionDirection = reflect(-LightDirection, Normal);
+		spec = pow(max(dot(ViewDirection, ReflectionDirection), 0.0f), Material.Shine);
+	} 
 
-	// Local normal, in tangent space. V texture coordinate is inverted because normal map is in TGA (instead DDS) for better quality
-	vec3 TextureNormal_tangentspace = normalize(texture(NormalTexture, vec2(UV.x, -UV.y)).rgb * 2.0f - 1.0f);
+	vec3 Ambient = 0.05f * texture(DiffuseTexture, UV).rgb;
+	vec3 Diffuse = PointLight[0].Color * PointLight[0].Power * texture(DiffuseTexture, UV).rgb * diff;
+	vec3 Specular = PointLight[0].Color * PointLight[0].Power * texture(SpecularTexture, UV).rgb * spec;
 
-	// Distance to the light
-	float distance = length(LightPosition_worldspace - Position_worldspace);
+	float Distance = length(PointLight[0].Position - FragmentPosition);
+	float Attenuation = 1.0f / (PointLight[0].Constant + PointLight[0].Linear * Distance + PointLight[0].Quadratic * (Distance * Distance));
 
-	// Normal of the computed fragment, in camera space
-	//vec3 n = normalize(Normal_cameraspace);
-	vec3 n = TextureNormal_tangentspace;
+	Ambient *= Attenuation;
+	Diffuse *= Attenuation;
+	Specular *= Attenuation;
 
-	// Direction of the light (from the fragment to the light)
-	//vec3 l = normalize(LightDirection_cameraspace);
-	vec3 l = normalize(LightDirection_tangentspace);
+	Color = Ambient + Diffuse + Specular;
 
-	// Cos of the angle between the normal and the light direction
-	float cosTheta = clamp(dot(n, l), 0.0f, 1.0f);
-	
-	// Eye vector (to camera)
-	//vec3 E = normalize(EyeDirection_cameraspace);
-	vec3 E = normalize(EyeDirection_tangentspace);
-
-	// Direction in which the triangle reflects the light
-	vec3 R = reflect(-l, n);
-
-	// Cosine of the angle between the Eye vector and the Reflect vector
-	float cosAlpha = clamp(dot( E,R ), 0.0f, 1.0f);
-	
-	color = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) + MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha, 5.0f) / (distance*distance);
-	//color = MaterialAmbientColor + MaterialDiffuseColor + MaterialSpecularColor;
+	Color = pow(Color, vec3(1.0/GammaCorrection));
 }

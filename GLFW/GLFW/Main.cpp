@@ -429,15 +429,13 @@ private:
 	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
 	GLuint BlinnID, MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID;
 	GLuint *PointLightPositionsIDs, *PointLightColorsIDs, *PointLightPowersIDs, *PointLightConstantsIDs, *PointLightLinearsIDs, *PointLightQuadraticsIDs;
-	GLuint ShaderID, CameraPositionID, LightID, LightsCountID, RefractiveIndexID;	
+	GLuint ShaderID, CameraPositionID, LightsCountID, RefractiveIndexID;	
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
 	GLuint DiffuseTexture, SpecularTexture, NormalTexture, CubeMapTexture;
 	/* Буферы */
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
-	/* */
-	vec3 LightPosition;
 	vector<vec3> vertices, normals, tangents, bitangents;
 	vector<vec2> uvs;
 	vector<unsigned short> indices;
@@ -668,12 +666,6 @@ private:
 	/* Подготовка данных для стекла/зеркала */
 	void PrepareReflectionRefraction()
 	{
-		if (Material.ID == 2)
-		{
-			glEnable(GL_CULL_FACE);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		}
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");	
@@ -697,11 +689,6 @@ private:
 		glEnableVertexAttribArray(1);
 
 		glBindVertexArray(0);
-		if (Material.ID == 2)
-		{
-			glDisable(GL_CULL_FACE);
-			glDisable(GL_BLEND);
-		}
 	}
 
 	/* Рендеринг стекла/зеркала */
@@ -732,11 +719,38 @@ private:
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
-		ModelView3x3MatrixID = glGetUniformLocation(ShaderID, "MV3x3");
 		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
 		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
 		SpecularTextureID = glGetUniformLocation(ShaderID, "SpecularTexture");
-		LightID = glGetUniformLocation(ShaderID, "LightPosition_worldspace");
+		//LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
+		MaterialShineID = glGetUniformLocation(ShaderID, "Material.Shine");
+		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+		BlinnID = glGetUniformLocation(ShaderID, "Blinn");
+
+		PointLightPositionsIDs = new GLuint[LightsCount];
+		PointLightColorsIDs = new GLuint[LightsCount];
+		PointLightPowersIDs = new GLuint[LightsCount];
+		PointLightConstantsIDs = new GLuint[LightsCount];
+		PointLightLinearsIDs = new GLuint[LightsCount];
+		PointLightQuadraticsIDs = new GLuint[LightsCount];
+
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[30];
+			sprintf(buf, "PointLight[%d].Position", i);
+			PointLightPositionsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Color", i);
+			PointLightColorsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Power", i);
+			PointLightPowersIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			PointLightConstantsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			PointLightLinearsIDs[i] = glGetUniformLocation(ShaderID, buf);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			PointLightQuadraticsIDs[i] = glGetUniformLocation(ShaderID, buf);
+		}
+
 
 		DiffuseTexture = LoadDDS("textures//diffuse.DDS");
 		NormalTexture = LoadBMP("textures//normal.bmp");
@@ -759,15 +773,15 @@ private:
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, indexed_vertices.size() * sizeof(vec3), &indexed_vertices[0], GL_STATIC_DRAW);
 
-		glGenBuffers(1, &uvbuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		glBufferData(GL_ARRAY_BUFFER, indexed_uvs.size() * sizeof(vec2), &indexed_uvs[0], GL_STATIC_DRAW);
-
 		glGenBuffers(1, &normalbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glBufferData(GL_ARRAY_BUFFER, indexed_normals.size() * sizeof(vec3), &indexed_normals[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &uvbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBufferData(GL_ARRAY_BUFFER, indexed_uvs.size() * sizeof(vec2), &indexed_uvs[0], GL_STATIC_DRAW);		
 
 		glGenBuffers(1, &tangentbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, tangentbuffer);
@@ -796,7 +810,7 @@ private:
 	/* Рендеринг цилиндра с картой нормалей */
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
-	void RenderCylinder(mat4 ProjectionMatrix, mat4 ViewMatrix)
+	void RenderCylinder(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
 
@@ -804,11 +818,29 @@ private:
 
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));	
-		glUniformMatrix3fv(ModelView3x3MatrixID, 1, GL_FALSE, value_ptr(ModelView3x3Matrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));			
+		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
+		//glUniform1i(LightsCountID, LightsCount);
+		glUniform1f(MaterialShineID, Material.Shine);
+		glUniform1i(BlinnID, Blinn);
 
-		glUniform3f(LightID, LightPosition.x, LightPosition.y, LightPosition.z);
-
+		for (int i = 0; i < LightsCount; i++)
+		{
+			char buf[30];
+			sprintf(buf, "PointLight[%d].Position", i);
+			glUniform3f(PointLightPositionsIDs[i], PointLight[i].Position.x, PointLight[i].Position.y, PointLight[i].Position.z);
+			sprintf(buf, "PointLight[%d].Color", i);
+			glUniform3f(PointLightColorsIDs[i], PointLight[i].Color.x, PointLight[i].Color.y, PointLight[i].Color.z);
+			sprintf(buf, "PointLight[%d].Power", i);
+			glUniform1f(PointLightPowersIDs[i], PointLight[i].Power);
+			sprintf(buf, "PointLight[%d].Constant", i);
+			glUniform1f(PointLightConstantsIDs[i], PointLight[i].Constant);
+			sprintf(buf, "PointLight[%d].Linear", i);
+			glUniform1f(PointLightLinearsIDs[i], PointLight[i].Linear);
+			sprintf(buf, "PointLight[%d].Quadratic", i);
+			glUniform1f(PointLightQuadraticsIDs[i], PointLight[i].Quadratic);
+		}
+		
 		glBindVertexArray(VAO);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -1213,6 +1245,11 @@ public:
 	OBJECT(int materialID, const char *path)
 	{
 		Material.ID = materialID;
+		if (Material.ID == 4)
+		{
+			LightsCount = 1;
+			PointLight = new pointLight[LightsCount];
+		}
 		LoadOBJ(path, vertices, uvs, normals);
 	}
 
@@ -1221,8 +1258,16 @@ public:
 	OBJECT(int materialID, int lightscount, const char *path)
 	{
 		Material.ID = materialID;
-		LightsCount = lightscount;
-		PointLight = new pointLight[LightsCount];
+		if (Material.ID == 4)
+		{
+			LightsCount = 1;
+			PointLight = new pointLight[LightsCount];
+		}
+		else
+		{
+			LightsCount = lightscount;
+			PointLight = new pointLight[LightsCount];
+		}
 		LoadOBJ(path, vertices, uvs, normals);
 	}
 
@@ -1284,6 +1329,64 @@ public:
 
 	/* Возвращает силу блеска */
 	float getShinePower() { return Material.Shine; }
+
+	/* Задаёт позицию источников света по его ID */
+	void setLightPosition(int id, float x, float y, float z) { PointLight[id].Position = vec3(x, y, z); }
+
+	/* Задаёт позицию источников света по его ID */
+	void setLightPosition(int id, vec3 position) { PointLight[id].Position = position; }
+
+	/* Задаёт позицию источников света */
+	void setLightsPositions(vec3 positions[]) { for (int i = 0; i < LightsCount; i++) PointLight[i].Position = positions[i]; }
+
+	/* Возвращает позицию источника света по его ID */
+	vec3 getLightPosition(int id) { return PointLight[id].Position; }
+
+	/* Задаёт цвет источника света по его ID */
+	void setLightColor(int id, float r, float g, float b) { PointLight[id].Color = vec3(r, g, b); }
+
+	/* Задаёт цвет источника света по его ID */
+	void setLightColor(int id, vec3 color) { PointLight[id].Color = color; }
+
+	/* Задаёт цвета всех источников света */
+	void setLightsColors(vec3 color[]) { for (int i = 0; i < LightsCount; i++) PointLight[i].Color = color[i]; }
+
+	/* Возвращает цвет источника света по его ID */
+	vec3 getLightColor(int id) { return PointLight[id].Color; }
+
+	/* Задаёт свойства источника света по его ID */
+	void setLightProperties(int id, float power, float constcoeff, float lincoeff, float quadcoeff)
+	{
+		PointLight[id].Power = power;
+		PointLight[id].Constant = constcoeff;
+		PointLight[id].Linear = lincoeff;
+		PointLight[id].Quadratic = quadcoeff;
+	}
+
+	/* Задаёт свойства источника света по его ID */
+	/* Порядок: power, constant, linear, quadratic */
+	void setLightProperties(int id, vec4 properties)
+	{
+		PointLight[id].Power = properties.x;
+		PointLight[id].Constant = properties.y;
+		PointLight[id].Linear = properties.z;
+		PointLight[id].Quadratic = properties.w;
+	}
+
+	/* Задаёт свойства всех источников света */
+	void setLightsProperties(vec4 properties[])
+	{
+		for (int i = 0; i < LightsCount; i++)
+		{
+			PointLight[i].Power = properties[i].x;
+			PointLight[i].Constant = properties[i].y;
+			PointLight[i].Linear = properties[i].z;
+			PointLight[i].Quadratic = properties[i].w;
+		}
+	}
+
+	/* Возвращает свойства источника света по его ID */
+	vec4 getlightProperties(int id) { return vec4(PointLight[id].Power, PointLight[id].Constant, PointLight[id].Linear, PointLight[id].Quadratic); }
 
 	/* Задаёт индекс преломления */
 	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
@@ -1386,60 +1489,6 @@ public:
 	/* Возвращает позицию объекта */
 	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
 
-	/* Задаёт позицию источника света */
-	void setLightPosition(float x, float y, float z) { LightPosition = vec3(x, y, z); }
-
-	/* Задаёт позицию источников света */
-	void setLightsPositions(vec3 positions[]) { for (int i = 0; i < LightsCount; i++) PointLight[i].Position = positions[i]; }
-
-	/* Возвращает позицию источника света по его ID */
-	vec3 getLightPosition(int id) { return PointLight[id].Position; }
-
-	/* Задаёт цвет источника света по его ID */
-	void setLightColor(int id, float r, float g, float b) { PointLight[id].Color = vec3(r, g, b); }
-
-	/* Задаёт цвет источника света по его ID */
-	void setLightColor(int id, vec3 color) { PointLight[id].Color = color; }
-
-	/* Задаёт цвета всех источников света */
-	void setLightsColors(vec3 color[]) { for (int i = 0; i < LightsCount; i++) PointLight[i].Color = color[i]; }
-
-	/* Возвращает цвет источника света по его ID */
-	vec3 getLightColor(int id) { return PointLight[id].Color; }
-
-	/* Задаёт свойства источника освещения по его ID */
-	void setLightProperties(int id, float power, float constcoeff, float lincoeff, float quadcoeff) 
-	{ 
-		PointLight[id].Power = power; 
-		PointLight[id].Constant = constcoeff;
-		PointLight[id].Linear = lincoeff;
-		PointLight[id].Quadratic = quadcoeff;
-	}
-
-	/* Задаёт свойства источника освещения по его ID */
-	void setLightProperties(int id, vec4 properties)
-	{
-		PointLight[id].Power = properties.x;
-		PointLight[id].Constant = properties.y;
-		PointLight[id].Linear = properties.z;
-		PointLight[id].Quadratic = properties.w;
-	}
-
-	/* Задаёт свойства всех источников освещения */
-	void setLightsProperties(vec4 properties[])
-	{
-		for (int i = 0; i < LightsCount; i++)
-		{
-			PointLight[i].Power = properties[i].x;
-			PointLight[i].Constant = properties[i].y;
-			PointLight[i].Linear = properties[i].z;
-			PointLight[i].Quadratic = properties[i].w;
-		}
-	}
-
-	/* Возвращает свойства источника освещения по его ID */
-	vec4 getlightProperties(int id) { return vec4(PointLight[id].Power, PointLight[id].Constant, PointLight[id].Linear, PointLight[id].Quadratic); }
-
 	/* Выполняет инициализацию объекта */
 	void Prepare()
 	{
@@ -1507,7 +1556,7 @@ public:
 		}
 		case 4:
 		{
-			RenderCylinder(ProjectionMatrix, ViewMatrix);
+			RenderCylinder(CameraPosition, ProjectionMatrix, ViewMatrix);
 			break;
 		}
 		default:
@@ -1864,32 +1913,32 @@ private:
 			{
 			case 0:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f));
+				ViewMatrix = lookAt(ObjectsMirror[id].getPosition(), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			case 1:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f));
+				ViewMatrix = lookAt(ObjectsMirror[id].getPosition(), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			case 2:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f));
+				ViewMatrix = lookAt(ObjectsMirror[id].getPosition(), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f));
 				break;
 			}
 			case 3:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f));
+				ViewMatrix = lookAt(ObjectsMirror[id].getPosition(), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f));
 				break;
 			}
 			case 4:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f));
+				ViewMatrix = lookAt(ObjectsMirror[id].getPosition(), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			case 5:
 			{
-				ViewMatrix = lookAt(Objects[id].getPosition(), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f));
+				ViewMatrix = lookAt(ObjectsMirror[id].getPosition(), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f));
 				break;
 			}
 			default:
@@ -1963,7 +2012,7 @@ public:
 			}
 		}
 
-		ObjectsCount = 13;
+		ObjectsCount = 15;
 		Objects = new OBJECT[ObjectsCount];
 
 		Objects[0] = OBJECT(0, LightsCount,"3dmodels//cube.obj");
@@ -1974,80 +2023,89 @@ public:
 		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
 
-		Objects[1] = OBJECT(1, LightsCount, "3dmodels//cube.obj");
+		Objects[1] = OBJECT(0, LightsCount, "3dmodels//sphere.obj");
 		Objects[1].setLightsPositions(LightsPositions);
 		Objects[1].setLightsColors(LightsColors);
 		Objects[1].setLightsProperties(LightsProperties);
 		Objects[1].Prepare();
-		Objects[1].setPosition(0.0f, 3.0f, 3.0f);
+		Objects[1].setDiffuseColor(0.6f, 0.3f, 0.9f);
+		Objects[1].setPosition(0.0f, 6.0f, 0.0f);
 
-		Objects[2] = OBJECT(2, "3dmodels//cube.obj");
+		Objects[2] = OBJECT(0, LightsCount, "3dmodels//cylinder2.obj");
+		Objects[2].setLightsPositions(LightsPositions);
+		Objects[2].setLightsColors(LightsColors);
+		Objects[2].setLightsProperties(LightsProperties);
 		Objects[2].Prepare();
-		Objects[2].setRefractiveIndex(1.1f);
-		Objects[2].setPosition(0.0f, 0.0f, 3.0f);
+		Objects[2].setDiffuseColor(0.1f, 0.9f, 0.8f);
+		Objects[2].setPosition(0.0f, 6.0f, -3.0f);
 
-		Objects[3] = OBJECT(3, "3dmodels//cube.obj");
+		Objects[3] = OBJECT(1, LightsCount, "3dmodels//cube.obj");
+		Objects[3].setLightsPositions(LightsPositions);
+		Objects[3].setLightsColors(LightsColors);
+		Objects[3].setLightsProperties(LightsProperties);
 		Objects[3].Prepare();
-		Objects[3].setPosition(0.0f, -3.0f, 3.0f);
+		Objects[3].setPosition(0.0f, 3.0f, 3.0f);
 
-		Objects[4] = OBJECT(0, LightsCount, "3dmodels//sphere.obj");
+		Objects[4] = OBJECT(1, LightsCount, "3dmodels//sphere.obj");
 		Objects[4].setLightsPositions(LightsPositions);
 		Objects[4].setLightsColors(LightsColors);
 		Objects[4].setLightsProperties(LightsProperties);
 		Objects[4].Prepare();
-		Objects[4].setDiffuseColor(0.6f, 0.3f, 0.9f);
-		Objects[4].setPosition(0.0f, 6.0f, 0.0f);	
+		Objects[4].setPosition(0.0f, 3.0f, 0.0f);
 
-		Objects[5] = OBJECT(1, LightsCount, "3dmodels//sphere.obj");
+		Objects[5] = OBJECT(1, LightsCount, "3dmodels//cylinder2.obj");
 		Objects[5].setLightsPositions(LightsPositions);
 		Objects[5].setLightsColors(LightsColors);
 		Objects[5].setLightsProperties(LightsProperties);
 		Objects[5].Prepare();
-		Objects[5].setPosition(0.0f, 3.0f, 0.0f);
+		Objects[5].setPosition(0.0f, 3.0f, -3.0f);
 
-		Objects[6] = OBJECT(2, "3dmodels//sphere.obj");
+		Objects[6] = OBJECT(2, "3dmodels//cube.obj");
 		Objects[6].Prepare();
-		Objects[6].setRefractiveIndex(2.42f);
+		Objects[6].setRefractiveIndex(1.1f);
+		Objects[6].setPosition(0.0f, 0.0f, 3.0f);
 
-		Objects[7] = OBJECT(3, "3dmodels//sphere.obj");
+		Objects[7] = OBJECT(2, "3dmodels//sphere.obj");
 		Objects[7].Prepare();
-		Objects[7].setPosition(0.0f, -3.0f, 0.0f);
+		Objects[7].setRefractiveIndex(2.42f);
 
-		Objects[8] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
-		Objects[8].setLightsPositions(LightsPositions);
-		Objects[8].setLightsColors(LightsColors);
-		Objects[8].setLightsProperties(LightsProperties);
+		Objects[8] = OBJECT(2, "3dmodels//cylinder2.obj");
 		Objects[8].Prepare();
-		Objects[8].setDiffuseColor(0.1f, 0.9f, 0.8f);
-		Objects[8].setPosition(0.0f, 5.0f, -3.0f);
+		Objects[8].setRefractiveIndex(1.33f);
+		Objects[8].setPosition(0.0f, 0.0f, -3.0f);
 
-		Objects[9] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
-		Objects[9].setLightsPositions(LightsPositions);
-		Objects[9].setLightsColors(LightsColors);
-		Objects[9].setLightsProperties(LightsProperties);
+		Objects[9] = OBJECT(3, "3dmodels//cube.obj");
 		Objects[9].Prepare();
-		Objects[9].setPosition(0.0f, 2.0f, -3.0f);
+		Objects[9].setPosition(0.0f, -3.0f, 3.0f);		
 
-		Objects[10] = OBJECT(2, "3dmodels//cylinder.obj");
+		Objects[10] = OBJECT(3, "3dmodels//sphere.obj");
 		Objects[10].Prepare();
-		Objects[10].setRefractiveIndex(1.33f);
-		Objects[10].setPosition(0.0f, -1.0f, -3.0f);
+		Objects[10].setPosition(0.0f, -3.0f, 0.0f);	
 
-		Objects[11] = OBJECT(3, "3dmodels//cylinder.obj");
+		Objects[11] = OBJECT(3, "3dmodels//cylinder2.obj");
 		Objects[11].Prepare();
-		Objects[11].setPosition(0.0f, -4.0f, -3.0f);
+		Objects[11].setPosition(0.0f, -3.0f, -3.0f);
 
-		Objects[12] = OBJECT(4, "3dmodels//cylinder.obj");
+		Objects[12] = OBJECT(4, "3dmodels//cube.obj");
+		Objects[12].setLightPosition(0, 5.0f, -6.0f, 3.0f);
 		Objects[12].Prepare();
-		Objects[12].setPosition(0.0f, -7.0f, -3.0f);
-		Objects[12].setLightPosition(0.0f, -7.0f, 0.0f);
+		Objects[12].setPosition(0.0f, -6.0f, 3.0f);	
 
-		Objects[2].setCubeMapTexture(Skybox.getCubeMapTexture());
-		Objects[3].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[13] = OBJECT(4, "3dmodels//sphere.obj");
+		Objects[13].setLightPosition(0, 5.0f, -6.0f, 0.0f);
+		Objects[13].Prepare();
+		Objects[13].setPosition(0.0f, -6.0f, 0.0f);		
+
+		Objects[14] = OBJECT(4, "3dmodels//cylinder2.obj");
+		Objects[14].setLightPosition(0, 5.0f, -6.0f, -3.0f);
+		Objects[14].Prepare();
+		Objects[14].setPosition(0.0f, -6.0f, -3.0f);		
 
 		Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[7].setCubeMapTexture(Skybox.getCubeMapTexture());
+		Objects[8].setCubeMapTexture(Skybox.getCubeMapTexture());
 
+		Objects[9].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[10].setCubeMapTexture(Skybox.getCubeMapTexture());
 		Objects[11].setCubeMapTexture(Skybox.getCubeMapTexture());
 
@@ -2101,9 +2159,9 @@ public:
 		ObjectsMirror[5].setDiffuseColor(0.5f, 0.8f, 0.9f);
 		ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
 
-		ObjectsMirror[6] = OBJECT(3, "3dmodels//diamond.obj");
+		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere.obj");
 		ObjectsMirror[6].Prepare();
-		ObjectsMirror[6].setRefractiveIndex(1.1f);
+		//ObjectsMirror[6].setRefractiveIndex(1.1f);
 		//ObjectsMirror[6].setScale(2.0f);
 		//ObjectsMirror[6].setRotation(90.0f, "Y");
 	};
@@ -2217,20 +2275,22 @@ public:
 			if (!StopRotations)
 			{
 				Objects[0].setRotation(-CubeAngle, "XYZ");
-				Objects[1].setRotation(CubeAngle, "XY");
-				Objects[2].setRotation(-CubeAngle, "X");
-				Objects[3].setRotation(CubeAngle, "X");
+				Objects[3].setRotation(CubeAngle, "XY");
+				Objects[6].setRotation(-CubeAngle, "X");
+				Objects[9].setRotation(CubeAngle, "X");
+				Objects[12].setRotation(-CubeAngle, "Y");
 
+				Objects[1].setScale(SpheresSize);
 				Objects[4].setScale(SpheresSize);
-				Objects[5].setScale(SpheresSize);
-				Objects[6].setScale(SpheresSize);
 				Objects[7].setScale(SpheresSize);
+				Objects[10].setScale(SpheresSize); 
+				Objects[13].setScale(SpheresSize);
 
+				Objects[2].setRotation(-CylinderAngle, "Y");
+				Objects[5].setRotation(CylinderAngle, "Y");
 				Objects[8].setRotation(-CylinderAngle, "Y");
-				Objects[9].setRotation(CylinderAngle, "Y");
-				Objects[10].setRotation(-CylinderAngle, "Y");
 				Objects[11].setRotation(CylinderAngle, "Y");
-				Objects[12].setRotation(-CylinderAngle, "Y");
+				Objects[14].setRotation(-CylinderAngle, "Y");
 
 				if ((SpheresSize > SpheresSizeMin) && SphereDecrease) SpheresSize -= SpheresSizeDelta;
 				else
@@ -2335,7 +2395,7 @@ void main()
 	glEnable(GL_DEPTH_TEST);
 	/* Выбираем фрагмент, ближайший к камере */
 	glDepthFunc(GL_LESS);																		  
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
 	SCENE Scene = SCENE();
 
