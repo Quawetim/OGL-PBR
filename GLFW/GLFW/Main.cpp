@@ -445,7 +445,7 @@ private:
 	/* Подготовка данных для объекта сплошного цвета */
 	void PrepareSolidColor()
 	{
-		LoadShaders("shaders//SolidColor.vs", "shaders//SolidColor.fs");
+		LoadShaders("shaders//SolidColor.vs", NULL, "shaders//SolidColor.fs");
 
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -547,7 +547,7 @@ private:
 	/* Подготовка данных для объекта градиентного цвета */
 	void PrepareGradientColor()
 	{
-		LoadShaders("shaders//GradientColor.vs", "shaders//GradientColor.fs");
+		LoadShaders("shaders//GradientColor.vs", NULL, "shaders//GradientColor.fs");
 
 		float *colorbuffer_data = new float[vertices.size() * sizeof(vec3) * 3];
 
@@ -727,7 +727,7 @@ private:
 	/* Подготовка данных для цилиндра с картой нормалей */
 	void PrepareCylinder()
 	{
-		LoadShaders("shaders//Cylinder.vs", "shaders//Cylinder.fs");
+		LoadShaders("shaders//Cylinder.vs", NULL, "shaders//Cylinder.fs");
 
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -980,9 +980,10 @@ private:
 	/* Загрузка вершинного и фрагментного шейдеров */
 	/* VertexShader - путь к вершинному шейдеру */
 	/* FragmentShader - путь к фрагментному (пиксельному) шейдеру */
-	bool LoadShaders(const char *VertexShader, const char *FragmentShader)
+	bool LoadShaders(const char *VertexShader, const char* GeometryShader, const char *FragmentShader)
 	{
 		GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+		GLuint GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
 		GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
 		string VertexShaderCode;
@@ -1019,7 +1020,7 @@ private:
 		int InfoLogLength;
 
 		printf("Compiling vertex shader: %s...\n", VertexShader);
-		char const * VertexSourcePointer = VertexShaderCode.c_str();
+		char const *VertexSourcePointer = VertexShaderCode.c_str();
 		glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
 		glCompileShader(VertexShaderID);
 
@@ -1048,10 +1049,45 @@ private:
 			printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
 		}
 
+		if (GeometryShader != NULL)
+		{
+			string GeometryShaderCode;
+			ifstream GeometryShaderStream(GeometryShader, ios::in);
+
+			if (GeometryShaderStream.is_open())
+			{
+				string Line = "";
+				while (getline(GeometryShaderStream, Line)) GeometryShaderCode += "\n" + Line;
+				GeometryShaderStream.close();
+
+			}
+			else
+			{
+				printf("File %s not found.\n", GeometryShader);
+				return false;
+			}
+
+			printf("Compiling geometry shader: %s...\n", GeometryShader);
+			char const *GeometrySourcePointer = GeometryShaderCode.c_str();
+			glShaderSource(GeometryShaderID, 1, &GeometrySourcePointer, NULL);
+			glCompileShader(GeometryShaderID);
+
+			glGetShaderiv(GeometryShaderID, GL_COMPILE_STATUS, &Result);
+			glGetShaderiv(GeometryShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+			if (InfoLogLength > 0)
+			{
+				vector<char> GeometryShaderErrorMessage(InfoLogLength + 1);
+				glGetShaderInfoLog(GeometryShaderID, InfoLogLength, NULL, &GeometryShaderErrorMessage[0]);
+				printf("\nError: %s\n", &GeometryShaderErrorMessage[0]);
+			}
+		}
+
 		printf("Linking program...\n");
 
 		ShaderID = glCreateProgram();
 		glAttachShader(ShaderID, VertexShaderID);
+		if (GeometryShader != NULL) glAttachShader(ShaderID, GeometryShaderID);
 		glAttachShader(ShaderID, FragmentShaderID);
 		glLinkProgram(ShaderID);
 
@@ -1066,9 +1102,11 @@ private:
 		}
 
 		glDetachShader(ShaderID, VertexShaderID);
+		if (GeometryShader != NULL) glDetachShader(ShaderID, GeometryShaderID);
 		glDetachShader(ShaderID, FragmentShaderID);
 
 		glDeleteShader(VertexShaderID);
+		glDeleteShader(GeometryShaderID);
 		glDeleteShader(FragmentShaderID);
 
 		return true;
@@ -1419,13 +1457,13 @@ public:
 		}
 		case 2:
 		{
-			LoadShaders("shaders//Refraction.vs", "shaders//Refraction.fs");
+			LoadShaders("shaders//Refraction.vs", NULL, "shaders//Refraction.fs");
 			PrepareReflectionRefraction();
 			break;
 		}
 		case 3:
 		{
-			LoadShaders("shaders//Reflection.vs", "shaders//Reflection.fs");
+			LoadShaders("shaders//Reflection.vs", NULL, "shaders//Reflection.fs");
 			PrepareReflectionRefraction();
 			break;
 		}
@@ -1480,7 +1518,7 @@ public:
 	/* Инициализация координатных осей */
 	void PrepareAxes()
 	{
-		LoadShaders("shaders//GradientColor.vs", "shaders//GradientColor.fs");
+		LoadShaders("shaders//GradientColor.vs", NULL, "shaders//GradientColor.fs");
 
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -1575,7 +1613,7 @@ public:
 	/* Инициализация Скайбокса */
 	void PrepareSkyBox()
 	{
-		LoadShaders("shaders//SkyBox.vs", "shaders//SkyBox.fs");
+		LoadShaders("shaders//SkyBox.vs", NULL, "shaders//SkyBox.fs");
 
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -2061,7 +2099,6 @@ public:
 		ObjectsMirror[5].setLightsProperties(LightsProperties);
 		ObjectsMirror[5].Prepare();
 		ObjectsMirror[5].setDiffuseColor(0.5f, 0.8f, 0.9f);
-		ObjectsMirror[5].setScale(2.0f);
 		ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
 
 		ObjectsMirror[6] = OBJECT(3, "3dmodels//diamond.obj");
@@ -2137,6 +2174,7 @@ public:
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(-Radius * cos(radians(Angle)), 0.0f, -Radius * sin(radians(Angle)));
 				ObjectsMirror[1].setPosition(NewPosition.x, Position.y, NewPosition.z);
+				ObjectsMirror[1].setRotation(-Angle, "Y");
 
 				ObjectsMirror[2].setRotation(CubeAngle, "YZ");
 				ObjectsMirror[3].setRotation(-CubeAngle, "XZ");
@@ -2145,11 +2183,13 @@ public:
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(Radius * cos(radians(Angle2)), Radius * sin(radians(Angle2)), 0.0f);
 				ObjectsMirror[4].setPosition(NewPosition.x, NewPosition.y, Position.z);
+				ObjectsMirror[4].setRotation(Angle2, "Z");
 
 				Position = ObjectsMirror[5].getPosition();
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(-Radius * cos(radians(Angle2)), -Radius * sin(radians(Angle2)), 0.0f);
 				ObjectsMirror[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
+				ObjectsMirror[5].setRotation(Angle2, "Z");
 
 				ObjectsMirror[6].setRotation(1.0f, "Y");
 
