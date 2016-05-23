@@ -2,7 +2,9 @@
 
 layout (location = 0) in vec3 VertexPosition;
 layout (location = 1) in vec3 VertexNormal;
+layout (location = 2) in vec2 VertexUV;
 
+out vec2 UV;
 out vec3 FragmentNormal;
 out vec3 FragmentPosition;
 
@@ -15,5 +17,6 @@ void main()
 	gl_Position =  P * V * M * vec4(VertexPosition, 1.0f);
 	FragmentNormal = mat3(transpose(inverse(M))) * VertexNormal;
 	FragmentPosition = vec3(M * vec4(VertexPosition, 1.0f));	
+	UV = VertexUV;
 }
 

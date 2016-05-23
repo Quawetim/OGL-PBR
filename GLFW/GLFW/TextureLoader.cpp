@@ -51,7 +51,7 @@ GLuint LoadBMP(const char *Image)
 
 	if (*(int*)&(Header[0x1C]) != 24) 
 	{ 
-		printf("Wrong BMP texture.\n");
+		printf("Wrong BMP texture. Use 24-bit texture, instead of %d\n", *(int*)&(Header[0x1C]));
 		fclose(Fin);
 		return 0; 
 	}

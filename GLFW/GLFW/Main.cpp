@@ -382,10 +382,13 @@ public:
 class OBJECT
 {
 private:
-	bool ModelLoaded = false;
+	bool ModelLoadedFlag = false;
+	bool DiffuseTextureFlag = false;
+	bool SpecularTextureFlag = false;
+	bool NormalTextureFlag = false;
 	char Name[50];
 	/* Material - материал*/
-	/* ID - тип: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
+	/* ID - тип: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping*/
 	/* AmbientColor - фоновый цвет */
 	/* DiffuseColor - диффузный цвет */
 	/* SpecularColor - отражённый цвет */
@@ -429,13 +432,13 @@ private:
 
 	/* ModelMatrix - матрица модели */
 	mat4 ModelMatrix = mat4(1.0f);
-	mat3 ModelView3x3Matrix;
 
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
-	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID, ModelView3x3MatrixID;
-	GLuint BlinnID, MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID;
+	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID;
+	GLuint BlinnID, MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID, RefractiveIndexID;
 	GLuint *PointLightPositionsIDs, *PointLightColorsIDs, *PointLightPowersIDs, *PointLightConstantsIDs, *PointLightLinearsIDs, *PointLightQuadraticsIDs;
-	GLuint ShaderID, CameraPositionID, LightsCountID, RefractiveIndexID;	
+	GLuint ShaderID, CameraPositionID, LightsCountID;	
+	GLuint DiffuseTextureFlagID, NormalTextureFlagID, SpecularTextureFlagID;
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
 	GLuint DiffuseTexture, SpecularTexture, NormalTexture, CubeMapTexture;
@@ -454,13 +457,23 @@ private:
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
+
 		LightsCountID = glGetUniformLocation(ShaderID, "LightsCount");
 		CameraPositionID = glGetUniformLocation(ShaderID, "CameraPosition");
+
 		BlinnID = glGetUniformLocation(ShaderID, "Blinn");
 		MaterialAmbientColorID = glGetUniformLocation(ShaderID, "Material.AmbientColor");
 		MaterialDiffuseColorID = glGetUniformLocation(ShaderID, "Material.DiffuseColor");
 		MaterialSpecularColorID = glGetUniformLocation(ShaderID, "Material.SpecularColor");
 		MaterialShineID = glGetUniformLocation(ShaderID, "Material.Shine");
+
+		DiffuseTextureFlagID = glGetUniformLocation(ShaderID, "DiffuseTextureFlag");
+		NormalTextureFlagID = glGetUniformLocation(ShaderID, "NormalTextureFlag");
+		SpecularTextureFlagID = glGetUniformLocation(ShaderID, "SpecularTextureFlag");
+
+		DiffuseTextureID = glGetUniformLocation(ShaderID, "DiffuseTexture");
+		NormalTextureID = glGetUniformLocation(ShaderID, "NormalTexture");
+		SpecularTextureID = glGetUniformLocation(ShaderID, "SpecularTexture");
 
 		PointLightPositionsIDs = new GLuint[LightsCount];
 		PointLightColorsIDs = new GLuint[LightsCount];
@@ -491,7 +504,7 @@ private:
 
 		glGenBuffers(1, &vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
 
 		glGenBuffers(1, &normalbuffer);
@@ -499,8 +512,14 @@ private:
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
 
+		glGenBuffers(1, &uvbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), &uvs[0], GL_STATIC_DRAW);
+
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 		glBindVertexArray(0);
 	}
 
@@ -522,6 +541,10 @@ private:
 		glUniform3f(MaterialDiffuseColorID, Material.DiffuseColor.x, Material.DiffuseColor.y, Material.DiffuseColor.z);
 		glUniform3f(MaterialSpecularColorID, Material.SpecularColor.x, Material.SpecularColor.y, Material.SpecularColor.z);
 		glUniform1f(MaterialShineID, Material.Shine);
+		glUniform1i(DiffuseTextureFlagID, DiffuseTextureFlag);
+		glUniform1i(SpecularTextureFlagID, SpecularTextureFlag);
+		glUniform1i(NormalTextureFlagID, NormalTextureFlag);
+		
 		glUniform1i(LightsCountID, LightsCount);
 		glUniform3f(CameraPositionID, Camera.x, Camera.y, Camera.z);
 		for (int i = 0; i < LightsCount; i++)
@@ -542,7 +565,30 @@ private:
 		}
 
 		glBindVertexArray(VAO);
+
+		if (DiffuseTextureFlag)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, DiffuseTexture);
+			glUniform1i(DiffuseTextureID, 0);
+		}
+
+		if (NormalTextureFlag)
+		{
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, NormalTexture);
+			glUniform1i(NormalTextureID, 1);
+		}
+
+		if (SpecularTextureFlag)
+		{
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, SpecularTexture);
+			glUniform1i(SpecularTextureID, 2);
+		}
+
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
+
 		glBindVertexArray(0);
 		/*glDisable(GL_BLEND);
 		glDisable(GL_CULL_FACE);*/
@@ -718,7 +764,7 @@ private:
 	}
 
 	/* Подготовка данных для цилиндра с картой нормалей */
-	void PrepareCylinder()
+	void PrepareNormalMapping()
 	{
 		LoadShaders("shaders//Cylinder.vs", NULL, "shaders//Cylinder.fs");
 
@@ -756,11 +802,6 @@ private:
 			sprintf(buf, "PointLight[%d].Quadratic", i);
 			PointLightQuadraticsIDs[i] = glGetUniformLocation(ShaderID, buf);
 		}
-
-
-		DiffuseTexture = LoadDDS("textures//diffuse.DDS");
-		NormalTexture = LoadBMP("textures//normal.bmp");
-		SpecularTexture = LoadDDS("textures//specular.DDS");	
 
 		ComputeTBT(vertices, uvs, normals, tangents, bitangents);
 
@@ -816,11 +857,9 @@ private:
 	/* Рендеринг цилиндра с картой нормалей */
 	/* ProjectionMatrix - матрица проекции */
 	/* ViewMatrix - матрица вида */
-	void RenderCylinder(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
+	void RenderNormalMapping(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
 		glUseProgram(ShaderID);
-
-		ModelView3x3Matrix = mat3(ViewMatrix * ModelMatrix);
 
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
@@ -912,7 +951,7 @@ private:
 					vec2 uv;
 
 					fscanf(Fin, "%f %f\n", &uv.x, &uv.y);
-					uv.y = -uv.y; // ивертируем для DDS текстуры. Убрать для TGA или BMP.
+					//uv.y = -uv.y; // ивертируем для DDS текстуры. Убрать для TGA или BMP.
 					tmp_UVs.push_back(uv);
 				}
 				else
@@ -1247,7 +1286,8 @@ public:
 	};
 
 	/* Конструктор для объектов*/
-	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр" */
+	/* materialID - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
+	/* path - путь к модели */
 	OBJECT(int materialID, const char *path)
 	{
 		sprintf(Name, path);
@@ -1257,11 +1297,13 @@ public:
 			LightsCount = 1;
 			PointLight = new pointLight[LightsCount];
 		}
-		ModelLoaded = LoadOBJ(path, vertices, uvs, normals);
+		ModelLoadedFlag = LoadOBJ(path, vertices, uvs, normals);
 	}
 
 	/* Конструктор для объектов*/
-	/* material - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр" */
+	/* materialID - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
+	/* lightscount - число источников света */
+	/* path - путь к модели */
 	OBJECT(int materialID, int lightscount, const char *path)
 	{
 		sprintf(Name, path);
@@ -1276,7 +1318,7 @@ public:
 			LightsCount = lightscount;
 			PointLight = new pointLight[LightsCount];
 		}
-		ModelLoaded = LoadOBJ(path, vertices, uvs, normals);
+		ModelLoadedFlag = LoadOBJ(path, vertices, uvs, normals);
 	}
 
 	/* Деструктор */
@@ -1298,8 +1340,96 @@ public:
 	/* Возвращает указатель на шейдер */
 	GLuint getShaderID() { return ShaderID; }
 
+	/* Задаёт размер объекта */
+	void setScale(float value)
+	{
+		Scale = value;
+		vec3 pos = getPosition();
+		ModelMatrix = mat4(1.0);
+		ModelMatrix *= scale(vec3(Scale, Scale, Scale));
+		ModelMatrix[3].x = pos.x;
+		ModelMatrix[3].y = pos.y;
+		ModelMatrix[3].z = pos.z;
+	}
+
+	/* Возвращает размер объекта */
+	float getScale()
+	{
+		return Scale;
+		//return ModelMatrix[0].x; 
+	}
+
+	/* Вращение объекта */
+	/* angle - угол в градусах */
+	/* axis - ось вращения: X, Y, Z, XY, XZ, YZ, XYZ */
+	void setRotation(float angle, char axis[])
+	{
+		vec3 pos, Axis;
+
+		pos = getPosition();
+
+		if (strcmp(axis, "X") == 0) Axis = vec3(1.0f, 0.0f, 0.0f);
+		else
+		{
+			if (strcmp(axis, "Y") == 0) Axis = vec3(0.0f, 1.0f, 0.0f);
+			else
+			{
+				if (strcmp(axis, "Z") == 0) Axis = vec3(0.0f, 0.0f, 1.0f);
+				else
+				{
+					if ((strcmp(axis, "XY") == 0) || (strcmp(axis, "YX") == 0)) Axis = vec3(1.0f, 1.0f, 0.0f);
+					else
+					{
+						if ((strcmp(axis, "XZ") == 0) || (strcmp(axis, "ZX") == 0)) Axis = vec3(1.0f, 0.0f, 1.0f);
+						else
+						{
+							if ((strcmp(axis, "YZ") == 0) || (strcmp(axis, "ZY") == 0)) Axis = vec3(0.0f, 1.0f, 1.0f);
+							else
+							{
+								if ((strcmp(axis, "XYZ") == 0) || (strcmp(axis, "XZY") == 0) ||
+									(strcmp(axis, "YXZ") == 0) || (strcmp(axis, "YZX") == 0) ||
+									(strcmp(axis, "ZXY") == 0) || (strcmp(axis, "ZYX") == 0)) Axis = vec3(1.0f, 1.0f, 1.0f);
+								else return;
+							}
+						}
+					}
+				}
+			}
+		}
+		//ModelMatrix = mat4(1.0);
+		//ModelMatrix[3].x = pos.x;
+		//ModelMatrix[3].y = pos.y;
+		//ModelMatrix[3].z = pos.z;
+		ModelMatrix *= rotate(radians(angle), Axis);
+	}
+
+	/* Задаёт позицию объекта */
+	void setPosition(float x, float y, float z)
+	{
+		float scale = getScale();
+		ModelMatrix = mat4(1.0);
+		ModelMatrix *= translate(vec3(x, y, z));
+		ModelMatrix[0].x = scale;
+		ModelMatrix[1].y = scale;
+		ModelMatrix[2].z = scale;
+	}
+
+	/* Задаёт позицию объекта */
+	void setPosition(vec3 position)
+	{
+		float scale = getScale();
+		ModelMatrix = mat4(1.0);
+		ModelMatrix *= translate(vec3(position.x, position.y, position.z));
+		ModelMatrix[0].x = scale;
+		ModelMatrix[1].y = scale;
+		ModelMatrix[2].z = scale;
+	}
+
+	/* Возвращает позицию объекта */
+	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
+
 	/* Задаёт материал */
-	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - "цилиндр"*/
+	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
 	void setMaterial(int value) { Material.ID = value; }
 		
 	/* Возвращает материал */
@@ -1337,6 +1467,36 @@ public:
 
 	/* Возвращает силу блеска */
 	float getShinePower() { return Material.Shine; }
+
+	/* Задаёт индекс преломления >= 1 */
+	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
+	void setRefractiveIndex(float value) { if (value < 1.0f) value = 1.0f; Material.RefractiveIndex = value; }
+
+	/* Возвращает индекс преломления */
+	float getRefractiveIndex() { return Material.RefractiveIndex; }
+
+	/* Задаёт диффузную текстуру */
+	void setDiffuseTexture(const char *path, bool DDS)
+	{
+		DiffuseTextureFlag = true;
+		if (DDS) DiffuseTexture = LoadDDS(path);
+		else DiffuseTexture = LoadBMP(path);
+	}
+
+	/* Задаёт карту отражений */
+	void setSpecularTexture(const char *path, bool DDS)
+	{
+		SpecularTextureFlag = true;
+		if (DDS) SpecularTexture = LoadDDS(path);
+		else SpecularTexture = LoadBMP(path);
+	}
+
+	/* задаёт карту нормалей */
+	void setNormalTexture(const char *path)
+	{
+		NormalTextureFlag = true;
+		NormalTexture = LoadBMP(path);
+	}
 
 	/* Задаёт позицию источников света по его ID */
 	void setLightPosition(int id, float x, float y, float z) { PointLight[id].Position = vec3(x, y, z); }
@@ -1396,111 +1556,16 @@ public:
 	/* Возвращает свойства источника света по его ID */
 	vec4 getlightProperties(int id) { return vec4(PointLight[id].Power, PointLight[id].Constant, PointLight[id].Linear, PointLight[id].Quadratic); }
 
-	/* Задаёт индекс преломления */
-	/* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
-	void setRefractiveIndex(float value) { if (value < 1.0f) value = 1.0f; Material.RefractiveIndex = value; }
-
-	/* Возвращает индекс преломления */
-	float getRefractiveIndex() { return Material.RefractiveIndex; }
-
 	/* Задаёт CubeMap-текстуру */
 	void setCubeMapTexture(GLuint value){ CubeMapTexture = value; }
 
 	/* Возврщает указатель на CubeMap-текстуру */
 	GLuint getCubeMapTexture() { return CubeMapTexture; }
 
-	/* Задаёт размер объекта */
-	void setScale(float value)
-	{
-		Scale = value;
-		vec3 pos = getPosition();
-		ModelMatrix = mat4(1.0);
-		ModelMatrix *= scale(vec3(Scale, Scale, Scale));
-		ModelMatrix[3].x = pos.x;
-		ModelMatrix[3].y = pos.y;
-		ModelMatrix[3].z = pos.z;
-	}
-
-	/* Возвращает размер объекта */
-	float getScale() 
-	{ 
-		return Scale;
-		//return ModelMatrix[0].x; 
-	}
-
-	/* Вращение объекта */
-	/* angle - угол в градусах */
-	/* axis - ось вращения: X, Y, Z, XY, XZ, YZ, XYZ */
-	void setRotation(float angle, char axis[]) 
-	{ 
-		vec3 pos, Axis;
-
-		pos = getPosition();
-		
-		if (strcmp(axis, "X") == 0) Axis = vec3(1.0f, 0.0f, 0.0f);
-		else
-		{
-			if (strcmp(axis, "Y") == 0) Axis = vec3(0.0f, 1.0f, 0.0f);
-			else
-			{
-				if (strcmp(axis, "Z") == 0) Axis = vec3(0.0f, 0.0f, 1.0f);
-				else
-				{
-					if ((strcmp(axis, "XY") == 0) || (strcmp(axis, "YX") == 0)) Axis = vec3(1.0f, 1.0f, 0.0f);
-					else
-					{
-						if ((strcmp(axis, "XZ") == 0) || (strcmp(axis, "ZX") == 0)) Axis = vec3(1.0f, 0.0f, 1.0f);
-						else
-						{
-							if ((strcmp(axis, "YZ") == 0) || (strcmp(axis, "ZY") == 0)) Axis = vec3(0.0f, 1.0f, 1.0f);
-							else
-							{
-								if ((strcmp(axis, "XYZ") == 0) || (strcmp(axis, "XZY") == 0) || 
-									(strcmp(axis, "YXZ") == 0) || (strcmp(axis, "YZX") == 0) || 
-									(strcmp(axis, "ZXY") == 0) || (strcmp(axis, "ZYX") == 0)) Axis = vec3(1.0f, 1.0f, 1.0f);
-								else return;
-							}
-						}
-					}
-				}
-			}
-		}
-		//ModelMatrix = mat4(1.0);
-		//ModelMatrix[3].x = pos.x;
-		//ModelMatrix[3].y = pos.y;
-		//ModelMatrix[3].z = pos.z;
-		ModelMatrix *= rotate(radians(angle), Axis);			
-	}
-
-	/* Задаёт позицию объекта */
-	void setPosition(float x, float y, float z) 
-	{ 
-		float scale = getScale();
-		ModelMatrix = mat4(1.0);
-		ModelMatrix *= translate(vec3(x, y, z)); 
-		ModelMatrix[0].x = scale;
-		ModelMatrix[1].y = scale;
-		ModelMatrix[2].z = scale;
-	}	
-
-	/* Задаёт позицию объекта */
-	void setPosition(vec3 position)
-	{
-		float scale = getScale();
-		ModelMatrix = mat4(1.0);
-		ModelMatrix *= translate(vec3(position.x, position.y, position.z));
-		ModelMatrix[0].x = scale;
-		ModelMatrix[1].y = scale;
-		ModelMatrix[2].z = scale;
-	}
-
-	/* Возвращает позицию объекта */
-	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
-
 	/* Выполняет инициализацию объекта */
 	void Prepare()
 	{
-		if (ModelLoaded)
+		if (ModelLoadedFlag)
 		{
 			switch (Material.ID)
 			{
@@ -1528,7 +1593,7 @@ public:
 			}
 			case 4:
 			{
-				PrepareCylinder();
+				PrepareNormalMapping();
 				break;
 			}
 			default:
@@ -1547,7 +1612,7 @@ public:
 	/* ViewMatrix - матрица вида */
 	void Render(vec3 CameraPosition, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	{
-		if (ModelLoaded)
+		if (ModelLoadedFlag)
 		{
 			switch (Material.ID)
 			{
@@ -1573,7 +1638,7 @@ public:
 			}
 			case 4:
 			{
-				RenderCylinder(CameraPosition, ProjectionMatrix, ViewMatrix);
+				RenderNormalMapping(CameraPosition, ProjectionMatrix, ViewMatrix);
 				break;
 			}
 			default:
@@ -1689,50 +1754,6 @@ public:
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
 		cubemapTextureID = glGetUniformLocation(ShaderID, "cubemap");
-
-		GLfloat skyboxVertices[] = {
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide,
-
-			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide,
-			SkyBoxSide, -SkyBoxSide,  SkyBoxSide
-		};
 
 		GLfloat skyboxVerticesNormals[] = {
 			/* Право */
@@ -1993,7 +2014,7 @@ public:
 		Axes = OBJECT();
 		Axes.PrepareAxes();
 
-		LightsCount = 3;
+		LightsCount = 0;
 		vec3 LightsPositions[] =
 		{
 			vec3(-60.0f, 50.0f, -80.0f),
@@ -2041,6 +2062,7 @@ public:
 		Objects[0].setLightsPositions(LightsPositions);
 		Objects[0].setLightsColors(LightsColors);
 		Objects[0].setLightsProperties(LightsProperties);
+		Objects[0].setDiffuseTexture("textures//batman.bmp", false);
 		Objects[0].Prepare();
 		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
@@ -2110,16 +2132,25 @@ public:
 
 		Objects[12] = OBJECT(4, "3dmodels//cube.obj");
 		Objects[12].setLightPosition(0, 5.0f, -6.0f, 3.0f);
+		Objects[12].setDiffuseTexture("textures//diffuse.dds", true);
+		Objects[12].setSpecularTexture("textures//specular.dds", true);
+		Objects[12].setNormalTexture("textures//normal.bmp");
 		Objects[12].Prepare();
 		Objects[12].setPosition(0.0f, -6.0f, 3.0f);	
 
 		Objects[13] = OBJECT(4, "3dmodels//sphere_lowpoly.obj");
 		Objects[13].setLightPosition(0, 5.0f, -6.0f, 0.0f);
+		Objects[13].setDiffuseTexture("textures//diffuse.dds", true);
+		Objects[13].setSpecularTexture("textures//specular.dds", true);
+		Objects[13].setNormalTexture("textures//normal.bmp");
 		Objects[13].Prepare();
 		Objects[13].setPosition(0.0f, -6.0f, 0.0f);		
 
 		Objects[14] = OBJECT(4, "3dmodels//cylinder.obj");
 		Objects[14].setLightPosition(0, 5.0f, -6.0f, -3.0f);
+		Objects[14].setDiffuseTexture("textures//diffuse.dds", true);
+		Objects[14].setSpecularTexture("textures//specular.dds", true);
+		Objects[14].setNormalTexture("textures//normal.bmp");
 		Objects[14].Prepare();
 		Objects[14].setPosition(0.0f, -6.0f, -3.0f);		
 

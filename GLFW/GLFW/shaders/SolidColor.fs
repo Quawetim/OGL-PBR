@@ -20,6 +20,7 @@ struct pointLight
 	float Quadratic;
 };
 
+in vec2 UV;
 in vec3 FragmentNormal;
 in vec3 FragmentPosition;
 
@@ -30,6 +31,12 @@ uniform material Material;
 uniform vec3 CameraPosition;
 uniform int LightsCount;
 uniform pointLight PointLight[MAX_POINT_LIGHTS];
+uniform bool DiffuseTextureFlag;
+uniform bool SpecularTextureFlag;
+uniform bool NormalTextureFlag;
+uniform sampler2D DiffuseTexture;
+uniform sampler2D NormalTexture;
+uniform sampler2D SpecularTexture;
 
 vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 {
@@ -50,9 +57,21 @@ vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 		spec = pow(max(dot(viewdir, ReflectionDirection), 0.0f), Material.Shine);
 	}
 	
-	vec3 Ambient = Material.AmbientColor * Material.DiffuseColor;
-	vec3 Diffuse = PointLight[id].Color * PointLight[id].Power * Material.DiffuseColor * diff;
-	vec3 Specular = PointLight[id].Color * PointLight[id].Power * Material.SpecularColor * spec;
+	vec3 Ambient, Diffuse, Specular;
+
+	if (DiffuseTextureFlag) 
+	{
+		Ambient = 0.05f * texture(DiffuseTexture, UV).rgb;
+		Diffuse = PointLight[id].Color * PointLight[id].Power * texture(DiffuseTexture, UV).rgb * diff;
+	}
+	else 
+	{
+		Ambient = Material.AmbientColor * Material.DiffuseColor;
+		Diffuse = PointLight[id].Color * PointLight[id].Power * Material.DiffuseColor * diff;
+	}
+
+	if (SpecularTextureFlag) Specular = PointLight[id].Color * PointLight[id].Power * texture(SpecularTexture, UV).rgb * spec;
+	else Specular = PointLight[id].Color * PointLight[id].Power * Material.SpecularColor * spec;
 
 	float Distance = length(position - fragpos);
 	float Attenuation = 1.0f / (PointLight[id].Constant + PointLight[id].Linear * Distance + PointLight[id].Quadratic * (Distance * Distance));
@@ -77,7 +96,8 @@ void main()
 	}
 	else
 	{
-		Color = Material.DiffuseColor;
+		if (DiffuseTextureFlag) Color = texture(DiffuseTexture, UV).rgb;
+		else Color = Material.DiffuseColor;
 	}
 
 	Color = pow(Color, vec3(1.0/GammaCorrection));
