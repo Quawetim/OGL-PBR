@@ -257,6 +257,8 @@ private:
 	{
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius > RadiusMin) Radius -= DeltaTime * Speed; }
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius < RadiusMax) Radius += DeltaTime * Speed; }
+
+		if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
 	}
 
 	/* Обработка клавиатуры для движения камеры №1 */
@@ -450,7 +452,7 @@ private:
 	GLuint DiffuseTextureFlagID, NormalTextureFlagID, SpecularTextureFlagID;
 	GLuint DiffuseTextureID, NormalTextureID, SpecularTextureID, cubemapTextureID;
 	/* Текстуры */
-	GLuint DiffuseTexture, SpecularTexture, NormalTexture, CubeMapTexture;
+	GLuint DiffuseTexture = 0, SpecularTexture = 0, NormalTexture = 0, CubeMapTexture = 0;
 	/* Буферы */
 	GLuint vertexbuffer, colorbuffer, uvbuffer, normalbuffer, tangentbuffer, bitangentbuffer, elementbuffer;
 
@@ -1565,24 +1567,24 @@ public:
 	/* Задаёт диффузную текстуру */
 	void setDiffuseTexture(const char *path, bool DDS)
 	{
-		DiffuseTextureFlag = true;
 		if (DDS) DiffuseTexture = LoadDDS(path);
 		else DiffuseTexture = LoadBMP(path);
+		if (DiffuseTexture > 0) DiffuseTextureFlag = true;
 	}
 
 	/* Задаёт карту отражений */
 	void setSpecularTexture(const char *path, bool DDS)
 	{
-		SpecularTextureFlag = true;
 		if (DDS) SpecularTexture = LoadDDS(path);
 		else SpecularTexture = LoadBMP(path);
+		if (SpecularTexture > 0) SpecularTextureFlag = true;
 	}
 
 	/* задаёт карту нормалей */
 	void setNormalTexture(const char *path)
 	{
-		NormalTextureFlag = true;
 		NormalTexture = LoadBMP(path);
+		if (NormalTexture > 0) NormalTextureFlag = true;
 	}
 
 	/* Задаёт позицию источников света по его ID */
@@ -2149,7 +2151,7 @@ public:
 		Objects[0].setLightsPositions(LightsPositions);
 		Objects[0].setLightsColors(LightsColors);
 		Objects[0].setLightsProperties(LightsProperties);
-		Objects[0].setDiffuseTexture("textures//batman.bmp", false);
+		Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
 		Objects[0].Prepare();
 		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		Objects[0].createModelMatrix(vec3(0.0f, 6.0f, 3.0f), NULL, NULL, 0.5f);
