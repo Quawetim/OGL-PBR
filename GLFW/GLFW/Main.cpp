@@ -600,6 +600,25 @@ private:
 
 		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
 
+
+		if (DiffuseTextureFlag)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		if (NormalTextureFlag)
+		{
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		if (SpecularTextureFlag)
+		{
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
 		glBindVertexArray(0);
 		/*glDisable(GL_BLEND);
 		glDisable(GL_CULL_FACE);*/
@@ -1839,9 +1858,10 @@ public:
 	void PrepareSkyBox()
 	{
 		LoadShaders("shaders//SkyBox.vs", NULL, "shaders//SkyBox.fs");
-
+	
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
+		ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 		cubemapTextureID = glGetUniformLocation(ShaderID, "cubemap");
 
 		GLfloat skyboxVerticesNormals[] = {
@@ -1932,6 +1952,7 @@ public:
 
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 		glUniform1i(glGetUniformLocation(ShaderID, "LightsCount"), LightsCount);
 		glUniform3f(glGetUniformLocation(ShaderID, "CameraPosition"), Camera.x, Camera.y, Camera.z);
 		for (int i = 0; i < LightsCount; i++)
@@ -1971,7 +1992,7 @@ private:
 
 	bool SphereDecrease = true, SphereIncrease = false;
 	float SpheresSize = 1.0f, SpheresSizeDelta = 0.004f, SpheresSizeMin = 0.8f, SpheresSizeMax = 1.0f;
-	float CubeAngle = 3.0f, CylinderAngle = -1.0f;
+	float CubeAngle = 1.0f, CylinderAngle = -1.0f;
 	float Radius, Angle = 0.0f, Angle2 = 0.0f, Angle3 = 0.0f, AngleDelta = 2.0f, AngleDelta2 = 1.0f, AngleDelta3 = 1.0f;
 	vec3 Position, NewPosition;
 
@@ -2152,8 +2173,10 @@ public:
 		Objects[0].setLightsColors(LightsColors);
 		Objects[0].setLightsProperties(LightsProperties);
 		Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
+		Objects[0].setSpecularTexture("textures//batman_specular.bmp", false);
 		Objects[0].Prepare();
-		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
+		//Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
+		Objects[0].setDiffuseColor(0.07f, 0.07f, 0.07f);
 		Objects[0].createModelMatrix(vec3(0.0f, 6.0f, 3.0f), NULL, NULL, 0.5f);
 
 		Objects[1] = OBJECT(0, LightsCount, "3dmodels//sphere_lowpoly.obj");
@@ -2338,6 +2361,8 @@ public:
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
+
 		if (MirrorExample)
 		{
 			for (int i = 0; i < ObjectsCountMirror; i++)
@@ -2356,14 +2381,6 @@ public:
 					glDeleteTextures(1, &tex);
 				}
 			}
-
-			if ((LightsCount > 0) && (ShowLights))
-			{
-				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
-			}
-
-			Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
-			Axes.RenderAxes(ViewMatrixAxes);
 					
 			if (!StopRotations)
 			{
@@ -2414,9 +2431,6 @@ public:
 				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
-			Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
-			Axes.RenderAxes(ViewMatrixAxes);
-
 			if (!StopRotations)
 			{
 				Objects[0].increaseRotation(-CubeAngle, "Y");
@@ -2454,6 +2468,14 @@ public:
 				}
 			}
 		}
+		
+		if ((LightsCount > 0) && (ShowLights))
+		{
+			for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);		
+		}
+
+		//Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
+		Axes.RenderAxes(ViewMatrixAxes);
 	}
 };
 
