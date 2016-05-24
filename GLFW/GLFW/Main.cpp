@@ -382,10 +382,15 @@ public:
 class OBJECT
 {
 private:
+	/* ModelLoadedFlag - флаг успешной/неуспешной загрузки модели */
+	/* DiffuseTextureFlag - флаг наличия/отсутствия диффузной текстуры */
+	/* SpecularTextureFlag - флаг наличия/отсутствия карты отражений */
+	/* NormalTextureFlag - флаг наличия/отсутствия карты нормалей */
 	bool ModelLoadedFlag = false;
 	bool DiffuseTextureFlag = false;
 	bool SpecularTextureFlag = false;
 	bool NormalTextureFlag = false;
+
 	char Name[50];
 	/* Material - материал*/
 	/* ID - тип: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping*/
@@ -407,8 +412,12 @@ private:
 	/* LightsCount - число источников освещения */
 	int LightsCount = 0;	
 
-	/**/
-	float Scale = 1.0f;
+	/* Position - позиция объекта */
+	/* Axis - ось последнего вращения */
+	/* Angle - угол поворота */
+	/* Scale - размер */
+	vec3 Position = vec3(0.0f, 0.0f, 0.0f), Axis = vec3(0.0f, 1.0f, 0.0f);
+	float Angle = 0.0f, Scale = 1.0f;
 
 	/* PointLight - точечный источник света */
 	/* Position - позиция */
@@ -431,8 +440,8 @@ private:
 	GLuint VAO;
 
 	/* ModelMatrix - матрица модели */
-	mat4 ModelMatrix = mat4(1.0f);
-
+public:	mat4 ModelMatrix = mat4(1.0f);
+private:
 	/* Идентификаторы шейдера, источника света, матриц и текстур для шейдеров*/
 	GLuint ProjectionMatrixID, ViewMatrixID, ModelMatrixID;
 	GLuint BlinnID, MaterialAmbientColorID, MaterialDiffuseColorID, MaterialSpecularColorID, MaterialShineID, RefractiveIndexID;
@@ -1340,34 +1349,99 @@ public:
 	/* Возвращает указатель на шейдер */
 	GLuint getShaderID() { return ShaderID; }
 
-	/* Задаёт размер объекта */
-	void setScale(float value)
+	/* Создаёт матрицу модели */
+	/* position - позиция объекта */
+	/* initialangle - начальный угол поворота */
+	/* axis - ось поворота */
+	/* size - исходный размер */
+	void createModelMatrix(vec3 position, float initialangle, char axis[], float size)
 	{
-		Scale = value;
-		vec3 pos = getPosition();
-		ModelMatrix = mat4(1.0);
+		ModelMatrix = mat4(1.0f);
+		ModelMatrix *= translate(position);
+
+		if (axis != NULL)
+		{
+			if (strcmp(axis, "X") == 0) Axis = vec3(1.0f, 0.0f, 0.0f);
+			else
+			{
+				if (strcmp(axis, "Y") == 0) Axis = vec3(0.0f, 1.0f, 0.0f);
+				else
+				{
+					if (strcmp(axis, "Z") == 0) Axis = vec3(0.0f, 0.0f, 1.0f);
+					else
+					{
+						if ((strcmp(axis, "XY") == 0) || (strcmp(axis, "YX") == 0)) Axis = vec3(1.0f, 1.0f, 0.0f);
+						else
+						{
+							if ((strcmp(axis, "XZ") == 0) || (strcmp(axis, "ZX") == 0)) Axis = vec3(1.0f, 0.0f, 1.0f);
+							else
+							{
+								if ((strcmp(axis, "YZ") == 0) || (strcmp(axis, "ZY") == 0)) Axis = vec3(0.0f, 1.0f, 1.0f);
+								else
+								{
+									if ((strcmp(axis, "XYZ") == 0) || (strcmp(axis, "XZY") == 0) ||
+										(strcmp(axis, "YXZ") == 0) || (strcmp(axis, "YZX") == 0) ||
+										(strcmp(axis, "ZXY") == 0) || (strcmp(axis, "ZYX") == 0)) Axis = vec3(1.0f, 1.0f, 1.0f);
+									else return;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			ModelMatrix *= rotate(radians(initialangle), Axis);
+		}
+
+		ModelMatrix *= scale(vec3(size, size, size));
+
+		Position = position;
+		Angle = initialangle;
+		Scale = size;
+	}
+
+	/* Создаёт матрицу модели */
+	/* position - позиция объекта */
+	/* initialangle - начальный угол поворота */
+	/* axis - ось поворота */
+	/* size - исходный размер */
+	void createModelMatrix(vec3 position, float initialangle, vec3 axis, float size)
+	{
+		ModelMatrix = mat4(1.0f);
+		ModelMatrix *= translate(position);		
+		ModelMatrix *= rotate(radians(initialangle), axis);
+		ModelMatrix *= scale(vec3(size, size, size));
+
+		Position = position;
+		Angle = initialangle;
+		Axis = axis;
+		Scale = size;
+	}
+
+	/* Возвращает угол поворота */
+	float getAngle() { return Angle; }
+
+	/* Возвращает ось поворота */
+	vec3 getAxis() { return Axis; }
+
+	/* Задаёт размер объекта */
+	void increaseScale(float value)
+	{
+		Scale += value;
 		ModelMatrix *= scale(vec3(Scale, Scale, Scale));
-		ModelMatrix[3].x = pos.x;
-		ModelMatrix[3].y = pos.y;
-		ModelMatrix[3].z = pos.z;
 	}
 
 	/* Возвращает размер объекта */
 	float getScale()
 	{
 		return Scale;
-		//return ModelMatrix[0].x; 
 	}
 
-	/* Вращение объекта */
+	/* Вращение объекта на заданный угол вокруг заданной оси */
 	/* angle - угол в градусах */
 	/* axis - ось вращения: X, Y, Z, XY, XZ, YZ, XYZ */
-	void setRotation(float angle, char axis[])
+	void increaseRotation(float angle, char axis[])
 	{
-		vec3 pos, Axis;
-
-		pos = getPosition();
-
 		if (strcmp(axis, "X") == 0) Axis = vec3(1.0f, 0.0f, 0.0f);
 		else
 		{
@@ -1396,11 +1470,18 @@ public:
 				}
 			}
 		}
-		//ModelMatrix = mat4(1.0);
-		//ModelMatrix[3].x = pos.x;
-		//ModelMatrix[3].y = pos.y;
-		//ModelMatrix[3].z = pos.z;
 		ModelMatrix *= rotate(radians(angle), Axis);
+		Angle += angle;
+	}
+
+	/* Вращение объекта на заданный угол вокруг заданной оси */
+	/* angle - угол в градусах */
+	/* axis - ось вращения: X, Y, Z, XY, XZ, YZ, XYZ */
+	void increaseRotation(float angle, vec3 axis)
+	{	
+		ModelMatrix *= rotate(radians(angle), axis);
+		Angle += angle;
+		Axis = axis;
 	}
 
 	/* Задаёт позицию объекта */
@@ -1412,6 +1493,7 @@ public:
 		ModelMatrix[0].x = scale;
 		ModelMatrix[1].y = scale;
 		ModelMatrix[2].z = scale;
+		Position = vec3(x, y, z);
 	}
 
 	/* Задаёт позицию объекта */
@@ -1423,10 +1505,15 @@ public:
 		ModelMatrix[0].x = scale;
 		ModelMatrix[1].y = scale;
 		ModelMatrix[2].z = scale;
+		Position = position;
 	}
 
 	/* Возвращает позицию объекта */
-	vec3 getPosition() { return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z); }
+	vec3 getPosition() 
+	{
+		//return vec3(ModelMatrix[3].x, ModelMatrix[3].y, ModelMatrix[3].z);
+		return Position;	 
+	}
 
 	/* Задаёт материал */
 	/* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
@@ -1883,7 +1970,7 @@ private:
 	bool SphereDecrease = true, SphereIncrease = false;
 	float SpheresSize = 1.0f, SpheresSizeDelta = 0.004f, SpheresSizeMin = 0.8f, SpheresSizeMax = 1.0f;
 	float CubeAngle = 3.0f, CylinderAngle = -1.0f;
-	float Radius, Angle = 0.0f, Angle2 = 0.0f, AngleDelta = 2.0f, AngleDelta2 = 1.0f;
+	float Radius, Angle = 0.0f, Angle2 = 0.0f, Angle3 = 0.0f, AngleDelta = 2.0f, AngleDelta2 = 1.0f, AngleDelta3 = 1.0f;
 	vec3 Position, NewPosition;
 
 	/* Позиция камеры */
@@ -2014,7 +2101,7 @@ public:
 		Axes = OBJECT();
 		Axes.PrepareAxes();
 
-		LightsCount = 0;
+		LightsCount = 3;
 		vec3 LightsPositions[] =
 		{
 			vec3(-60.0f, 50.0f, -80.0f),
@@ -2051,7 +2138,7 @@ public:
 				Lights[i].Prepare();
 				Lights[i].setDiffuseColor(LightsColors[i]);
 				Lights[i].setPosition(LightsPositions[i]);
-				Lights[i].setScale(0.5f);
+				Lights[i].createModelMatrix(LightsPositions[i], NULL, NULL, 0.5f);
 			}
 		}
 
@@ -2065,7 +2152,7 @@ public:
 		Objects[0].setDiffuseTexture("textures//batman.bmp", false);
 		Objects[0].Prepare();
 		Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
-		Objects[0].setPosition(0.0f, 6.0f, 3.0f);	
+		Objects[0].createModelMatrix(vec3(0.0f, 6.0f, 3.0f), NULL, NULL, 0.5f);
 
 		Objects[1] = OBJECT(0, LightsCount, "3dmodels//sphere_lowpoly.obj");
 		Objects[1].setLightsPositions(LightsPositions);
@@ -2073,7 +2160,7 @@ public:
 		Objects[1].setLightsProperties(LightsProperties);
 		Objects[1].Prepare();
 		Objects[1].setDiffuseColor(0.6f, 0.3f, 0.9f);
-		Objects[1].setPosition(0.0f, 6.0f, 0.0f);
+		Objects[1].createModelMatrix(vec3(0.0f, 6.0f, 0.0f), NULL, NULL, 1.0f);
 
 		Objects[2] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
 		Objects[2].setLightsPositions(LightsPositions);
@@ -2081,7 +2168,7 @@ public:
 		Objects[2].setLightsProperties(LightsProperties);
 		Objects[2].Prepare();
 		Objects[2].setDiffuseColor(0.1f, 0.9f, 0.8f);
-		Objects[2].setPosition(0.0f, 6.0f, -3.0f);
+		Objects[2].createModelMatrix(vec3(0.0f, 6.0f, -3.0f), NULL, NULL, 1.0f);
 
 		Objects[3] = OBJECT(1, LightsCount, "3dmodels//cube.obj");
 		Objects[3].setLightsPositions(LightsPositions);
@@ -2165,7 +2252,7 @@ public:
 		ObjectsCountMirror = 7;
 		ObjectsMirror = new OBJECT[ObjectsCountMirror];
 
-		ObjectsMirror[0] = OBJECT(0, LightsCount, "3dmodels//sphere_lowpoly.obj");
+		ObjectsMirror[0] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[0].setLightsPositions(LightsPositions);
 		ObjectsMirror[0].setLightsColors(LightsColors);
 		ObjectsMirror[0].setLightsProperties(LightsProperties);
@@ -2173,7 +2260,7 @@ public:
 		ObjectsMirror[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
 
-		ObjectsMirror[1] = OBJECT(0, LightsCount, "3dmodels//sphere_lowpoly.obj");
+		ObjectsMirror[1] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
 		ObjectsMirror[1].setLightsPositions(LightsPositions);
 		ObjectsMirror[1].setLightsColors(LightsColors);
 		ObjectsMirror[1].setLightsProperties(LightsProperties);
@@ -2195,9 +2282,10 @@ public:
 		ObjectsMirror[3].setLightsProperties(LightsProperties);
 		ObjectsMirror[3].Prepare();
 		ObjectsMirror[3].setDiffuseColor(0.5f, 0.0f, 0.9f);
-		ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
+		//ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
+		ObjectsMirror[3].createModelMatrix(vec3(-5.0f, 0.0f, 0.0f), NULL, NULL, 1.0f);
 
-		ObjectsMirror[4] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
+		ObjectsMirror[4] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
 		ObjectsMirror[4].setLightsPositions(LightsPositions);
 		ObjectsMirror[4].setLightsColors(LightsColors);
 		ObjectsMirror[4].setLightsProperties(LightsProperties);
@@ -2211,7 +2299,8 @@ public:
 		ObjectsMirror[5].setLightsProperties(LightsProperties);
 		ObjectsMirror[5].Prepare();
 		ObjectsMirror[5].setDiffuseColor(0.0f, 1.0f, 1.0f);
-		ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
+		//ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
+		ObjectsMirror[5].createModelMatrix(vec3(0.0f, -15.0f, 0.0f), NULL, NULL, 0.5f);
 
 		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere_highpoly.obj");
 		ObjectsMirror[6].Prepare();
@@ -2278,38 +2367,38 @@ public:
 			{
 				Angle += AngleDelta;
 				Angle2 += AngleDelta2;
+				Angle3 += AngleDelta3;
 				if (Angle > 360.0f) Angle = 0.0f;
 				if (Angle2 > 360.0f) Angle2 = 0.0f;
+				if (Angle3 > 360.0f) Angle3 = 0.0f;
 
 				Position = ObjectsMirror[0].getPosition();
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(Radius * sin(radians(Angle)), 0.0f, Radius * cos(radians(Angle)));
-				ObjectsMirror[0].setPosition(NewPosition.x, Position.y, NewPosition.z);
-				ObjectsMirror[0].setRotation(-Angle, "Y");
+				ObjectsMirror[0].createModelMatrix(NewPosition, -Angle, "Y", ObjectsMirror[0].getScale());
 
 				Position = ObjectsMirror[1].getPosition();
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(-Radius * sin(radians(Angle)), 0.0f, -Radius * cos(radians(Angle)));
-				ObjectsMirror[1].setPosition(NewPosition.x, Position.y, NewPosition.z);
-				ObjectsMirror[1].setRotation(-Angle, "Y");
+				ObjectsMirror[1].createModelMatrix(NewPosition, -Angle, "Y", ObjectsMirror[1].getScale());
 
-				ObjectsMirror[2].setRotation(CubeAngle, "YZ");
-				ObjectsMirror[3].setRotation(-CubeAngle, "XZ");
+				ObjectsMirror[2].increaseRotation(CubeAngle, "YZ");
+				ObjectsMirror[3].increaseRotation(-CubeAngle, "XZ");
 
 				Position = ObjectsMirror[4].getPosition();
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(Radius * sin(radians(Angle2)), Radius * cos(radians(Angle2)), 0.0f);
-				ObjectsMirror[4].setPosition(NewPosition.x, NewPosition.y, Position.z);
-				ObjectsMirror[4].setRotation(-Angle2, "Z");
+				ObjectsMirror[4].createModelMatrix(NewPosition, Angle3, NewPosition, ObjectsMirror[4].getScale());
+				ObjectsMirror[4].increaseRotation(-Angle2, "Z");
 
 				Position = ObjectsMirror[5].getPosition();
 				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
 				NewPosition = vec3(-Radius * sin(radians(Angle2)), -Radius * cos(radians(Angle2)), 0.0f);
-				ObjectsMirror[5].setPosition(NewPosition.x, NewPosition.y, Position.z);
-				ObjectsMirror[5].setRotation(-Angle2, "Z");
+				ObjectsMirror[5].createModelMatrix(NewPosition, Angle3, NewPosition, ObjectsMirror[5].getScale());
+				ObjectsMirror[5].increaseRotation(-Angle2, "Z");
 
-				ObjectsMirror[6].setRotation(1.0f, "Y");				
-			}
+				ObjectsMirror[6].increaseRotation(1.0f, "Y");				
+			}	
 		}
 		else
 		{
@@ -2328,23 +2417,25 @@ public:
 
 			if (!StopRotations)
 			{
-				Objects[0].setRotation(-CubeAngle, "XYZ");
-				Objects[3].setRotation(CubeAngle, "XY");
-				Objects[6].setRotation(-CubeAngle, "X");
-				Objects[9].setRotation(CubeAngle, "X");
-				Objects[12].setRotation(CylinderAngle, "Y");
+				Objects[0].increaseRotation(-CubeAngle, "Y");
+				Objects[3].increaseRotation(CubeAngle, "XY");
+				Objects[6].increaseRotation(-CubeAngle, "X");
+				Objects[9].increaseRotation(CubeAngle, "X");
+				Objects[12].increaseRotation(CylinderAngle, "Y");
 
-				Objects[1].setScale(SpheresSize);
-				Objects[4].setScale(SpheresSize);
-				Objects[7].setScale(SpheresSize);
-				Objects[10].setScale(SpheresSize); 
-				Objects[13].setRotation(-0.6f, "XYZ");
+				Objects[1].createModelMatrix(Objects[1].getPosition(), Objects[1].getAngle(), Objects[1].getAxis(), SpheresSize);
+				Objects[4].createModelMatrix(Objects[4].getPosition(), Objects[4].getAngle(), Objects[4].getAxis(), SpheresSize);
+				Objects[7].createModelMatrix(Objects[7].getPosition(), Objects[7].getAngle(), Objects[7].getAxis(), SpheresSize);
+				Objects[10].createModelMatrix(Objects[10].getPosition(), Objects[10].getAngle(), Objects[10].getAxis(), SpheresSize);
+				
+				Objects[13].createModelMatrix(Objects[13].getPosition(), Objects[13].getAngle(), Objects[13].getAxis(), SpheresSize);
+				Objects[13].increaseRotation(-0.6f, "XYZ");			
 
-				Objects[2].setRotation(-CylinderAngle, "Y");
-				Objects[5].setRotation(CylinderAngle, "Y");
-				Objects[8].setRotation(-CylinderAngle, "Y");
-				Objects[11].setRotation(CylinderAngle, "Y");
-				Objects[14].setRotation(-CylinderAngle, "Y");
+				Objects[2].increaseRotation(-CylinderAngle, "Y");
+				Objects[5].increaseRotation(CylinderAngle, "Y");
+				Objects[8].increaseRotation(-CylinderAngle, "Y");
+				Objects[11].increaseRotation(CylinderAngle, "Y");
+				Objects[14].increaseRotation(-CylinderAngle, "Y");
 
 				if ((SpheresSize > SpheresSizeMin) && SphereDecrease) SpheresSize -= SpheresSizeDelta;
 				else
