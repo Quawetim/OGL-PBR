@@ -36,7 +36,7 @@ int WindowWidth = 1280, WindowHeight = 800;
 int CameraMode = 2;
 int GenTextureSize = 512;
 float FOV = 90.0f;
-float SkyBoxSide = 500.0f;
+float SkyBoxHalfSide = 100.0f;
 bool Wireframe = false;
 bool StopRotations = true;
 bool ShowLights = false;
@@ -279,12 +279,12 @@ private:
 
 		if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
 
-		if (Position.x > SkyBoxSide) Position.x = SkyBoxSide - 0.1f;
-		if (Position.x < -SkyBoxSide) Position.x = -SkyBoxSide + 0.1f;
-		if (Position.y > SkyBoxSide) Position.y = SkyBoxSide - 0.1f;
-		if (Position.y < -SkyBoxSide) Position.y = -SkyBoxSide + 0.1f;
-		if (Position.z > SkyBoxSide) Position.z = SkyBoxSide - 0.1f;
-		if (Position.z < -SkyBoxSide) Position.z = -SkyBoxSide + 0.1f;
+		if (Position.x > SkyBoxHalfSide) Position.x = SkyBoxHalfSide - 0.1f;
+		if (Position.x < -SkyBoxHalfSide) Position.x = -SkyBoxHalfSide + 0.1f;
+		if (Position.y > SkyBoxHalfSide) Position.y = SkyBoxHalfSide - 0.1f;
+		if (Position.y < -SkyBoxHalfSide) Position.y = -SkyBoxHalfSide + 0.1f;
+		if (Position.z > SkyBoxHalfSide) Position.z = SkyBoxHalfSide - 0.1f;
+		if (Position.z < -SkyBoxHalfSide) Position.z = -SkyBoxHalfSide + 0.1f;
 	}
 
 public:
@@ -373,7 +373,7 @@ public:
 			break;
 		}
 
-		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.1f, 100.0f);
+		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.05f, 500.0f);
 
 		LastTime = CurrentTime;
 
@@ -1841,7 +1841,7 @@ public:
 
 		glViewport(5, 5, 60, 60);
 
-		mat4 ProjectionMatrix = perspective(radians(45.0f), 1.0f, 0.1f, 100.0f);
+		mat4 ProjectionMatrix = perspective(radians(45.0f), 1.0f, 0.1f, 10.0f);
 		glUniformMatrix4fv(ProjectionMatrixID, 1, GL_FALSE, value_ptr(ProjectionMatrix));
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, value_ptr(ViewMatrix));
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
@@ -1866,57 +1866,58 @@ public:
 
 		GLfloat skyboxVerticesNormals[] = {
 			/* Право */
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,	//или -
-			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
-			SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, 0.0f, 1.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 0.0f, 1.0f,	//или -
+			-SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 0.0f, 1.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 0.0f, 1.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 0.0f, 1.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 0.0f, 1.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 0.0f, 1.0f,
 
 			/* Зад */
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 1.0f, 0.0f, 0.0f,
-			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 1.0f, 0.0f, 0.0f,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 1.0f, 0.0f, 0.0f,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 1.0f, 0.0f, 0.0f,
-			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 1.0f, 0.0f, 0.0f,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 1.0f, 0.0f, 0.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 1.0f, 0.0f, 0.0f,
 
 			/* Перед */
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, -1.0f, 0.0f, 0.0f,
-			SkyBoxSide, -SkyBoxSide,  SkyBoxSide, -1.0f, 0.0f, 0.0f,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, -1.0f, 0.0f, 0.0f,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, -1.0f, 0.0f, 0.0f,
-			SkyBoxSide,  SkyBoxSide, -SkyBoxSide, -1.0f, 0.0f, 0.0f,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, -1.0f, 0.0f, 0.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, -1.0f, 0.0f, 0.0f,
 
 			/* Лево */
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
-			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
-			SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 0.0f, -1.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 0.0f, -1.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 0.0f, -1.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 0.0f, -1.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 0.0f, -1.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 0.0f, -1.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 0.0f, -1.0f,
 
 			/* Верх */
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, -1.0f, 0.0f,
-			SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, -1.0f, 0.0f,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, -1.0f, 0.0f,
-			SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, -1.0f, 0.0f,
-			-SkyBoxSide,  SkyBoxSide,  SkyBoxSide, 0.0f, -1.0f, 0.0f,
-			-SkyBoxSide,  SkyBoxSide, -SkyBoxSide, 0.0f, -1.0f, 0.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, -1.0f, 0.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, -1.0f, 0.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, -1.0f, 0.0f,
+			SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, -1.0f, 0.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, -1.0f, 0.0f,
+			-SkyBoxHalfSide,  SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, -1.0f, 0.0f,
 
 			/* Низ */
-			-SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 1.0f, 0.0f,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 1.0f, 0.0f,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 1.0f, 0.0f,
-			SkyBoxSide, -SkyBoxSide, -SkyBoxSide, 0.0f, 1.0f, 0.0f,
-			-SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 1.0f, 0.0f,
-			SkyBoxSide, -SkyBoxSide,  SkyBoxSide, 0.0f, 1.0f, 0.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 1.0f, 0.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 1.0f, 0.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 1.0f, 0.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide, -SkyBoxHalfSide, 0.0f, 1.0f, 0.0f,
+			-SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 1.0f, 0.0f,
+			SkyBoxHalfSide, -SkyBoxHalfSide,  SkyBoxHalfSide, 0.0f, 1.0f, 0.0f,
 		};
 
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
 
+		/*
 		glGenBuffers(1, &vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVerticesNormals), skyboxVerticesNormals, GL_STATIC_DRAW);
@@ -1930,14 +1931,29 @@ public:
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 		glBindVertexArray(0);
+		*/
+
+		glGenBuffers(1, &vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+
+		glGenBuffers(1, &normalbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glBindVertexArray(0);
 
 		vector<const GLchar*> faces;
-		faces.push_back("skybox//right.jpg");
-		faces.push_back("skybox//left.jpg");
-		faces.push_back("skybox//top.jpg");
-		faces.push_back("skybox//bottom.jpg");
-		faces.push_back("skybox//back.jpg");
-		faces.push_back("skybox//front.jpg");
+		faces.push_back("textures//skybox//right.jpg");
+		faces.push_back("textures//skybox//left.jpg");
+		faces.push_back("textures//skybox//top.jpg");
+		faces.push_back("textures//skybox//bottom.jpg");
+		faces.push_back("textures//skybox//back.jpg");
+		faces.push_back("textures//skybox//front.jpg");
 		CubeMapTexture = LoadCubeMap(faces);
 	}
 
@@ -1974,7 +1990,8 @@ public:
 
 		glBindVertexArray(VAO);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, CubeMapTexture);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, vertices.size() * sizeof(vec3));
 		glBindVertexArray(0);
 
 		glDepthFunc(GL_LESS);
@@ -1987,7 +2004,7 @@ private:
 	/* LightsCount - число источников света */
 	/* ObjectsCount, ObjectsCountMirror - число объектов */
 	int LightsCount = 0, ObjectsCount = 0, ObjectsCountMirror = 0;
-	OBJECT *Lights, Axes, Skybox, *Objects, *ObjectsMirror;
+	OBJECT *Lights, Axes, Skybox, Plane, *Objects, *ObjectsMirror;
 	CAMERA Camera;
 
 	bool SphereDecrease = true, SphereIncrease = false;
@@ -2146,11 +2163,12 @@ public:
 			vec4(50.0f, 1.0f, 0.2f, 0.03f)
 		};	
 
-		Skybox = OBJECT(0);
+		Skybox = OBJECT(0, "3dmodels//skybox.obj");
 		Skybox.setLightsPositions(LightsPositions);
 		Skybox.setLightsColors(LightsColors);
 		Skybox.setLightsProperties(LightsProperties);
 		Skybox.PrepareSkyBox();
+		Skybox.createModelMatrix(vec3(0.0f, 0.0f, 0.0f), NULL, NULL, SkyBoxHalfSide * 2.0);
 
 		if (LightsCount > 0)
 		{
@@ -2172,7 +2190,7 @@ public:
 		Objects[0].setLightsPositions(LightsPositions);
 		Objects[0].setLightsColors(LightsColors);
 		Objects[0].setLightsProperties(LightsProperties);
-		Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
+		//Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
 		Objects[0].setSpecularTexture("textures//batman_specular.bmp", false);
 		Objects[0].Prepare();
 		//Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
@@ -2362,7 +2380,7 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
-
+		
 		if (MirrorExample)
 		{
 			for (int i = 0; i < ObjectsCountMirror; i++)
