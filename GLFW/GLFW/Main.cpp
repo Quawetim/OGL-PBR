@@ -796,7 +796,7 @@ private:
 	/* Подготовка данных для цилиндра с картой нормалей */
 	void PrepareNormalMapping()
 	{
-		LoadShaders("shaders//Cylinder.vs", NULL, "shaders//Cylinder.fs");
+		LoadShaders("shaders//NormalMapping.vs", NULL, "shaders//NormalMapping.fs");
 
 		ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 		ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -2009,12 +2009,21 @@ private:
 
 	bool SphereDecrease = true, SphereIncrease = false;
 	float SpheresSize = 1.0f, SpheresSizeDelta = 0.004f, SpheresSizeMin = 0.8f, SpheresSizeMax = 1.0f;
-	float CubeAngle = 1.0f, CylinderAngle = -1.0f;
-	float Radius, Angle = 0.0f, Angle2 = 0.0f, Angle3 = 0.0f, AngleDelta = 2.0f, AngleDelta2 = 1.0f, AngleDelta3 = 1.0f;
+	float CubeAngle = 1.0f, CylinderAngle = -0.2f;
+	float Radius, Angle = 0.0f, Angle2 = 0.0f, Angle3 = 0.0f, LightAngle = 0.0f;
+	float AngleDelta = 2.0f, AngleDelta2 = 1.0f, AngleDelta3 = 1.0f, LightAngleDelta = 0.5f;
 	vec3 Position, NewPosition;
 
 	/* Позиция камеры */
 	vec3 CameraPosition;
+
+	/* LightsPositions - позиции источников света */
+	/* LightsColors - цвета источников света */
+	vec3 *LightsPositions, *LightsColors;
+
+	/* Свойства источников света */
+	vec4 *LightsProperties;
+
 	/* Матрицы проекции и вида */
 	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
 
@@ -2142,26 +2151,6 @@ public:
 		Axes.PrepareAxes();
 
 		LightsCount = 3;
-		vec3 LightsPositions[] =
-		{
-			vec3(-60.0f, 50.0f, -80.0f),
-			vec3(-60.0f, -60.0f, -80.0f),
-			vec3(60.0f, 6.0f, 60.0f)
-		};
-
-		vec3 LightsColors[] =
-		{
-			vec3(1.0f, 1.0f, 1.0f),
-			vec3(1.0f, 1.0f, 1.0f),
-			vec3(1.0f, 1.0f, 1.0f)
-		};
-
-		vec4 LightsProperties[] =
-		{
-			vec4(100.0f, 1.0f, 0.8f, 0.002f),
-			vec4(100.0f, 1.0f, 0.7f, 0.008f),
-			vec4(50.0f, 1.0f, 0.2f, 0.03f)
-		};	
 
 		Skybox = OBJECT(0, "3dmodels//skybox.obj");
 		Skybox.setLightsPositions(LightsPositions);
@@ -2172,6 +2161,21 @@ public:
 
 		if (LightsCount > 0)
 		{
+			LightsPositions = new vec3[LightsCount];
+			LightsPositions[0] = vec3(-60.0f, 50.0f, -80.0f);
+			LightsPositions[1] = vec3(-60.0f, -60.0f, -80.0f);
+			LightsPositions[2] = vec3(60.0f, 6.0f, 60.0f);
+
+			LightsColors = new vec3[LightsCount];
+			LightsColors[0] = vec3(1.0f, 1.0f, 1.0f);
+			LightsColors[1] = vec3(1.0f, 1.0f, 1.0f);
+			LightsColors[2] = vec3(1.0f, 1.0f, 1.0f);
+
+			LightsProperties = new vec4[LightsCount];
+			LightsProperties[0] = vec4(100.0f, 1.0f, 0.8f, 0.002f);
+			LightsProperties[1] = vec4(100.0f, 1.0f, 0.7f, 0.008f);
+			LightsProperties[2] = vec4(50.0f, 1.0f, 0.2f, 0.03f);
+
 			Lights = new OBJECT[LightsCount];
 			for (int i = 0; i < LightsCount; i++)
 			{
@@ -2187,50 +2191,31 @@ public:
 		Objects = new OBJECT[ObjectsCount];
 
 		Objects[0] = OBJECT(0, LightsCount,"3dmodels//cube.obj");
-		Objects[0].setLightsPositions(LightsPositions);
-		Objects[0].setLightsColors(LightsColors);
-		Objects[0].setLightsProperties(LightsProperties);
-		//Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
-		Objects[0].setSpecularTexture("textures//batman_specular.bmp", false);
 		Objects[0].Prepare();
+		//Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
+		Objects[0].setSpecularTexture("textures//batman_specular.bmp", false);		
 		//Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
-		Objects[0].setDiffuseColor(0.07f, 0.07f, 0.07f);
 		Objects[0].createModelMatrix(vec3(0.0f, 6.0f, 3.0f), NULL, NULL, 0.5f);
 
 		Objects[1] = OBJECT(0, LightsCount, "3dmodels//sphere_lowpoly.obj");
-		Objects[1].setLightsPositions(LightsPositions);
-		Objects[1].setLightsColors(LightsColors);
-		Objects[1].setLightsProperties(LightsProperties);
 		Objects[1].Prepare();
 		Objects[1].setDiffuseColor(0.6f, 0.3f, 0.9f);
-		Objects[1].createModelMatrix(vec3(0.0f, 6.0f, 0.0f), NULL, NULL, 1.0f);
+		Objects[1].setPosition(0.0f, 6.0f, 0.0f);
 
 		Objects[2] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
-		Objects[2].setLightsPositions(LightsPositions);
-		Objects[2].setLightsColors(LightsColors);
-		Objects[2].setLightsProperties(LightsProperties);
 		Objects[2].Prepare();
 		Objects[2].setDiffuseColor(0.1f, 0.9f, 0.8f);
-		Objects[2].createModelMatrix(vec3(0.0f, 6.0f, -3.0f), NULL, NULL, 1.0f);
+		Objects[2].setPosition(0.0f, 6.0f, -3.0f);
 
 		Objects[3] = OBJECT(1, LightsCount, "3dmodels//cube.obj");
-		Objects[3].setLightsPositions(LightsPositions);
-		Objects[3].setLightsColors(LightsColors);
-		Objects[3].setLightsProperties(LightsProperties);
 		Objects[3].Prepare();
 		Objects[3].setPosition(0.0f, 3.0f, 3.0f);
 
 		Objects[4] = OBJECT(1, LightsCount, "3dmodels//sphere_lowpoly.obj");
-		Objects[4].setLightsPositions(LightsPositions);
-		Objects[4].setLightsColors(LightsColors);
-		Objects[4].setLightsProperties(LightsProperties);
 		Objects[4].Prepare();
 		Objects[4].setPosition(0.0f, 3.0f, 0.0f);
 
 		Objects[5] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
-		Objects[5].setLightsPositions(LightsPositions);
-		Objects[5].setLightsColors(LightsColors);
-		Objects[5].setLightsProperties(LightsProperties);
 		Objects[5].Prepare();
 		Objects[5].setPosition(0.0f, 3.0f, -3.0f);
 
@@ -2262,26 +2247,27 @@ public:
 
 		Objects[12] = OBJECT(4, "3dmodels//cube.obj");
 		Objects[12].setLightPosition(0, 5.0f, -6.0f, 3.0f);
-		Objects[12].setDiffuseTexture("textures//diffuse.dds", true);
-		Objects[12].setSpecularTexture("textures//specular.dds", true);
-		Objects[12].setNormalTexture("textures//normal.bmp");
-		Objects[12].Prepare();
+		Objects[12].Prepare();	
+		Objects[12].setDiffuseTexture("textures//brick_diffuse.bmp", false);
+		Objects[12].setSpecularTexture("textures//brick_specular.bmp", false);
+		Objects[12].setNormalTexture("textures//brick_normal.bmp");		
+		Objects[12].setShinePower(32.0f);
 		Objects[12].setPosition(0.0f, -6.0f, 3.0f);	
 
 		Objects[13] = OBJECT(4, "3dmodels//sphere_lowpoly.obj");
 		Objects[13].setLightPosition(0, 5.0f, -6.0f, 0.0f);
-		Objects[13].setDiffuseTexture("textures//diffuse.dds", true);
-		Objects[13].setSpecularTexture("textures//specular.dds", true);
-		Objects[13].setNormalTexture("textures//normal.bmp");
-		Objects[13].Prepare();
+		Objects[13].Prepare();		
+		Objects[13].setDiffuseTexture("textures//brick2_diffuse.bmp", false);
+		Objects[13].setSpecularTexture("textures//brick2_specular.bmp", false);
+		Objects[13].setNormalTexture("textures//brick2_normal.bmp");		
 		Objects[13].setPosition(0.0f, -6.0f, 0.0f);		
 
 		Objects[14] = OBJECT(4, "3dmodels//cylinder.obj");
 		Objects[14].setLightPosition(0, 5.0f, -6.0f, -3.0f);
+		Objects[14].Prepare();		
 		Objects[14].setDiffuseTexture("textures//diffuse.dds", true);
 		Objects[14].setSpecularTexture("textures//specular.dds", true);
 		Objects[14].setNormalTexture("textures//normal.bmp");
-		Objects[14].Prepare();
 		Objects[14].setPosition(0.0f, -6.0f, -3.0f);		
 
 		Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
@@ -2296,45 +2282,47 @@ public:
 		ObjectsMirror = new OBJECT[ObjectsCountMirror];
 
 		ObjectsMirror[0] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[0].Prepare();
 		ObjectsMirror[0].setLightsPositions(LightsPositions);
 		ObjectsMirror[0].setLightsColors(LightsColors);
-		ObjectsMirror[0].setLightsProperties(LightsProperties);
-		ObjectsMirror[0].Prepare();
+		ObjectsMirror[0].setLightsProperties(LightsProperties);		
 		ObjectsMirror[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 		ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
 
 		ObjectsMirror[1] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[1].Prepare();
 		ObjectsMirror[1].setLightsPositions(LightsPositions);
 		ObjectsMirror[1].setLightsColors(LightsColors);
-		ObjectsMirror[1].setLightsProperties(LightsProperties);
-		ObjectsMirror[1].Prepare();
+		ObjectsMirror[1].setLightsProperties(LightsProperties);		
 		ObjectsMirror[1].setDiffuseColor(0.0f, 0.5f, 0.9f);
 		ObjectsMirror[1].setPosition(0.0f, 0.0f, -10.0f);
 
 		ObjectsMirror[2] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[2].Prepare();
 		ObjectsMirror[2].setLightsPositions(LightsPositions);
 		ObjectsMirror[2].setLightsColors(LightsColors);
-		ObjectsMirror[2].setLightsProperties(LightsProperties);
-		ObjectsMirror[2].Prepare();
+		ObjectsMirror[2].setLightsProperties(LightsProperties);	
 		ObjectsMirror[2].setDiffuseColor(0.3f, 0.8f, 0.5f);
 		ObjectsMirror[2].setPosition(5.0f, 0.0f, 0.0f);
 
 		ObjectsMirror[3] = OBJECT(0, LightsCount, "3dmodels//cube.obj");
+		ObjectsMirror[3].Prepare();
 		ObjectsMirror[3].setLightsPositions(LightsPositions);
 		ObjectsMirror[3].setLightsColors(LightsColors);
-		ObjectsMirror[3].setLightsProperties(LightsProperties);
-		ObjectsMirror[3].Prepare();
+		ObjectsMirror[3].setLightsProperties(LightsProperties);		
 		ObjectsMirror[3].setDiffuseColor(0.5f, 0.0f, 0.9f);
+		ObjectsMirror[3].setDiffuseTexture("textures//deadpool.bmp", false);
 		//ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
 		ObjectsMirror[3].createModelMatrix(vec3(-5.0f, 0.0f, 0.0f), NULL, NULL, 1.0f);
 
 		ObjectsMirror[4] = OBJECT(1, LightsCount, "3dmodels//cylinder.obj");
+		ObjectsMirror[4].Prepare();
 		ObjectsMirror[4].setLightsPositions(LightsPositions);
 		ObjectsMirror[4].setLightsColors(LightsColors);
-		ObjectsMirror[4].setLightsProperties(LightsProperties);
-		ObjectsMirror[4].Prepare();
+		ObjectsMirror[4].setLightsProperties(LightsProperties);	
 		ObjectsMirror[4].setDiffuseColor(0.1f, 0.3f, 0.5f);
-		ObjectsMirror[4].setPosition(0.0f, 15.0f, 0.0f);
+		//ObjectsMirror[4].setPosition(0.0f, 15.0f, 0.0f);
+		ObjectsMirror[4].createModelMatrix(vec3(0.0f, 15.0f, 0.0f), NULL, NULL, 3.0f);
 
 		ObjectsMirror[5] = OBJECT(0, LightsCount, "3dmodels//cylinder.obj");
 		ObjectsMirror[5].setLightsPositions(LightsPositions);
@@ -2342,10 +2330,11 @@ public:
 		ObjectsMirror[5].setLightsProperties(LightsProperties);
 		ObjectsMirror[5].Prepare();
 		ObjectsMirror[5].setDiffuseColor(0.0f, 1.0f, 1.0f);
-		//ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
-		ObjectsMirror[5].createModelMatrix(vec3(0.0f, -15.0f, 0.0f), NULL, NULL, 0.5f);
+		ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
+		//ObjectsMirror[5].createModelMatrix(vec3(0.0f, -15.0f, 0.0f), NULL, NULL, 3.0f);
 
-		ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere_highpoly.obj");
+		ObjectsMirror[6] = OBJECT(3, "3dmodels//teapot.obj"); 
+		//ObjectsMirror[6].createModelMatrix(vec3(0.0f, 0.0f, 0.0f), NULL, NULL, 0.5f);
 		ObjectsMirror[6].Prepare();
 		//ObjectsMirror[6].setRefractiveIndex(1.1f);
 		//ObjectsMirror[6].setScale(2.0f);
@@ -2410,12 +2399,12 @@ public:
 				if (Angle3 > 360.0f) Angle3 = 0.0f;
 
 				Position = ObjectsMirror[0].getPosition();
-				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
 				NewPosition = vec3(Radius * sin(radians(Angle)), 0.0f, Radius * cos(radians(Angle)));
 				ObjectsMirror[0].createModelMatrix(NewPosition, -Angle, "Y", ObjectsMirror[0].getScale());
 
 				Position = ObjectsMirror[1].getPosition();
-				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
 				NewPosition = vec3(-Radius * sin(radians(Angle)), 0.0f, -Radius * cos(radians(Angle)));
 				ObjectsMirror[1].createModelMatrix(NewPosition, -Angle, "Y", ObjectsMirror[1].getScale());
 
@@ -2423,13 +2412,13 @@ public:
 				ObjectsMirror[3].increaseRotation(-CubeAngle, "XZ");
 
 				Position = ObjectsMirror[4].getPosition();
-				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				Radius = sqrt(Position.y * Position.y + Position.x * Position.x);
 				NewPosition = vec3(Radius * sin(radians(Angle2)), Radius * cos(radians(Angle2)), 0.0f);
 				ObjectsMirror[4].createModelMatrix(NewPosition, Angle3, NewPosition, ObjectsMirror[4].getScale());
 				ObjectsMirror[4].increaseRotation(-Angle2, "Z");
 
 				Position = ObjectsMirror[5].getPosition();
-				Radius = sqrt(Position.y * Position.y + (Position.x * Position.x + Position.z * Position.z));
+				Radius = sqrt(Position.y * Position.y + Position.x * Position.x);
 				NewPosition = vec3(-Radius * sin(radians(Angle2)), -Radius * cos(radians(Angle2)), 0.0f);
 				ObjectsMirror[5].createModelMatrix(NewPosition, Angle3, NewPosition, ObjectsMirror[5].getScale());
 				ObjectsMirror[5].increaseRotation(-Angle2, "Z");
@@ -2439,14 +2428,71 @@ public:
 		}
 		else
 		{
+			static vec3 color = vec3(1.0f, 0.0f, 0.0f);
+			static bool flag = false;
+
+			if ((color.r > 0.0f) && (!flag))
+			{
+				color.r -= 0.001f;
+				color.g += 0.001f;
+			}
+			else
+			{
+				if (color.g > 0.0f)
+				{
+					color.g -= 0.001f;
+					color.b += 0.001f;
+				}
+				else
+				{
+					if (color.b > 0.0f)
+					{
+						color.b -= 0.001f;
+						color.r += 0.001f;
+						if (!flag) flag = true;
+					}
+					else flag = false;
+				}
+			}
+
+			LightsColors[0] = color;
+			Lights[0].setDiffuseColor(color);
+
 			for (int i = 0; i < ObjectsCount; i++)
 			{
+				if (i < 6)
+				{
+					Objects[i].setLightsPositions(LightsPositions);
+					Objects[i].setLightsColors(LightsColors);
+					Objects[i].setLightsProperties(LightsProperties);				
+				}
 				Objects[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
-			if ((LightsCount > 0) && (ShowLights))
+			if (LightsCount > 0)
 			{
-				for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
+				LightAngle += LightAngleDelta;
+				if (LightAngle > 360.0f) LightAngle = 0;
+
+				Position = Lights[0].getPosition();
+				Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
+				NewPosition = vec3(-Radius * sin(radians(LightAngle)), Position.y, -Radius * cos(radians(LightAngle)));
+				LightsPositions[0] = NewPosition;
+				Lights[0].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[0].getScale());		
+
+				Position = Lights[1].getPosition();
+				Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
+				NewPosition = vec3(-Radius * sin(radians(LightAngle)), Position.y, -Radius * cos(radians(LightAngle)));
+				LightsPositions[1] = NewPosition;
+				Lights[1].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[1].getScale());
+
+				Position = Lights[2].getPosition();
+				Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
+				NewPosition = vec3(Radius * sin(radians(LightAngle)), Position.y, Radius * cos(radians(LightAngle)));
+				LightsPositions[2] = NewPosition;
+				Lights[2].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[2].getScale());
+
+				if (ShowLights) for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			}
 
 			if (!StopRotations)
@@ -2455,7 +2501,7 @@ public:
 				Objects[3].increaseRotation(CubeAngle, "XY");
 				Objects[6].increaseRotation(-CubeAngle, "X");
 				Objects[9].increaseRotation(CubeAngle, "X");
-				Objects[12].increaseRotation(CylinderAngle, "Y");
+				Objects[12].increaseRotation(CylinderAngle * 3.0f, "Y");
 
 				Objects[1].createModelMatrix(Objects[1].getPosition(), Objects[1].getAngle(), Objects[1].getAxis(), SpheresSize);
 				Objects[4].createModelMatrix(Objects[4].getPosition(), Objects[4].getAngle(), Objects[4].getAxis(), SpheresSize);

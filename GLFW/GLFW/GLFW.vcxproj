@@ -171,8 +171,8 @@
     <None Include="shaders\GradientColor.vs" />
     <None Include="shaders\Text.fs" />
     <None Include="shaders\Text.vs" />
-    <None Include="shaders\Cylinder.fs" />
-    <None Include="shaders\Cylinder.vs" />
+    <None Include="shaders\NormalMapping.fs" />
+    <None Include="shaders\NormalMapping.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

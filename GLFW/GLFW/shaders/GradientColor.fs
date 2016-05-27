@@ -43,7 +43,7 @@ vec3 ComputePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
 	if (Blinn)
 	{
 		vec3 HalfwayDirection = normalize(LightDirection + viewdir);  
-        spec = pow(max(dot(normal, HalfwayDirection), 0.0), Material.Shine);
+        spec = pow(max(dot(normal, HalfwayDirection), 0.0), Material.Shine * 8.0f);
 	}
 	else
 	{

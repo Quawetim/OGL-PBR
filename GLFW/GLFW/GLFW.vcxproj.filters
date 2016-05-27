@@ -52,12 +52,6 @@
     <None Include="shaders\SolidColor.fs">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
-    <None Include="shaders\Cylinder.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Cylinder.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
     <None Include="shaders\GradientColor.fs">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
@@ -86,6 +80,12 @@
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
     <None Include="shaders\Text.vs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\NormalMapping.fs">
+      <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="shaders\NormalMapping.vs">
       <Filter>Файлы исходного кода\shaders</Filter>
     </None>
   </ItemGroup>
