@@ -1,9 +1,11 @@
 #include "Includes.h"
+#include "Camera.h"
 #include "TextureLoader.h"
 #include "VboIndexer.h"
 #include "Text.h"
 
-GLFWwindow* window;
+//GLFWwindow* window;
+windowInfo WindowInfo;
 
 /* WindowWidth, WindowHeight - ширина и высота окна */
 /* FOV - field of view */
@@ -14,7 +16,7 @@ GLFWwindow* window;
 /* ShowLights - переключение отображения источников света по F3 */
 /* Blinn - переключение модели освещения по F4 */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
-int WindowWidth = 1280, WindowHeight = 800;
+//int WindowWidth = 1280, WindowHeight = 800;
 int CameraMode = 2;
 int GenTextureSize = 512;
 float FOV = 90.0f;
@@ -24,8 +26,8 @@ bool StopRotations = true;
 bool ShowLights = false;
 bool Blinn = false;
 bool MirrorExample = false;
-bool FullSceen = false;
-bool ShowCursor = false;
+//bool FullSceen = false;
+//bool ShowCursor = false;
 
 /* Обработка ошибок */
 void error_callback(int error, const char* description)
@@ -132,15 +134,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
-		ShowCursor = true;
+		WindowInfo.ShowCursor = true;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
 	{
-		ShowCursor = false;
+		WindowInfo.ShowCursor = false;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
+		glfwSetCursorPos(window, WindowInfo.Width / 2, WindowInfo.Height / 2);
 	}
 }
 
@@ -220,164 +222,6 @@ void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum 
 
 	printf("Message : %s\n", message);
 }
-
-class CAMERA
-{
-private:
-	/* CameraPosition - позиция камеры */
-	/* CameraLookTo - точка, на которую направлена камера */
-	/* CameraUp - направление верха камеры */
-	/* CameraStaticPosition - позиция статической камеры */
-	/* Radius, RadiusMin, RadiusMax - радиус полёта камеры от начала координат для камеры №2 и его минимальное и максимальное значения */
-	/* Speed, Speed2 - скорость движения камер №1 и №2  */
-	/* MouseSpeed - скорость движения мышки */
-	vec3 CameraPosition, CameraLookTo = vec3(0.0f, 0.0f, 0.0f), CameraUp = vec3(0.0f, 1.0f, 0.0f), CameraStaticPosition = vec3(8.0f, 3.0f, 6.0f);
-	float Pi = pi<float>();
-	float DeltaTime, Radius = 20.0f, RadiusMin = 2.0f, RadiusMax = 100.0f;
-	float Speed = 15.0f, MouseSpeed = 0.003f;
-
-	/* ProjectionMatrix - матрица проекции */
-	/* ViewMatrix - матрица вида */
-	/* ViewMatrix - матрица вида для координатных осей */
-	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
-
-	/* Обработка клавиатуры для движения камеры №2 */
-	/* window - указатель на окно */
-	void CheckMove(GLFWwindow* window)
-	{
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius > RadiusMin) Radius -= DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius < RadiusMax) Radius += DeltaTime * Speed; }
-
-		if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
-	}
-
-	/* Обработка клавиатуры для движения камеры №1 */
-	/* window - указатель на окно */
-	/* direction - направление камеры */
-	/* right - вектор "вправо" для камеры */
-	void CheckMove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 Right)
-	{
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += normalize(Direction) * DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { Position -= normalize(Direction) * DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { Position += normalize(Right) * DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { Position -= normalize(Right) * DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) { Position.y += DeltaTime * Speed; }
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { Position.y -= DeltaTime * Speed; }
-
-		if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) Speed += 1.0f;
-		if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) Speed -= 1.0f;
-
-		if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
-
-		if (Position.x > SkyBoxHalfSide) Position.x = SkyBoxHalfSide - 0.1f;
-		if (Position.x < -SkyBoxHalfSide) Position.x = -SkyBoxHalfSide + 0.1f;
-		if (Position.y > SkyBoxHalfSide) Position.y = SkyBoxHalfSide - 0.1f;
-		if (Position.y < -SkyBoxHalfSide) Position.y = -SkyBoxHalfSide + 0.1f;
-		if (Position.z > SkyBoxHalfSide) Position.z = SkyBoxHalfSide - 0.1f;
-		if (Position.z < -SkyBoxHalfSide) Position.z = -SkyBoxHalfSide + 0.1f;
-	}
-
-public:
-	/* Возвращает матрицу проекции */
-	mat4 getProjectionMatrix() { return ProjectionMatrix; }
-	/* Возвращает матрицу вида */
-	mat4 getViewMatrix() { return ViewMatrix; }
-	/* Возвращает матрицу вида для координатных осей */
-	mat4 getViewMatrixAxes() { return ViewMatrixAxes; }
-
-	/* Вычисление матриц вида и проекции, возвращает позицию камеры */
-	/* window - указатель окна */
-	/* CameraMode - выбранная камера */
-	vec3 ComputeViewMatrix(GLFWwindow* window, int CameraMode)
-	{
-		double CurrentTime, MouseX, MouseY;
-		static double LastTime = glfwGetTime();
-
-		CurrentTime = glfwGetTime();
-		DeltaTime = float(CurrentTime - LastTime);
-
-		glfwGetCursorPos(window, &MouseX, &MouseY);
-
-		switch (CameraMode)
-		{
-		/* От первого лица */
-		case 1:
-		{
-			static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
-			static float HorizontalAngle = radians(180.0f), VerticalAngle = radians(0.0f);
-
-			if (degrees(VerticalAngle) > 90.0f) VerticalAngle = radians(89.9f);
-			if (degrees(VerticalAngle) < -90.0f) VerticalAngle = radians(-89.9f);
-
-			Direction = normalize(vec3(cos(HorizontalAngle) * cos(VerticalAngle), sin(VerticalAngle), sin(-HorizontalAngle) * cos(VerticalAngle)));
-			Right = cross(Direction, CameraUp);
-
-			CheckMove(window, Position, Direction, Right);
-
-			ViewMatrix = lookAt(Position, Position + Direction, CameraUp);
-
-			ViewMatrixAxes = lookAt(vec3(-5.0f * cos(HorizontalAngle), Position.y, 5.0f * sin(HorizontalAngle)), CameraLookTo, CameraUp);
-
-			CameraPosition = Position;
-
-			if (!ShowCursor)
-			{
-				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
-				glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
-			}
-
-			break;
-		}
-		/* От третьего лица */
-		case 2:
-		{
-			static vec3 Position;
-			static float HorizontalAngle = radians(30.0f), VerticalAngle = radians(-90.0f);
-
-			if (degrees(VerticalAngle) > 0.0f) VerticalAngle = radians(-0.9f);
-			if (degrees(VerticalAngle) < -180.0f) VerticalAngle = radians(-179.9f);
-
-			/* Переход из сферической системы в декартову */
-			Position = vec3(-Radius * sin(VerticalAngle) * cos(HorizontalAngle), Radius * cos(VerticalAngle), Radius * sin(VerticalAngle) * sin(-HorizontalAngle));
-
-			CheckMove(window);
-
-			ViewMatrix = lookAt(Position, CameraLookTo, CameraUp);
-
-			ViewMatrixAxes = lookAt(vec3(5.0f * cos(HorizontalAngle), 5.0f * cos(VerticalAngle), 5.0 * sin(HorizontalAngle)), CameraLookTo, CameraUp);
-
-			CameraPosition = Position;
-
-			if (!ShowCursor)
-			{
-				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
-				glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
-			}
-			break;
-		}
-		/* Фиксированная */
-		case 3:
-		{
-			ViewMatrix = lookAt(CameraStaticPosition, CameraLookTo, CameraUp);
-
-			ViewMatrixAxes = ViewMatrix;
-
-			CameraPosition = CameraStaticPosition;
-			break;
-		}
-		default:
-			break;
-		}
-
-		ProjectionMatrix = perspective(radians(FOV), (float)WindowWidth / (float)WindowHeight, 0.05f, 500.0f);
-
-		LastTime = CurrentTime;
-
-		return CameraPosition;
-	}
-};
 
 class OBJECT
 {
@@ -1849,7 +1693,7 @@ public:
 		glDrawArrays(GL_LINES, 0, 6);
 		glBindVertexArray(0);
 
-		glViewport(0, 0, WindowWidth, WindowHeight);
+		glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
 	}
 
 	/* Инициализация Скайбокса */
@@ -2133,7 +1977,7 @@ private:
 			}
 			Skybox.RenderSkyBox(camera, ProjectionMatrix, ViewMatrix);
 		}
-		glViewport(0, 0, WindowWidth, WindowHeight);
+		glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDeleteRenderbuffers(1, &depthbuffer);
 		glDeleteFramebuffers(1, &framebuffer);
@@ -2359,7 +2203,7 @@ public:
 	/* Рендеринг сцены */
 	void Render()
 	{
-		CameraPosition = Camera.ComputeViewMatrix(window, CameraMode);
+		CameraPosition = Camera.ComputeViewMatrix(WindowInfo, CameraMode, FOV);
 		ProjectionMatrix = Camera.getProjectionMatrix();
 		ViewMatrix = Camera.getViewMatrix();
 		ViewMatrixAxes = Camera.getViewMatrixAxes();
@@ -2562,38 +2406,42 @@ void main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 
-
 	GLFWmonitor *Screen = glfwGetPrimaryMonitor();
 
-	if (FullSceen)
+	WindowInfo.Width = 1280;
+	WindowInfo.Height = 800;
+	WindowInfo.ShowCursor = false;
+	WindowInfo.FullScreen = false;
+
+	if (WindowInfo.FullScreen)
 	{
-		WindowWidth = 1920; WindowHeight = 1080;
+		WindowInfo.Width = 1920; WindowInfo.Height = 1080;
 
 		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
-		window = glfwCreateWindow(WindowWidth, WindowHeight, "Diploma", Screen, NULL);
+		WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", Screen, NULL);
 	}
 	else
 	{
 		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
-		window = glfwCreateWindow(WindowWidth, WindowHeight, "Diploma", NULL, NULL);
+		WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", NULL, NULL);
 
 		/* Информация об экране, разрешение */
 		const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
 		/* Окно в центр экрана */
-		glfwSetWindowPos(window, VidMode->width / 2 - WindowWidth / 2, VidMode->height / 2 - WindowHeight / 2);
+		glfwSetWindowPos(WindowInfo.Window, VidMode->width / 2 - WindowInfo.Width / 2, VidMode->height / 2 - WindowInfo.Height / 2);
 	}
 
-	if (!window)
+	if (!WindowInfo.Window)
 	{
 		printf("Can't open GLFW window.\n");
 		getchar();
 		glfwTerminate();
 	}
 
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(WindowInfo.Window);
 	glfwSwapInterval(1);
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetKeyCallback(WindowInfo.Window, key_callback);
+	glfwSetScrollCallback(WindowInfo.Window, scroll_callback);
 
 	glewExperimental = true;
 	if (glewInit() != GLEW_OK)
@@ -2614,11 +2462,11 @@ void main()
 		printf("OpenGL debug output doesn't work.\n");
 	}
 
-	glViewport(0, 0, WindowWidth, WindowHeight);
+	glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
 
 	/* Скрыть курсор */
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);		
-	glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
+	glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
 	/* Цвет фона, RGBA */
 	glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
 	/* Включаем буфер глубины */
@@ -2633,7 +2481,7 @@ void main()
 
 	lastTime = glfwGetTime();
 
-	while (!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(WindowInfo.Window))
 	{
 		currentTime = glfwGetTime();
 		nbFrames++;
@@ -2643,7 +2491,7 @@ void main()
 			//sprintf(text, "%.3f ms for frame. %d frames\n", 1000.0 / double(nbFrames), nbFrames);
 			sprintf(text, "%d FPS", nbFrames);
 			sprintf(text2, "Diploma at %d FPS", nbFrames);
-			glfwSetWindowTitle(window, text2);
+			glfwSetWindowTitle(WindowInfo.Window, text2);
 			nbFrames = 0;
 			lastTime += 1.0;
 		}
@@ -2653,7 +2501,7 @@ void main()
 		Scene.Render();
 		PrintText(text, 0, 580, 12);
 
-		glfwSwapBuffers(window);														  
+		glfwSwapBuffers(WindowInfo.Window);
 	}
 
 	DeleteText();
