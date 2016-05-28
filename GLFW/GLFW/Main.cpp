@@ -224,7 +224,7 @@ void main()
 {
 	int nbFrames = 0;
 	double currentTime, lastTime;
-	char text[30], text2[30];
+	char text[100], text2[30];
 
 	glfwSetErrorCallback(error_callback);
 
@@ -323,8 +323,8 @@ void main()
 
 		if (currentTime - lastTime >= 0.01)
 		{
-			//sprintf(text, "%.3f ms for frame. %d frames\n", 1000.0 / double(nbFrames), nbFrames);
-			sprintf(text, "%d FPS", nbFrames);
+			sprintf(text, "%.3f ms for frame. %d frames\n", 1000.0 / double(nbFrames), nbFrames);
+			//sprintf(text, "%d FPS", nbFrames);
 			sprintf(text2, "Diploma at %d FPS", nbFrames);
 			glfwSetWindowTitle(WindowInfo.Window, text2);
 			nbFrames = 0;

@@ -351,6 +351,36 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 
 	Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
 
+	static vec3 color = vec3(1.0f, 0.0f, 0.0f);
+	static bool flag = false;
+
+	if ((color.r > 0.0f) && (!flag))
+	{
+		color.r -= 0.001f;
+		color.g += 0.001f;
+	}
+	else
+	{
+		if (color.g > 0.0f)
+		{
+			color.g -= 0.001f;
+			color.b += 0.001f;
+		}
+		else
+		{
+			if (color.b > 0.0f)
+			{
+				color.b -= 0.001f;
+				color.r += 0.001f;
+				if (!flag) flag = true;
+			}
+			else flag = false;
+		}
+	}
+
+	LightsColors[0] = color;
+	Lights[0].setDiffuseColor(color);
+
 	if (mirrorexample)
 	{
 		for (int i = 0; i < ObjectsCountMirror; i++)
@@ -361,6 +391,13 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 
 		for (int i = 0; i < ObjectsCountMirror; i++)
 		{
+			if (i < 6)
+			{
+				ObjectsMirror[i].setLightsPositions(LightsPositions);
+				ObjectsMirror[i].setLightsColors(LightsColors);
+				ObjectsMirror[i].setLightsProperties(LightsProperties);
+			}
+
 			ObjectsMirror[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 			int mat = ObjectsMirror[i].getMaterial();
 			if ((mat == 2) || (mat == 3))
@@ -409,36 +446,6 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 	}
 	else
 	{
-		static vec3 color = vec3(1.0f, 0.0f, 0.0f);
-		static bool flag = false;
-
-		if ((color.r > 0.0f) && (!flag))
-		{
-			color.r -= 0.001f;
-			color.g += 0.001f;
-		}
-		else
-		{
-			if (color.g > 0.0f)
-			{
-				color.g -= 0.001f;
-				color.b += 0.001f;
-			}
-			else
-			{
-				if (color.b > 0.0f)
-				{
-					color.b -= 0.001f;
-					color.r += 0.001f;
-					if (!flag) flag = true;
-				}
-				else flag = false;
-			}
-		}
-
-		LightsColors[0] = color;
-		Lights[0].setDiffuseColor(color);
-
 		for (int i = 0; i < ObjectsCount; i++)
 		{
 			if (i < 6)
@@ -448,32 +455,6 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 				Objects[i].setLightsProperties(LightsProperties);
 			}
 			Objects[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
-		}
-
-		if (LightsCount > 0)
-		{
-			LightAngle += LightAngleDelta;
-			if (LightAngle > 360.0f) LightAngle = 0;
-
-			Position = Lights[0].getPosition();
-			Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
-			NewPosition = vec3(-Radius * sin(radians(LightAngle)), Position.y, -Radius * cos(radians(LightAngle)));
-			LightsPositions[0] = NewPosition;
-			Lights[0].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[0].getScale());
-
-			Position = Lights[1].getPosition();
-			Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
-			NewPosition = vec3(-Radius * sin(radians(LightAngle)), Position.y, -Radius * cos(radians(LightAngle)));
-			LightsPositions[1] = NewPosition;
-			Lights[1].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[1].getScale());
-
-			Position = Lights[2].getPosition();
-			Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
-			NewPosition = vec3(Radius * sin(radians(LightAngle)), Position.y, Radius * cos(radians(LightAngle)));
-			LightsPositions[2] = NewPosition;
-			Lights[2].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[2].getScale());
-
-			if (showlights) for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 		}
 
 		if (!stoprotations)
@@ -514,9 +495,30 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 		}
 	}
 
-	if ((LightsCount > 0) && (showlights))
+	if (LightsCount > 0)
 	{
-		for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
+		LightAngle += LightAngleDelta;
+		if (LightAngle > 360.0f) LightAngle = 0;
+
+		Position = Lights[0].getPosition();
+		Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
+		NewPosition = vec3(-Radius * sin(radians(LightAngle)), Position.y, -Radius * cos(radians(LightAngle)));
+		LightsPositions[0] = NewPosition;
+		Lights[0].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[0].getScale());
+
+		Position = Lights[1].getPosition();
+		Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
+		NewPosition = vec3(-Radius * sin(radians(LightAngle)), Position.y, -Radius * cos(radians(LightAngle)));
+		LightsPositions[1] = NewPosition;
+		Lights[1].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[1].getScale());
+
+		Position = Lights[2].getPosition();
+		Radius = sqrt(Position.x * Position.x + Position.z * Position.z);
+		NewPosition = vec3(Radius * sin(radians(LightAngle)), Position.y, Radius * cos(radians(LightAngle)));
+		LightsPositions[2] = NewPosition;
+		Lights[2].createModelMatrix(NewPosition, -LightAngle, "Y", Lights[2].getScale());
+
+		if (showlights) for (int i = 0; i < LightsCount; i++) Lights[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 	}
 
 	//Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
