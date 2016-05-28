@@ -54,6 +54,6 @@ public:
 	~SCENE();
 
 	/* Рендеринг сцены */
-	void Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool stoprotations, bool showlights);
+	void Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool stoprotations, bool showlights, bool blinn);
 };
 #endif

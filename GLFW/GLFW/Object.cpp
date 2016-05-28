@@ -1207,6 +1207,9 @@ void OBJECT::setLightsProperties(vec4 properties[])
 	}
 }
 
+/* Задаёт модель освещения */
+void OBJECT::setBlinn(bool value) { Blinn = value; }
+
 /* Возвращает свойства источника света по его ID */
 vec4 OBJECT::getlightProperties(int id) { return vec4(PointLight[id].Power, PointLight[id].Constant, PointLight[id].Linear, PointLight[id].Quadratic); }
 

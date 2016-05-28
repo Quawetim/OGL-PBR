@@ -338,7 +338,7 @@ SCENE::~SCENE()
 };
 
 /* Рендеринг сцены */
-void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool stoprotations, bool showlights)
+void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool stoprotations, bool showlights, bool blinn)
 {
 	WindowInfo = Winfo;
 
@@ -347,7 +347,7 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 	ViewMatrix = Camera.getViewMatrix();
 	ViewMatrixAxes = Camera.getViewMatrixAxes();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	Skybox.RenderSkyBox(CameraPosition, ProjectionMatrix, ViewMatrix);
 
@@ -393,6 +393,7 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 		{
 			if (i < 6)
 			{
+				ObjectsMirror[i].setBlinn(blinn);
 				ObjectsMirror[i].setLightsPositions(LightsPositions);
 				ObjectsMirror[i].setLightsColors(LightsColors);
 				ObjectsMirror[i].setLightsProperties(LightsProperties);
@@ -450,6 +451,7 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 		{
 			if (i < 6)
 			{
+				Objects[i].setBlinn(blinn);
 				Objects[i].setLightsPositions(LightsPositions);
 				Objects[i].setLightsColors(LightsColors);
 				Objects[i].setLightsProperties(LightsProperties);

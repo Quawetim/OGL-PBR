@@ -148,24 +148,26 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Gui.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="VboIndexer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Gui.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="Text.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="VboIndexer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
+    <None Include="shaders\Gui.fs" />
+    <None Include="shaders\Gui.vs" />
     <None Include="shaders\SolidColor.fs" />
     <None Include="shaders\SolidColor.vs" />
     <None Include="shaders\Reflection.fs" />

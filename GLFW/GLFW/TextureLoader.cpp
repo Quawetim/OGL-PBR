@@ -144,6 +144,7 @@ GLuint LoadDDS(const char * Image)
 	/* Определяем алгоритм сжатия */
 	unsigned int components = (FourCC == FOURCC_DXT1) ? 3 : 4;
 	unsigned int format;
+	
 	switch (FourCC)
 	{
 		case (FOURCC_DXT1):

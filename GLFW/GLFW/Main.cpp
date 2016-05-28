@@ -4,7 +4,7 @@
 #include "Scene.h"
 #include "TextureLoader.h"
 #include "VboIndexer.h"
-#include "Text.h"
+#include "Gui.h"
 
 /* WindowInfo - хранит информацию об окне */
 windowInfo WindowInfo;
@@ -312,18 +312,22 @@ void main()
 
 	SCENE Scene = SCENE(Blinn, WindowInfo);
 
-	InitText("textures//Text.DDS");
+	TEXT Text = TEXT("textures//Text.DDS");
+
+	BUTTON Button = BUTTON("textures//test.bmp", "textures//test.bmp", "textures//test.bmp");
 
 	lastTime = glfwGetTime();
 
 	while (!glfwWindowShouldClose(WindowInfo.Window))
 	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		currentTime = glfwGetTime();
 		nbFrames++;
 
 		if (currentTime - lastTime >= 0.01)
 		{
-			sprintf(text, "%.3f ms for frame. %d frames\n", 1000.0 / double(nbFrames), nbFrames);
+			sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
 			//sprintf(text, "%d FPS", nbFrames);
 			sprintf(text2, "Diploma at %d FPS", nbFrames);
 			glfwSetWindowTitle(WindowInfo.Window, text2);
@@ -333,12 +337,14 @@ void main()
 
 		glfwPollEvents();
 
-		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, StopRotations, ShowLights);
-		PrintText(text, 0, 580, 12);
+		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, StopRotations, ShowLights, Blinn);
+		Text.Render(text, 0, 580, 12);
+		Button.Render(0.91f, 0.9f, 0.08f, 0.08f);
+		Button.Render(0.91f, 0.72f, 0.08f, 0.08f);
+		Button.Render(0.91f, 0.54f, 0.08f, 0.08f);
 
 		glfwSwapBuffers(WindowInfo.Window);
 	}
 
-	DeleteText();
 	glfwTerminate();
 }

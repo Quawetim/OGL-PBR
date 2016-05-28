@@ -306,6 +306,9 @@ public:
 	/* Задаёт свойства всех источников света */
 	void setLightsProperties(vec4 properties[]);
 
+	/* Задаёт модель освещения */
+	void setBlinn(bool value);
+
 	/* Возвращает свойства источника света по его ID */
 	vec4 getlightProperties(int id);
 
