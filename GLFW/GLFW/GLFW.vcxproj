@@ -153,6 +153,7 @@
     <ClCompile Include="VboIndexer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Includes.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="VboIndexer.h" />

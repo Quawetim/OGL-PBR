@@ -1,9 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <GL/glew.h>
-#include <GL/glfw3.h>
+#include "TextureLoader.h"
 
 /* Загрузка BMP-текстуры */
 /* Image - путь к текстуре */

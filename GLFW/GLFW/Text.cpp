@@ -1,14 +1,3 @@
-#include <vector>
-#include <string>
-#include <fstream>
-
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-using namespace std;
-using namespace glm;
-
 #include "TextureLoader.h"
 #include "Text.h"
 

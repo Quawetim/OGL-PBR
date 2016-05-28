@@ -1,8 +1,4 @@
-#include <vector>
-#include <map>
-#include <glm/glm.hpp>
 #include "VboIndexer.h"
-#include <string.h>
 
 /* Проверяет близость точек */
 bool is_near(float v1, float v2)

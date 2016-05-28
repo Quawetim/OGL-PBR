@@ -1,6 +1,8 @@
 #ifndef TEXT_H
 #define TEXT_H
 
+#include "Includes.h"
+
 /* Инициализация */
 /* TexturePath - путь к текстуре */
 void InitText(const char *TexturePath);

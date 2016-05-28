@@ -1,27 +1,9 @@
-#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
-#include <stdlib.h>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
-
-#include <GL/glew.h>
-#include <GL/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <SOIL/SOIL.h>
-
-using namespace std;
-using namespace glm;
-
-GLFWwindow* window;
-
+#include "Includes.h"
 #include "TextureLoader.h"
 #include "VboIndexer.h"
 #include "Text.h"
+
+GLFWwindow* window;
 
 /* WindowWidth, WindowHeight - ширина и высота окна */
 /* FOV - field of view */
