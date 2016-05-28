@@ -31,6 +31,9 @@
     <Filter Include="Файлы исходного кода\object">
       <UniqueIdentifier>{282c7860-f42b-4f5a-b747-b8fbd0837804}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\scene">
+      <UniqueIdentifier>{a063ce22-4eab-41d2-855d-05cb203414b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -51,6 +54,9 @@
     <ClCompile Include="Object.cpp">
       <Filter>Файлы исходного кода\object</Filter>
     </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Файлы исходного кода\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Includes.h">
@@ -70,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>Файлы исходного кода\object</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Файлы исходного кода\scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
