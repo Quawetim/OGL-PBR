@@ -43,6 +43,7 @@ bool ShowLights = false;
 bool Blinn = false;
 bool MirrorExample = false;
 bool FullSceen = false;
+bool ShowCursor = false;
 
 /* Обработка ошибок */
 void error_callback(int error, const char* description)
@@ -146,12 +147,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			MirrorExample = true;
 		}
 	}
-}
 
-/* Обработка кнопок мышки */
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-	if (glfwGetKey(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) FOV = 90.0f;
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	{
+		ShowCursor = true;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
+	{
+		ShowCursor = false;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetCursorPos(window, WindowWidth / 2, WindowHeight / 2);
+	}
 }
 
 /* Обработка колёсика мышки */
@@ -307,11 +315,10 @@ public:
 		DeltaTime = float(CurrentTime - LastTime);
 
 		glfwGetCursorPos(window, &MouseX, &MouseY);
-		glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
 
 		switch (CameraMode)
 		{
-			/* От первого лица */
+		/* От первого лица */
 		case 1:
 		{
 			static vec3 Position = vec3(Radius, 0.0f, 0.0f), Direction, Right;
@@ -331,8 +338,13 @@ public:
 
 			CameraPosition = Position;
 
-			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+			if (!ShowCursor)
+			{
+				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+				glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
+			}
+
 			break;
 		}
 		/* От третьего лица */
@@ -355,8 +367,12 @@ public:
 
 			CameraPosition = Position;
 
-			HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
-			VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+			if (!ShowCursor)
+			{
+				HorizontalAngle += MouseSpeed * (float)(WindowWidth / 2.0f - MouseX);
+				VerticalAngle += MouseSpeed * (float)(WindowHeight / 2.0f - MouseY);
+				glfwSetCursorPos(window, WindowWidth / 2.0f, WindowHeight / 2.0f);
+			}
 			break;
 		}
 		/* Фиксированная */
@@ -2595,7 +2611,6 @@ void main()
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 	glfwSetKeyCallback(window, key_callback);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetScrollCallback(window, scroll_callback);
 
 	glewExperimental = true;
