@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Object.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="TextureLoader.cpp" />
     <ClCompile Include="VboIndexer.cpp" />
@@ -156,6 +157,7 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Includes.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="TextureLoader.h" />
     <ClInclude Include="VboIndexer.h" />

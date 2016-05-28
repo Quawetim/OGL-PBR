@@ -3,8 +3,6 @@
 
 #include "Includes.h"
 
-#include "Camera.h"
-
 class CAMERA
 {
 private:
