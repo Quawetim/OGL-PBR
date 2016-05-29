@@ -39,6 +39,9 @@ public:
 class BUTTON
 {
 private:
+	/**/
+	int ID;
+
 	/* VAO - Vertex Array Object*/
 	GLuint VAO;
 
@@ -51,6 +54,9 @@ private:
 	/* Текстуры */
 	GLuint InactiveTexture, HoverTexture, ActiveTexture;
 
+	/**/
+	bool Pressed = false;	
+
 	/* Указатели для шейдера*/
 	GLuint ShaderID, ModelMatrixID, TextureID;
 
@@ -60,11 +66,14 @@ private:
 	GLuint LoadShaders(const char *VertexShader, const char *FragmentShader);
 
 public:
+
+	bool flag = true;
+
 	/* Конструктор по-умолчанию */
 	BUTTON();
 
 	/* Конструктор */
-	BUTTON(const char* inactivetexturepath, const char* hovertexturepath, const char* activetexturepath);
+	BUTTON(int id, bool defaultstate, const char* inactivetexturepath, const char* hovertexturepath, const char* activetexturepath);
 
 	/* Деструктор */
 	~BUTTON();
@@ -77,7 +86,7 @@ public:
 	/* Выводит изображение на экран */
 	/* X, Y - координаты положения на экране */
 	/* Size - размер */
-	void Render(float x, float y, float sizex, float sizey);
+	bool Render(int id, windowInfo Winfo, float x, float y, float sizex, float sizey);
 };
 
 #endif

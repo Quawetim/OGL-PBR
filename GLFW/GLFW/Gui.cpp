@@ -303,8 +303,11 @@ GLuint BUTTON::LoadShaders(const char *VertexShader, const char *FragmentShader)
 BUTTON::BUTTON() {};
 
 /* Конструктор */
-BUTTON::BUTTON(const char* inactivetexturepath, const char* hovertexturepath, const char* activetexturepath)
+BUTTON::BUTTON(int id, bool defaultstate, const char* inactivetexturepath, const char* hovertexturepath, const char* activetexturepath)
 {
+	ID = id;
+	Pressed = defaultstate;
+
 	ShaderID = LoadShaders("shaders//Gui.vs", "shaders//Gui.fs");
 
 	InactiveTexture = LoadBMP(inactivetexturepath);
@@ -359,27 +362,138 @@ void BUTTON::createModelMatrix(float x, float y, float sizex, float sizey)
 /* Text - буфер */
 /* X, Y - координаты положения на экране */
 /* Size - размер */
-void BUTTON::Render(float x, float y, float sizex, float sizey)
+bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, float sizey)
 {
+	bool Answer = true;
+	double MouseX, MouseY;
+	float Left, Right, Top, Bottom;
+
 	createModelMatrix(x, y, sizex, sizey);
 
 	glUseProgram(ShaderID);
 
 	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, InactiveTexture);
-	glUniform1i(TextureID, 0);
+	glfwGetCursorPos(Winfo.Window, &MouseX, &MouseY);
+
+	/*
+		(MouseX > Winfo.HalfWidth * (1.0f + x - sizex)) && 
+		(MouseX < Winfo.HalfWidth * (1.0f + x + sizex)) && 
+		(MouseY > Winfo.HalfHeight * (1.0f - y - sizey)) && 
+		(MouseY < Winfo.HalfHeight * (1.0f - y + sizey)))
+	*/
+
+
+	Left = Winfo.HalfWidth * (1.0f + x - sizex);
+	Right = Winfo.HalfWidth * (1.0f + x + sizex);
+	Top = Winfo.HalfHeight * (1.0f - y - sizey);
+	Bottom = Winfo.HalfHeight * (1.0f - y + sizey);
+
+	if ((glfwGetMouseButton(Winfo.Window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) && flag)
+	{
+		if ((MouseX > Left) && (MouseX < Right) && (MouseY > Top) && (MouseY < Bottom))
+		{
+			if (Pressed)
+			{
+				Pressed = false;
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, InactiveTexture);
+				glUniform1i(TextureID, 0);
+
+				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+			else
+			{
+				Pressed = true;
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, ActiveTexture);
+				glUniform1i(TextureID, 0);
+
+				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				if (id == 1);
+			}
+
+			flag = false;
+		}
+		else
+		{
+			if (Pressed)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, ActiveTexture);
+				glUniform1i(TextureID, 0);
+			}
+			else
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, InactiveTexture);
+				glUniform1i(TextureID, 0);
+			}
+		}
+	}
+	else
+	{
+		if ((MouseX > Left) && (MouseX < Right) && (MouseY > Top) && (MouseY < Bottom))
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, HoverTexture);
+			glUniform1i(TextureID, 0);
+		}
+		else
+		{
+			if (Pressed)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, ActiveTexture);
+				glUniform1i(TextureID, 0);
+
+				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			}
+			else
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, InactiveTexture);
+				glUniform1i(TextureID, 0);
+
+				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+		}
+	}
+
+	/*if ((MouseX > Left) && (MouseX < Right) && (MouseY > Top) && (MouseY < Bottom))
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, HoverTexture);
+		glUniform1i(TextureID, 0);
+
+		if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, InactiveTexture);
+		glUniform1i(TextureID, 0);
+
+		if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}*/
 
 	glBindVertexArray(VAO);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
+
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
 	glBindVertexArray(0);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return Answer;
 }

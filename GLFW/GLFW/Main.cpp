@@ -63,7 +63,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 
 	/* Переключение отображения полигональной сетки */
-	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+	/*if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
 	{
 		if (Wireframe)
 		{
@@ -75,7 +75,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			Wireframe = true;
 		}
-	}
+	}*/
 
 	/* Включение/отключение вращений */
 	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
@@ -243,14 +243,15 @@ void main()
 
 	GLFWmonitor *Screen = glfwGetPrimaryMonitor();
 
-	WindowInfo.Width = 1280;
-	WindowInfo.Height = 800;
+	WindowInfo.Width = 1280; WindowInfo.Height = 800;
+	WindowInfo.HalfWidth = 1280 / 2.0f; WindowInfo.HalfHeight = 800 / 2.0f;
 	WindowInfo.ShowCursor = false;
 	WindowInfo.FullScreen = false;
 
 	if (WindowInfo.FullScreen)
 	{
 		WindowInfo.Width = 1920; WindowInfo.Height = 1080;
+		WindowInfo.HalfWidth = 1920 / 2.0f; WindowInfo.HalfHeight = 1080 / 2.0f;
 
 		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
 		WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", Screen, NULL);
@@ -314,18 +315,29 @@ void main()
 
 	TEXT Text = TEXT("textures//Text.DDS");
 
-	BUTTON Button = BUTTON("textures//test.bmp", "textures//test.bmp", "textures//test.bmp");
+	BUTTON Button1 = BUTTON(0, false, "textures//test.bmp", "textures//test_hover.bmp", "textures//test_active.bmp");
+	BUTTON Button2 = BUTTON(1, false, "textures//test.bmp", "textures//test_hover.bmp", "textures//test_active.bmp");
+	BUTTON Button3 = BUTTON(2, false, "textures//test.bmp", "textures//test_hover.bmp", "textures//test_active.bmp");
 
 	lastTime = glfwGetTime();
+	int frames = 0;
 
 	while (!glfwWindowShouldClose(WindowInfo.Window))
 	{
+		if (frames > 30)
+		{
+			Button1.flag = true;
+			Button2.flag = true;
+			Button3.flag = true;
+			frames = 0;
+		}
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		currentTime = glfwGetTime();
 		nbFrames++;
 
-		if (currentTime - lastTime >= 0.01)
+		if (currentTime - lastTime >= 0.01f)
 		{
 			sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
 			//sprintf(text, "%d FPS", nbFrames);
@@ -339,11 +351,13 @@ void main()
 
 		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, StopRotations, ShowLights, Blinn);
 		Text.Render(text, 0, 580, 12);
-		Button.Render(0.91f, 0.9f, 0.08f, 0.08f);
-		Button.Render(0.91f, 0.72f, 0.08f, 0.08f);
-		Button.Render(0.91f, 0.54f, 0.08f, 0.08f);
+
+		Button1.Render(0, WindowInfo, 0.91f, 0.9f, 0.08f, 0.08f);
+		Button2.Render(1, WindowInfo, 0.91f, 0.72f, 0.08f, 0.08f);
+		Button3.Render(2, WindowInfo, 0.91f, 0.54f, 0.08f, 0.08f);
 
 		glfwSwapBuffers(WindowInfo.Window);
+		frames++;
 	}
 
 	glfwTerminate();

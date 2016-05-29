@@ -86,9 +86,9 @@ vec3 CAMERA::ComputeViewMatrix(windowInfo WindowInfo, int CameraMode, float FOV)
 
 			if (!WindowInfo.ShowCursor)
 			{
-				HorizontalAngle += MouseSpeed * (float)(WindowInfo.Width / 2.0f - MouseX);
-				VerticalAngle += MouseSpeed * (float)(WindowInfo.Height / 2.0f - MouseY);
-				glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2.0f, WindowInfo.Height / 2.0f);
+				HorizontalAngle += MouseSpeed * (float)(WindowInfo.HalfWidth - MouseX);
+				VerticalAngle += MouseSpeed * (float)(WindowInfo.HalfHeight - MouseY);
+				glfwSetCursorPos(WindowInfo.Window, WindowInfo.HalfWidth, WindowInfo.HalfHeight);
 			}
 
 			break;

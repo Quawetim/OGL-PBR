@@ -26,10 +26,9 @@ using namespace glm;
 struct windowInfo
 {
 	GLFWwindow* Window;
-	int Width;
-	int Height;
-	bool FullScreen;
-	bool ShowCursor;
+	int Width, Height;
+	float HalfWidth, HalfHeight;
+	bool FullScreen, ShowCursor;
 };
 
 #endif
