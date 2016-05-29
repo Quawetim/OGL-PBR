@@ -13,15 +13,15 @@ windowInfo WindowInfo;
 /* GenTextureSize - размер генерируемой текстуры */
 /* FOV - field of view */
 /* Wireframe - отображение сетки объектов, переключение по F1 */
-/* StopRotations - переключение вращений по F2 */
+/* Rotations - переключение вращений по F2 */
 /* ShowLights - переключение отображения источников света по F3 */
 /* Blinn - переключение модели освещения по F4 */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
 int CameraMode = 2;
-int GenTextureSize = 512;
+int GenTextureSize = 128;
 float FOV = 90.0f;
-bool Wireframe = false;
-bool StopRotations = true;
+bool Vsync = false;
+bool Rotations = false;
 bool ShowLights = false;
 bool Blinn = false;
 bool MirrorExample = false;
@@ -62,79 +62,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		else CameraMode = PrevCamera;
 	}
 
-	/* Переключение отображения полигональной сетки */
-	/*if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
-	{
-		if (Wireframe)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			Wireframe = false;
-		}
-		else
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			Wireframe = true;
-		}
-	}*/
-
-	/* Включение/отключение вращений */
-	if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS)
-	{
-		if (StopRotations)
-		{
-			StopRotations = false;
-		}
-		else
-		{
-			StopRotations = true;
-		}
-	}
-
-	/* Включение/отключение отображения источников света */
-	if (glfwGetKey(window, GLFW_KEY_F3) == GLFW_PRESS)
-	{
-		if (ShowLights)
-		{
-			ShowLights = false;
-		}
-		else
-		{
-			ShowLights = true;
-		}
-	}
-
-	/* Переключение модели освещения */
-	if (glfwGetKey(window, GLFW_KEY_F4) == GLFW_PRESS)
-	{
-		if (Blinn)
-		{
-			Blinn = false;
-		}
-		else
-		{
-			Blinn = true;
-		}
-	}
-
-	/* Переключение сцен */
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
-	{
-		if (MirrorExample)
-		{
-			MirrorExample = false;
-		}
-		else
-		{
-			MirrorExample = true;
-		}
-	}
-
+	/* Отображение курсора при удерживании CTRL */
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
 	{
 		WindowInfo.ShowCursor = true;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
+	/* Скрытие курсора при отпускании CTRL */
 	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
 	{
 		WindowInfo.ShowCursor = false;
@@ -245,6 +180,7 @@ void main()
 
 	WindowInfo.Width = 1280; WindowInfo.Height = 800;
 	WindowInfo.HalfWidth = 1280 / 2.0f; WindowInfo.HalfHeight = 800 / 2.0f;
+
 	WindowInfo.ShowCursor = false;
 	WindowInfo.FullScreen = false;
 
@@ -275,7 +211,8 @@ void main()
 	}
 
 	glfwMakeContextCurrent(WindowInfo.Window);
-	glfwSwapInterval(1);
+	if (Vsync) glfwSwapInterval(1);
+
 	glfwSetKeyCallback(WindowInfo.Window, key_callback);
 	glfwSetScrollCallback(WindowInfo.Window, scroll_callback);
 
@@ -315,21 +252,24 @@ void main()
 
 	TEXT Text = TEXT("textures//Text.DDS");
 
-	BUTTON Button1 = BUTTON(0, false, "textures//test.bmp", "textures//test_hover.bmp", "textures//test_active.bmp");
-	BUTTON Button2 = BUTTON(1, false, "textures//test.bmp", "textures//test_hover.bmp", "textures//test_active.bmp");
-	BUTTON Button3 = BUTTON(2, false, "textures//test.bmp", "textures//test_hover.bmp", "textures//test_active.bmp");
+	int ButtonsCount = 5;
+	BUTTON *Buttons = new BUTTON[ButtonsCount];
+	Buttons[0].Prepare(0, false, "textures//gui//wireframe_inactive.bmp", "textures//gui//wireframe_inactivehover.bmp", "textures//gui//wireframe_active.bmp", "textures//gui//wireframe_activehover.bmp");
+	Buttons[1].Prepare(1, false, "textures//gui//rotations_inactive.bmp", "textures//gui//rotations_inactivehover.bmp", "textures//gui//rotations_active.bmp", "textures//gui//rotations_activehover.bmp");
+	Buttons[2].Prepare(2, false, "textures//gui//lights_inactive.bmp", "textures//gui//lights_inactivehover.bmp", "textures//gui//lights_active.bmp", "textures//gui//lights_activehover.bmp");
+	Buttons[3].Prepare(3, false, "textures//gui//blinn_inactive.bmp", "textures//gui//blinn_inactivehover.bmp", "textures//gui//blinn_active.bmp", "textures//gui//blinn_activehover.bmp");
+	Buttons[4].Prepare(4, false, "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp", "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp");
 
 	lastTime = glfwGetTime();
-	int frames = 0;
 
 	while (!glfwWindowShouldClose(WindowInfo.Window))
 	{
-		if (frames > 30)
+		for (int i = 0; i < ButtonsCount; i++)
 		{
-			Button1.flag = true;
-			Button2.flag = true;
-			Button3.flag = true;
-			frames = 0;
+			if (Buttons[i].frames > 30)
+			{
+				Buttons[i].flag = true;
+			}
 		}
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -349,15 +289,21 @@ void main()
 
 		glfwPollEvents();
 
-		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, StopRotations, ShowLights, Blinn);
+		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, Rotations, ShowLights, Blinn);
 		Text.Render(text, 0, 580, 12);
 
-		Button1.Render(0, WindowInfo, 0.91f, 0.9f, 0.08f, 0.08f);
-		Button2.Render(1, WindowInfo, 0.91f, 0.72f, 0.08f, 0.08f);
-		Button3.Render(2, WindowInfo, 0.91f, 0.54f, 0.08f, 0.08f);
+		double MouseX, MouseY;
+		glfwGetCursorPos(WindowInfo.Window, &MouseX, &MouseY);
+
+		Buttons[0].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.9f, 0.05f, 0.08f);
+		Rotations = Buttons[1].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.72f, 0.05f, 0.08f);
+		ShowLights = Buttons[2].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.54f, 0.05f, 0.08f);
+		Blinn = Buttons[3].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.36f, 0.05f, 0.08f);
+		MirrorExample = Buttons[4].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.18f, 0.05f, 0.08f);
 
 		glfwSwapBuffers(WindowInfo.Window);
-		frames++;
+
+		for (int i = 0; i < ButtonsCount; i++) Buttons[i].frames++;
 	}
 
 	glfwTerminate();

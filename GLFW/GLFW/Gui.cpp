@@ -303,16 +303,17 @@ GLuint BUTTON::LoadShaders(const char *VertexShader, const char *FragmentShader)
 BUTTON::BUTTON() {};
 
 /* Конструктор */
-BUTTON::BUTTON(int id, bool defaultstate, const char* inactivetexturepath, const char* hovertexturepath, const char* activetexturepath)
+void BUTTON::Prepare(int function, bool defaultstate, const char* inactivetexturepath, const char* inactivehovertexturepath, const char* activetexturepath, const char* activehovertexturepath)
 {
-	ID = id;
+	Function = function;
 	Pressed = defaultstate;
 
 	ShaderID = LoadShaders("shaders//Gui.vs", "shaders//Gui.fs");
 
 	InactiveTexture = LoadBMP(inactivetexturepath);
-	HoverTexture = LoadBMP(hovertexturepath);
+	InactiveHoverTexture = LoadBMP(inactivehovertexturepath);
 	ActiveTexture = LoadBMP(activetexturepath);
+	ActiveHoverTexture = LoadBMP(activehovertexturepath);
 
 	ModelMatrixID = glGetUniformLocation(ShaderID, "M");
 	TextureID = glGetUniformLocation(ShaderID, "Texture");
@@ -343,8 +344,9 @@ BUTTON::~BUTTON()
 	glDeleteBuffers(1, &vertexbuffer);
 	glDeleteBuffers(1, &uvbuffer);
 	glDeleteTextures(1, &InactiveTexture);
-	glDeleteTextures(1, &HoverTexture);
+	glDeleteTextures(1, &InactiveHoverTexture);
 	glDeleteTextures(1, &ActiveTexture);
+	glDeleteTextures(1, &ActiveHoverTexture);
 	glDeleteProgram(ShaderID);
 }
 
@@ -362,10 +364,10 @@ void BUTTON::createModelMatrix(float x, float y, float sizex, float sizey)
 /* Text - буфер */
 /* X, Y - координаты положения на экране */
 /* Size - размер */
-bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, float sizey)
+bool BUTTON::Render(windowInfo Winfo, double mousex, double mousey, float x, float y, float sizex, float sizey)
 {
-	bool Answer = true;
-	double MouseX, MouseY;
+	bool Answer = Pressed, Wireframe = false;
+	
 	float Left, Right, Top, Bottom;
 
 	createModelMatrix(x, y, sizex, sizey);
@@ -374,15 +376,12 @@ bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, flo
 
 	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
 
-	glfwGetCursorPos(Winfo.Window, &MouseX, &MouseY);
-
 	/*
 		(MouseX > Winfo.HalfWidth * (1.0f + x - sizex)) && 
 		(MouseX < Winfo.HalfWidth * (1.0f + x + sizex)) && 
 		(MouseY > Winfo.HalfHeight * (1.0f - y - sizey)) && 
 		(MouseY < Winfo.HalfHeight * (1.0f - y + sizey)))
 	*/
-
 
 	Left = Winfo.HalfWidth * (1.0f + x - sizex);
 	Right = Winfo.HalfWidth * (1.0f + x + sizex);
@@ -391,7 +390,7 @@ bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, flo
 
 	if ((glfwGetMouseButton(Winfo.Window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) && flag)
 	{
-		if ((MouseX > Left) && (MouseX < Right) && (MouseY > Top) && (MouseY < Bottom))
+		if ((mousex > Left) && (mousex < Right) && (mousey > Top) && (mousey < Bottom))
 		{
 			if (Pressed)
 			{
@@ -401,7 +400,8 @@ bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, flo
 				glBindTexture(GL_TEXTURE_2D, InactiveTexture);
 				glUniform1i(TextureID, 0);
 
-				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				if (Function == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				Answer = false;
 			}
 			else
 			{
@@ -411,11 +411,12 @@ bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, flo
 				glBindTexture(GL_TEXTURE_2D, ActiveTexture);
 				glUniform1i(TextureID, 0);
 
-				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				if (id == 1);
+				if (Function == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				Answer = true;
 			}
 
 			flag = false;
+			frames = 0;
 		}
 		else
 		{
@@ -435,11 +436,20 @@ bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, flo
 	}
 	else
 	{
-		if ((MouseX > Left) && (MouseX < Right) && (MouseY > Top) && (MouseY < Bottom))
+		if ((mousex > Left) && (mousex < Right) && (mousey > Top) && (mousey < Bottom))
 		{
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, HoverTexture);
-			glUniform1i(TextureID, 0);
+			if (Pressed)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, ActiveHoverTexture);
+				glUniform1i(TextureID, 0);
+			}
+			else
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, InactiveHoverTexture);
+				glUniform1i(TextureID, 0);
+			}
 		}
 		else
 		{
@@ -448,16 +458,12 @@ bool BUTTON::Render(int id, windowInfo Winfo, float x, float y, float sizex, flo
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, ActiveTexture);
 				glUniform1i(TextureID, 0);
-
-				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			}
 			else
 			{
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, InactiveTexture);
 				glUniform1i(TextureID, 0);
-
-				if (id == 0) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 		}
 	}

@@ -40,7 +40,10 @@ class BUTTON
 {
 private:
 	/**/
-	int ID;
+	int Function;
+
+	/**/
+
 
 	/* VAO - Vertex Array Object*/
 	GLuint VAO;
@@ -52,7 +55,7 @@ private:
 	GLuint vertexbuffer, uvbuffer;
 
 	/* Текстуры */
-	GLuint InactiveTexture, HoverTexture, ActiveTexture;
+	GLuint InactiveTexture, InactiveHoverTexture, ActiveTexture, ActiveHoverTexture;
 
 	/**/
 	bool Pressed = false;	
@@ -69,11 +72,14 @@ public:
 
 	bool flag = true;
 
+	int frames = 0;
+
 	/* Конструктор по-умолчанию */
 	BUTTON();
 
 	/* Конструктор */
-	BUTTON(int id, bool defaultstate, const char* inactivetexturepath, const char* hovertexturepath, const char* activetexturepath);
+	/* function - функция кнопки: 0 - отображение сетки, 1 - остановка вращений, 2 - отображение источников света, 3 - модель освещения Блинна, 4 - переключение сцены */
+	void Prepare(int function, bool defaultstate, const char* inactivetexturepath, const char* inactivehovertexturepath, const char* activetexturepath, const char* activehovertexturepath);
 
 	/* Деструктор */
 	~BUTTON();
@@ -86,7 +92,7 @@ public:
 	/* Выводит изображение на экран */
 	/* X, Y - координаты положения на экране */
 	/* Size - размер */
-	bool Render(int id, windowInfo Winfo, float x, float y, float sizex, float sizey);
+	bool Render(windowInfo Winfo, double MouseX, double MouseY, float x, float y, float sizex, float sizey);
 };
 
 #endif

@@ -173,7 +173,7 @@ SCENE::SCENE(bool blinn, windowInfo Winfo)
 	Objects[0].Prepare();
 	//Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
 	Objects[0].setSpecularTexture("textures//batman_specular.bmp", false);
-	//Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
+	Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 	Objects[0].createModelMatrix(vec3(0.0f, 6.0f, 3.0f), NULL, NULL, 0.5f);
 
 	Objects[1] = OBJECT(0, LightsCount, blinn, "3dmodels//sphere_lowpoly.obj");
@@ -338,7 +338,7 @@ SCENE::~SCENE()
 };
 
 /* Рендеринг сцены */
-void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool stoprotations, bool showlights, bool blinn)
+void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool rotations, bool showlights, bool blinn)
 {
 	WindowInfo = Winfo;
 
@@ -408,7 +408,7 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 			}
 		}
 
-		if (!stoprotations)
+		if (rotations)
 		{
 			Angle += AngleDelta;
 			Angle2 += AngleDelta2;
@@ -459,7 +459,7 @@ void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov,
 			Objects[i].Render(CameraPosition, ProjectionMatrix, ViewMatrix);
 		}
 
-		if (!stoprotations)
+		if (rotations)
 		{
 			Objects[0].increaseRotation(-CubeAngle, "Y");
 			Objects[3].increaseRotation(CubeAngle, "XY");
