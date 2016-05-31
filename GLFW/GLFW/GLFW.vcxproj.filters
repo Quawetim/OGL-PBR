@@ -34,6 +34,9 @@
     <Filter Include="Файлы исходного кода\gui">
       <UniqueIdentifier>{47a4d890-5c4b-47cb-989d-86e58341ee67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\config">
+      <UniqueIdentifier>{fafb989c-55b7-42fb-a261-a55acb0f915a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -132,6 +135,9 @@
     </None>
     <None Include="shaders\Gui.vs">
       <Filter>Файлы исходного кода\shaders</Filter>
+    </None>
+    <None Include="config\config.ini">
+      <Filter>Файлы исходного кода\config</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -20,7 +20,6 @@ windowInfo WindowInfo;
 int CameraMode = 2;
 int GenTextureSize = 128;
 float FOV = 90.0f;
-bool Vsync = false;
 bool Rotations = false;
 bool ShowLights = false;
 bool Blinn = false;
@@ -155,6 +154,90 @@ void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	printf("Message : %s\n", message);
 }
 
+/* Считывание настроек из файла конфигурации */
+/* Winfo - считанные даные об окне */
+/* Reflectres - размеркарты отражений */
+void ReadConfig(windowInfo &Winfo, int &Reflectres)
+{
+	FILE *Fin = fopen("config//config.ini", "r");
+
+	if (Fin != NULL)
+	{
+		char Buf[128];
+
+		/* Настройки по-умолчанию */
+		Winfo.FullScreen = false; Winfo.Vsync = true; Winfo.ShowCursor = false;
+		Winfo.Width = 800; Winfo.Height = 600;
+		Winfo.HalfWidth = Winfo.Width / 2.0f; Winfo.HalfHeight = Winfo.Height / 2.0f;
+
+		while (true)
+		{
+			if (fscanf(Fin, "%s", Buf) == EOF) break;
+
+			if (strcmp(Buf, "Fullscreen") == 0)
+			{
+				fscanf(Fin, "%s", Buf);
+				if (strcmp(Buf, "=") == 0)
+				{
+					fscanf(Fin, "%s", Buf);
+					if (strcmp(Buf, "true") == 0) Winfo.FullScreen = true;
+					else Winfo.FullScreen = false;
+
+					continue;
+				}
+			}
+
+			if (strcmp(Buf, "Vsync") == 0)
+			{
+				fscanf(Fin, "%s", Buf);
+				if (strcmp(Buf, "=") == 0)
+				{
+					fscanf(Fin, "%s", Buf);
+					if (strcmp(Buf, "true") == 0) Winfo.Vsync = true;
+					else Winfo.Vsync = false;
+
+					continue;
+				}
+			}
+				
+			if (strcmp(Buf, "WindowWidth") == 0)
+			{
+				fscanf(Fin, "%s", Buf);
+				if (strcmp(Buf, "=") == 0)
+				{
+					fscanf(Fin, "%d", &Winfo.Width);
+					Winfo.HalfWidth = Winfo.Width / 2.0f;
+
+					continue;
+				}
+			}
+					
+			if (strcmp(Buf, "WindowHeight") == 0)
+			{
+				fscanf(Fin, "%s", Buf);
+				if (strcmp(Buf, "=") == 0)
+				{
+					fscanf(Fin, "%d", &Winfo.Height);
+					Winfo.HalfHeight = Winfo.Height / 2.0f;
+
+					continue;
+				}
+			}
+
+			if (strcmp(Buf, "ReflectionResolution") == 0)
+			{
+				fscanf(Fin, "%s", Buf);
+				if (strcmp(Buf, "=") == 0)
+				{
+					fscanf(Fin, "%d", &Reflectres);
+
+					continue;
+				}
+			}
+		}
+	}
+}
+
 void main()
 {
 	int nbFrames = 0;
@@ -178,16 +261,15 @@ void main()
 
 	GLFWmonitor *Screen = glfwGetPrimaryMonitor();
 
-	WindowInfo.Width = 1280; WindowInfo.Height = 800;
-	WindowInfo.HalfWidth = 1280 / 2.0f; WindowInfo.HalfHeight = 800 / 2.0f;
-
-	WindowInfo.ShowCursor = false;
-	WindowInfo.FullScreen = false;
+	ReadConfig(WindowInfo, GenTextureSize);
 
 	if (WindowInfo.FullScreen)
 	{
-		WindowInfo.Width = 1920; WindowInfo.Height = 1080;
-		WindowInfo.HalfWidth = 1920 / 2.0f; WindowInfo.HalfHeight = 1080 / 2.0f;
+		/* Информация об экране, разрешение */
+		const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
+
+		WindowInfo.Width = VidMode->width; WindowInfo.HalfWidth = WindowInfo.Width / 2.0f;
+		WindowInfo.Height = VidMode->height; WindowInfo.HalfHeight = WindowInfo.Height / 2.0f;
 
 		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
 		WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", Screen, NULL);
@@ -211,7 +293,7 @@ void main()
 	}
 
 	glfwMakeContextCurrent(WindowInfo.Window);
-	if (Vsync) glfwSwapInterval(1);
+	if (WindowInfo.Vsync) glfwSwapInterval(1);
 
 	glfwSetKeyCallback(WindowInfo.Window, key_callback);
 	glfwSetScrollCallback(WindowInfo.Window, scroll_callback);

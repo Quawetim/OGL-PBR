@@ -28,7 +28,7 @@ struct windowInfo
 	GLFWwindow* Window;
 	int Width, Height;
 	float HalfWidth, HalfHeight;
-	bool FullScreen, ShowCursor;
+	bool FullScreen, Vsync, ShowCursor;
 };
 
 #endif
