@@ -48,7 +48,7 @@ public:
 	SCENE();
 
 	/* Конструктор, инициализирует объекты сцены */
-	SCENE(bool blinn, windowInfo Winfo);
+	SCENE(windowInfo Winfo, float skyboxsize, bool blinn);
 
 	/* Деструктор, удаляет шейдеры */
 	~SCENE();

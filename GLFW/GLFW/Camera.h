@@ -14,7 +14,7 @@ private:
 	/* Speed, Speed2 - скорость движения камер №1 и №2  */
 	/* MouseSpeed - скорость движения мышки */
 	vec3 CameraPosition, CameraLookTo = vec3(0.0f, 0.0f, 0.0f), CameraUp = vec3(0.0f, 1.0f, 0.0f), CameraStaticPosition = vec3(8.0f, 3.0f, 6.0f);
-	float Pi = pi<float>(), SkyBoxHalfSide = 100.0f;
+	float Pi = pi<float>(), Side = 100.0f;
 	float DeltaTime, Radius = 20.0f, RadiusMin = 2.0f, RadiusMax = 100.0f;
 	float Speed = 15.0f, MouseSpeed = 0.003f;
 

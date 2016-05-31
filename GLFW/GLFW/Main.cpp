@@ -20,10 +20,12 @@ windowInfo WindowInfo;
 int CameraMode = 2;
 int GenTextureSize = 128;
 float FOV = 90.0f;
+float SkyBoxSize = 500.0f;
 bool Rotations = false;
 bool ShowLights = false;
 bool Blinn = false;
 bool MirrorExample = false;
+bool ShowHelp = false;
 
 /* Обработка ошибок */
 void error_callback(int error, const char* description)
@@ -37,8 +39,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	static int PrevCamera;
 	/* Клавиши для выхода из приложения */
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+	//if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+	//if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 
 	/* FOV по-молчанию */
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { FOV = 90.0f; }
@@ -74,6 +76,18 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		WindowInfo.ShowCursor = false;
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		glfwSetCursorPos(window, WindowInfo.Width / 2, WindowInfo.Height / 2);
+	}
+
+	/* Отображение справки при удерживании F1 */
+	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
+	{
+		ShowHelp = true;
+	}
+
+	/* Скрытие справки при отпускании F1 */
+	if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE)
+	{
+		ShowHelp = false;
 	}
 }
 
@@ -161,14 +175,14 @@ void ReadConfig(windowInfo &Winfo, int &Reflectres)
 {
 	FILE *Fin = fopen("config//config.ini", "r");
 
+	/* Настройки по-умолчанию */
+	Winfo.FullScreen = false; Winfo.Vsync = true; Winfo.ShowCursor = false;
+	Winfo.Width = 800; Winfo.Height = 600;
+	Winfo.HalfWidth = Winfo.Width / 2.0f; Winfo.HalfHeight = Winfo.Height / 2.0f;
+
 	if (Fin != NULL)
 	{
 		char Buf[128];
-
-		/* Настройки по-умолчанию */
-		Winfo.FullScreen = false; Winfo.Vsync = true; Winfo.ShowCursor = false;
-		Winfo.Width = 800; Winfo.Height = 600;
-		Winfo.HalfWidth = Winfo.Width / 2.0f; Winfo.HalfHeight = Winfo.Height / 2.0f;
 
 		while (true)
 		{
@@ -330,7 +344,7 @@ void main()
 	glDepthFunc(GL_LESS);																		  
 	glEnable(GL_CULL_FACE);
 
-	SCENE Scene = SCENE(Blinn, WindowInfo);
+	SCENE Scene = SCENE(WindowInfo, SkyBoxSize, Blinn);
 
 	TEXT Text = TEXT("textures//Text.DDS");
 
@@ -341,6 +355,9 @@ void main()
 	Buttons[2].Prepare(2, false, "textures//gui//lights_inactive.bmp", "textures//gui//lights_inactivehover.bmp", "textures//gui//lights_active.bmp", "textures//gui//lights_activehover.bmp");
 	Buttons[3].Prepare(3, false, "textures//gui//blinn_inactive.bmp", "textures//gui//blinn_inactivehover.bmp", "textures//gui//blinn_active.bmp", "textures//gui//blinn_activehover.bmp");
 	Buttons[4].Prepare(4, false, "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp", "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp");
+
+	WINDOW HelpWindow = WINDOW();
+	HelpWindow.Prepare("textures//gui//help.bmp");
 
 	lastTime = glfwGetTime();
 
@@ -383,9 +400,11 @@ void main()
 		Blinn = Buttons[3].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.36f, 0.05f, 0.08f);
 		MirrorExample = Buttons[4].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.18f, 0.05f, 0.08f);
 
-		glfwSwapBuffers(WindowInfo.Window);
+		if (ShowHelp) HelpWindow.Render(WindowInfo, 0.0f, 0.0f, 0.8f, 0.8f);
 
 		for (int i = 0; i < ButtonsCount; i++) Buttons[i].frames++;
+
+		glfwSwapBuffers(WindowInfo.Window);
 	}
 
 	glfwTerminate();

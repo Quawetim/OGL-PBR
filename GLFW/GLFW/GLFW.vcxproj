@@ -166,7 +166,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
-    <None Include="config\config.ini" />
+    <None Include="config\config.ini">
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <DeploymentContent>false</DeploymentContent>
+    </None>
     <None Include="shaders\Gui.fs" />
     <None Include="shaders\Gui.vs" />
     <None Include="shaders\SolidColor.fs" />

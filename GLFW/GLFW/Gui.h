@@ -39,11 +39,8 @@ public:
 class BUTTON
 {
 private:
-	/**/
+	/* Функция кнопки */
 	int Function;
-
-	/**/
-
 
 	/* VAO - Vertex Array Object*/
 	GLuint VAO;
@@ -57,7 +54,7 @@ private:
 	/* Текстуры */
 	GLuint InactiveTexture, InactiveHoverTexture, ActiveTexture, ActiveHoverTexture;
 
-	/**/
+	/* Нажата/нет */
 	bool Pressed = false;	
 
 	/* Указатели для шейдера*/
@@ -69,9 +66,8 @@ private:
 	GLuint LoadShaders(const char *VertexShader, const char *FragmentShader);
 
 public:
-
+	/* "Заморозка" кнопки и число кадров с последнего нажатия */
 	bool flag = true;
-
 	int frames = 0;
 
 	/* Конструктор по-умолчанию */
@@ -94,5 +90,51 @@ public:
 	/* Size - размер */
 	bool Render(windowInfo Winfo, double MouseX, double MouseY, float x, float y, float sizex, float sizey);
 };
+
+class WINDOW
+{
+private:
+	/* VAO - Vertex Array Object*/
+	GLuint VAO;
+
+	/* Матрица модели */
+	mat4 ModelMatrix = mat4(1.0f);
+
+	/* Буферы*/
+	GLuint vertexbuffer, uvbuffer;
+
+	/* Текстура */
+	GLuint Texture;
+
+	/* Указатели для шейдера*/
+	GLuint ShaderID, ModelMatrixID, TextureID;
+
+	/* Загрузка шейдеров */
+	/* VertexShader - путь к вершинному шейдеру */
+	/* FragmentShader - путь к фрагментному (пиксельному) шейдеру */
+	GLuint LoadShaders(const char *VertexShader, const char *FragmentShader);
+
+public:
+	/* Конструктор по-умолчанию */
+	WINDOW();
+
+	/* Конструктор */
+	/* function - функция кнопки: 0 - отображение сетки, 1 - остановка вращений, 2 - отображение источников света, 3 - модель освещения Блинна, 4 - переключение сцены */
+	void Prepare(const char* texturepath);
+
+	/* Деструктор */
+	~WINDOW();
+
+	/* Создаёт матрицу модели */
+	/* position - позиция объекта */
+	/* scale - размер */
+	void createModelMatrix(float x, float y, float sizex, float sizey);
+
+	/* Выводит изображение на экран */
+	/* X, Y - координаты положения на экране */
+	/* Size - размер */
+	void Render(windowInfo Winfo, float x, float y, float sizex, float sizey);
+};
+
 
 #endif

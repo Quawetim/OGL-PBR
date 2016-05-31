@@ -7,6 +7,9 @@ void CAMERA::CheckMove(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { if (Radius > RadiusMin) Radius -= DeltaTime * Speed; }
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { if (Radius < RadiusMax) Radius += DeltaTime * Speed; }
 
+	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) Speed += 1.0f;
+	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) if (Speed > 1.0f) Speed -= 1.0f;
+
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
 }
 
@@ -24,21 +27,21 @@ void CAMERA::CheckMove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) { Position.y -= DeltaTime * Speed; }
 
 	if (glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS) Speed += 1.0f;
-	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) Speed -= 1.0f;
+	if (glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS) if (Speed > 1.0f) Speed -= 1.0f;
 
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) Speed = 15.0f;
 
-	if (Position.x > SkyBoxHalfSide) Position.x = SkyBoxHalfSide - 0.1f;
-	if (Position.x < -SkyBoxHalfSide) Position.x = -SkyBoxHalfSide + 0.1f;
-	if (Position.y > SkyBoxHalfSide) Position.y = SkyBoxHalfSide - 0.1f;
-	if (Position.y < -SkyBoxHalfSide) Position.y = -SkyBoxHalfSide + 0.1f;
-	if (Position.z > SkyBoxHalfSide) Position.z = SkyBoxHalfSide - 0.1f;
-	if (Position.z < -SkyBoxHalfSide) Position.z = -SkyBoxHalfSide + 0.1f;
+	if (Position.x > Side) Position.x = Side - 0.1f;
+	if (Position.x < -Side) Position.x = -Side + 0.1f;
+	if (Position.y > Side) Position.y = Side - 0.1f;
+	if (Position.y < -Side) Position.y = -Side + 0.1f;
+	if (Position.z > Side) Position.z = Side - 0.1f;
+	if (Position.z < -Side) Position.z = -Side + 0.1f;
 }
 
 /* Конструктор */
 /* На вход подаётся половина длины стороны скайбокса */
-CAMERA::CAMERA(float value) { SkyBoxHalfSide = value; }
+CAMERA::CAMERA(float value) { Side = value; }
 	
 /* Возвращает матрицу проекции */
 mat4 CAMERA::getProjectionMatrix() { return ProjectionMatrix; }

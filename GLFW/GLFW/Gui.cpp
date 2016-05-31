@@ -503,3 +503,185 @@ bool BUTTON::Render(windowInfo Winfo, double mousex, double mousey, float x, flo
 
 	return Answer;
 }
+
+/* Загрузка вершинного и фрагментного шейдеров */
+/* VertexShader - путь к вершинному шейдеру */
+/* FragmentShader - путь к фрагментному (пиксельному) шейдеру */
+GLuint WINDOW::LoadShaders(const char *VertexShader, const char *FragmentShader)
+{
+	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+
+	string VertexShaderCode;
+	ifstream VertexShaderStream(VertexShader, ios::in);
+
+	if (VertexShaderStream.is_open())
+	{
+		string Line = "";
+		while (getline(VertexShaderStream, Line)) VertexShaderCode += "\n" + Line;
+		VertexShaderStream.close();
+	}
+	else
+	{
+		printf("File %s not found.\n", VertexShader);
+		return 0;
+	}
+
+	string FragmentShaderCode;
+	ifstream FragmentShaderStream(FragmentShader, ios::in);
+
+	if (FragmentShaderStream.is_open())
+	{
+		string Line = "";
+		while (getline(FragmentShaderStream, Line)) FragmentShaderCode += "\n" + Line;
+		FragmentShaderStream.close();
+	}
+	else
+	{
+		printf("File %s not found.\n", FragmentShader);
+		return 0;
+	}
+
+	GLint Result = GL_FALSE;
+	int InfoLogLength;
+
+	printf("Compiling vertex shader: %s...", VertexShader);
+	char const * VertexSourcePointer = VertexShaderCode.c_str();
+	glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
+	glCompileShader(VertexShaderID);
+
+	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+	if (InfoLogLength > 0)
+	{
+		vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
+		glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+		printf("\nError: %s\n", &VertexShaderErrorMessage[0]);
+	}
+
+	printf("Compiling fragment shader: %s...", FragmentShader);
+	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
+	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
+	glCompileShader(FragmentShaderID);
+
+	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+	if (InfoLogLength > 0)
+	{
+		vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
+		glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+		printf("\nError: %s\n", &FragmentShaderErrorMessage[0]);
+	}
+
+	printf("Linking program...");
+	GLuint ProgramID = glCreateProgram();
+	glAttachShader(ProgramID, VertexShaderID);
+	glAttachShader(ProgramID, FragmentShaderID);
+	glLinkProgram(ProgramID);
+
+	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+
+	if (InfoLogLength > 0)
+	{
+		vector<char> ProgramErrorMessage(InfoLogLength + 1);
+		glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+		printf("\nError: %s\n", &ProgramErrorMessage[0]);
+	}
+
+	glDetachShader(ProgramID, VertexShaderID);
+	glDetachShader(ProgramID, FragmentShaderID);
+
+	glDeleteShader(VertexShaderID);
+	glDeleteShader(FragmentShaderID);
+
+	return ProgramID;
+}
+
+/* Конструктор по-умолчанию */
+WINDOW::WINDOW() {};
+
+/* Конструктор */
+void WINDOW::Prepare(const char* texturepath)
+{
+	ShaderID = LoadShaders("shaders//Gui.vs", "shaders//Gui.fs");
+
+	Texture = LoadBMP(texturepath);
+
+	ModelMatrixID = glGetUniformLocation(ShaderID, "M");
+	TextureID = glGetUniformLocation(ShaderID, "Texture");
+
+	GLfloat verticiesUVs[]
+	{
+		-1.0f, 1.0f,
+		-1.0f, -1.0f,
+		1.0f, 1.0f,
+		1.0f, -1.0f
+	};
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verticiesUVs), verticiesUVs, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+}
+
+/* Деструктор */
+WINDOW::~WINDOW()
+{
+	glDeleteBuffers(1, &vertexbuffer);
+	glDeleteBuffers(1, &uvbuffer);
+	glDeleteTextures(1, &Texture);
+	glDeleteProgram(ShaderID);
+}
+
+/* Создаёт матрицу модели */
+/* position - позиция объекта */
+/* size - размер */
+void WINDOW::createModelMatrix(float x, float y, float sizex, float sizey)
+{
+	ModelMatrix = mat4(1.0f);
+	ModelMatrix *= translate(vec3(x, y, 0.0f));
+	ModelMatrix *= scale(vec3(sizex, sizey, 1.0f));
+}
+
+/* Выводит текст на экран */
+/* Text - буфер */
+/* X, Y - координаты положения на экране */
+/* Size - размер */
+void WINDOW::Render(windowInfo Winfo, float x, float y, float sizex, float sizey)
+{
+	createModelMatrix(x, y, sizex, sizey);
+
+	glUseProgram(ShaderID);
+
+	glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, value_ptr(ModelMatrix));
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, Texture);
+	glUniform1i(TextureID, 0);
+
+	glBindVertexArray(VAO);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
+	glBindVertexArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}

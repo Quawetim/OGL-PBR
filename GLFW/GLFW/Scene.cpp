@@ -122,9 +122,11 @@ GLuint SCENE::MakeCubemap(int GenTextureSize, int id, vec3 camera, mat4 ViewMatr
 SCENE::SCENE() {};
 
 /* Конструктор, инициализирует объекты сцены */
-SCENE::SCENE(bool blinn, windowInfo Winfo)
+SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 {
 	WindowInfo = Winfo;
+
+	Camera = CAMERA(skyboxsize);
 
 	Axes = OBJECT(WindowInfo);
 	Axes.PrepareAxes();
@@ -135,8 +137,8 @@ SCENE::SCENE(bool blinn, windowInfo Winfo)
 	Skybox.setLightsPositions(LightsPositions);
 	Skybox.setLightsColors(LightsColors);
 	Skybox.setLightsProperties(LightsProperties);
-	Skybox.PrepareSkyBox(100.0f);
-	Skybox.createModelMatrix(vec3(0.0f, 0.0f, 0.0f), NULL, NULL, 100.0f * 2.0);
+	Skybox.PrepareSkyBox(skyboxsize);
+	Skybox.createModelMatrix(vec3(0.0f, 0.0f, 0.0f), NULL, NULL, skyboxsize * 2.0f);
 
 	if (LightsCount > 0)
 	{
