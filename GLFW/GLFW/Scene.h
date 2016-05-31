@@ -38,6 +38,7 @@ private:
 	mat4 ProjectionMatrix, ViewMatrix, ViewMatrixAxes;
 
 	/* Генерирует CubeMap-текстуру для зеркального объекта */
+	/* texturesize - размер текстуры */
 	/* id - идентификатор объекта, позиция в массиве всех объектов */
 	/* camera - позиция камеры */
 	/* ViewMatrix - матрица вида */
@@ -48,12 +49,23 @@ public:
 	SCENE();
 
 	/* Конструктор, инициализирует объекты сцены */
+	/* Winfo информация об окне */
+	/* skyboxsize - размер скайбокса */
+	/* blinn - модель освещения */
 	SCENE(windowInfo Winfo, float skyboxsize, bool blinn);
 
 	/* Деструктор, удаляет шейдеры */
 	~SCENE();
 
 	/* Рендеринг сцены */
+	/* Winfo информация об окне */
+	/* cameramode - выбранная камера */
+	/* texturesize - размер карты отражений */
+	/* fov - field of view */
+	/* mirrorexample - выбранная сцена */
+	/* stoprotations - вращения */
+	/* showlights - отображение источников света */
+	/* blinn - модель освещения */
 	void Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool stoprotations, bool showlights, bool blinn);
 };
 #endif

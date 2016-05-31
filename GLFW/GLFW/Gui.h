@@ -73,21 +73,25 @@ public:
 	/* Конструктор по-умолчанию */
 	BUTTON();
 
-	/* Конструктор */
+	/* Подготовка данных */
 	/* function - функция кнопки: 0 - отображение сетки, 1 - остановка вращений, 2 - отображение источников света, 3 - модель освещения Блинна, 4 - переключение сцены */
+	/* defaultstate - значение по-умолчанию */
+	/* inactivetexturepath, inactivehovertexturepath, activetexturepath, activehovertexturepath - путь к текстурам */
 	void Prepare(int function, bool defaultstate, const char* inactivetexturepath, const char* inactivehovertexturepath, const char* activetexturepath, const char* activehovertexturepath);
 
 	/* Деструктор */
 	~BUTTON();
 
 	/* Создаёт матрицу модели */
-	/* position - позиция объекта */
-	/* scale - размер */
+	/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+	/* sizex, sizey - размер кнопки по X, по Y */
 	void createModelMatrix(float x, float y, float sizex, float sizey);
 
-	/* Выводит изображение на экран */
-	/* X, Y - координаты положения на экране */
-	/* Size - размер */
+	/* Выводит кнопку на экран */
+	/* Winfo - информация об окне */
+	/* mousex, mousey - координаты курсора */
+	/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+	/* sizex, sizey - размер кнопки по X, по Y */
 	bool Render(windowInfo Winfo, double MouseX, double MouseY, float x, float y, float sizex, float sizey);
 };
 
@@ -118,21 +122,23 @@ public:
 	/* Конструктор по-умолчанию */
 	WINDOW();
 
-	/* Конструктор */
-	/* function - функция кнопки: 0 - отображение сетки, 1 - остановка вращений, 2 - отображение источников света, 3 - модель освещения Блинна, 4 - переключение сцены */
+	/* Подготовка данных */
+	/* texturepath - путь к тестуре */
 	void Prepare(const char* texturepath);
 
 	/* Деструктор */
 	~WINDOW();
 
 	/* Создаёт матрицу модели */
-	/* position - позиция объекта */
-	/* scale - размер */
+	/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+	/* sizex, sizey - размер кнопки по X, по Y */
 	void createModelMatrix(float x, float y, float sizex, float sizey);
 
-	/* Выводит изображение на экран */
-	/* X, Y - координаты положения на экране */
-	/* Size - размер */
+	/* Выводит окно на экран */
+	/* Winfo - информация об окне */
+	/* mousex, mousey - координаты курсора */
+	/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+	/* sizex, sizey - размер кнопки по X, по Y */
 	void Render(windowInfo Winfo, float x, float y, float sizex, float sizey);
 };
 

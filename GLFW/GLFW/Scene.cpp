@@ -1,6 +1,7 @@
 #include "Scene.h"
 
 /* Генерирует CubeMap-текстуру для зеркального объекта */
+/* texturesize - размер текстуры */
 /* id - идентификатор объекта, позиция в массиве всех объектов */
 /* camera - позиция камеры */
 /* ViewMatrix - матрица вида */
@@ -122,6 +123,9 @@ GLuint SCENE::MakeCubemap(int GenTextureSize, int id, vec3 camera, mat4 ViewMatr
 SCENE::SCENE() {};
 
 /* Конструктор, инициализирует объекты сцены */
+/* Winfo информация об окне */
+/* skyboxsize - размер скайбокса */
+/* blinn - модель освещения */
 SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 {
 	WindowInfo = Winfo;
@@ -340,6 +344,14 @@ SCENE::~SCENE()
 };
 
 /* Рендеринг сцены */
+/* Winfo информация об окне */
+/* cameramode - выбранная камера */
+/* texturesize - размер карты отражений */
+/* fov - field of view */
+/* mirrorexample - выбранная сцена */
+/* stoprotations - вращения */
+/* showlights - отображение источников света */
+/* blinn - модель освещения */
 void SCENE::Render(windowInfo Winfo, int cameramode, int texturesize, float fov, bool mirrorexample, bool rotations, bool showlights, bool blinn)
 {
 	WindowInfo = Winfo;

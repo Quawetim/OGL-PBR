@@ -12,11 +12,12 @@ windowInfo WindowInfo;
 /* CameraMode - выбранная камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированная */
 /* GenTextureSize - размер генерируемой текстуры */
 /* FOV - field of view */
-/* Wireframe - отображение сетки объектов, переключение по F1 */
-/* Rotations - переключение вращений по F2 */
-/* ShowLights - переключение отображения источников света по F3 */
-/* Blinn - переключение модели освещения по F4 */
+/* SkyBoxSize - размер скайбокса */
+/* Rotations - переключение вращений */
+/* ShowLights - переключение отображения источников света */
+/* Blinn - переключение модели освещения */
 /* MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map */
+/* ShowHelp - переключение отображения справки */
 int CameraMode = 2;
 int GenTextureSize = 128;
 float FOV = 90.0f;
@@ -170,8 +171,8 @@ void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum 
 
 /* Считывание настроек из файла конфигурации */
 /* Winfo - считанные даные об окне */
-/* Reflectres - размеркарты отражений */
-void ReadConfig(windowInfo &Winfo, int &Reflectres)
+/* Reflection_res - размер карты отражений */
+void ReadConfig(windowInfo &Winfo, int &Reflection_res)
 {
 	FILE *Fin = fopen("config//config.ini", "r");
 
@@ -243,7 +244,7 @@ void ReadConfig(windowInfo &Winfo, int &Reflectres)
 				fscanf(Fin, "%s", Buf);
 				if (strcmp(Buf, "=") == 0)
 				{
-					fscanf(Fin, "%d", &Reflectres);
+					fscanf(Fin, "%d", &Reflection_res);
 
 					continue;
 				}
@@ -255,157 +256,170 @@ void ReadConfig(windowInfo &Winfo, int &Reflectres)
 void main()
 {
 	int nbFrames = 0;
-	double currentTime, lastTime;
+	double currentTime, lastTime, MouseX, MouseY;
 	char text[100], text2[30];
 
 	glfwSetErrorCallback(error_callback);
 
-	if (!glfwInit())
-	{
-		printf("Can't init GLFW.\n");
-		getchar();
-	}
-
-	/* 4x сглаживание, OpenGL 3.3 */
-	glfwWindowHint(GLFW_SAMPLES, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-
-	GLFWmonitor *Screen = glfwGetPrimaryMonitor();
-
-	ReadConfig(WindowInfo, GenTextureSize);
-
-	if (WindowInfo.FullScreen)
-	{
-		/* Информация об экране, разрешение */
-		const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
-
-		WindowInfo.Width = VidMode->width; WindowInfo.HalfWidth = WindowInfo.Width / 2.0f;
-		WindowInfo.Height = VidMode->height; WindowInfo.HalfHeight = WindowInfo.Height / 2.0f;
-
-		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
-		WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", Screen, NULL);
+	if (!glfwInit()) 
+	{ 
+		printf("Can't init GLFW.\n"); 
+		getchar(); 
 	}
 	else
 	{
-		/* Ширина, высота, название окна, монитор (FullSreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
-		WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", NULL, NULL);
+		/* 4x сглаживание, OpenGL 3.3 */
+		glfwWindowHint(GLFW_SAMPLES, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
 
-		/* Информация об экране, разрешение */
-		const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
-		/* Окно в центр экрана */
-		glfwSetWindowPos(WindowInfo.Window, VidMode->width / 2 - WindowInfo.Width / 2, VidMode->height / 2 - WindowInfo.Height / 2);
-	}
+		/* Указатель на экран ПК */
+		GLFWmonitor *Screen = glfwGetPrimaryMonitor();
 
-	if (!WindowInfo.Window)
-	{
-		printf("Can't open GLFW window.\n");
-		getchar();
-		glfwTerminate();
-	}
+		ReadConfig(WindowInfo, GenTextureSize);
 
-	glfwMakeContextCurrent(WindowInfo.Window);
-	if (WindowInfo.Vsync) glfwSwapInterval(1);
-
-	glfwSetKeyCallback(WindowInfo.Window, key_callback);
-	glfwSetScrollCallback(WindowInfo.Window, scroll_callback);
-
-	glewExperimental = true;
-	if (glewInit() != GLEW_OK)
-	{
-		printf("Can't init GLEW.\n");
-		getchar();
-		glfwTerminate();
-	}
-
-	if (GLEW_ARB_debug_output)
-	{
-		printf("OpenGL debug output Ok.\n");
-		glDebugMessageCallbackARB(&DebugOutputCallback, NULL);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-	}
-	else
-	{
-		printf("OpenGL debug output doesn't work.\n");
-	}
-
-	glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
-
-	/* Скрыть курсор */
-	glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
-	/* Цвет фона, RGBA */
-	glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
-	/* Включаем буфер глубины */
-	glEnable(GL_DEPTH_TEST);
-	/* Выбираем фрагмент, ближайший к камере */
-	glDepthFunc(GL_LESS);																		  
-	glEnable(GL_CULL_FACE);
-
-	SCENE Scene = SCENE(WindowInfo, SkyBoxSize, Blinn);
-
-	TEXT Text = TEXT("textures//Text.DDS");
-
-	int ButtonsCount = 5;
-	BUTTON *Buttons = new BUTTON[ButtonsCount];
-	Buttons[0].Prepare(0, false, "textures//gui//wireframe_inactive.bmp", "textures//gui//wireframe_inactivehover.bmp", "textures//gui//wireframe_active.bmp", "textures//gui//wireframe_activehover.bmp");
-	Buttons[1].Prepare(1, false, "textures//gui//rotations_inactive.bmp", "textures//gui//rotations_inactivehover.bmp", "textures//gui//rotations_active.bmp", "textures//gui//rotations_activehover.bmp");
-	Buttons[2].Prepare(2, false, "textures//gui//lights_inactive.bmp", "textures//gui//lights_inactivehover.bmp", "textures//gui//lights_active.bmp", "textures//gui//lights_activehover.bmp");
-	Buttons[3].Prepare(3, false, "textures//gui//blinn_inactive.bmp", "textures//gui//blinn_inactivehover.bmp", "textures//gui//blinn_active.bmp", "textures//gui//blinn_activehover.bmp");
-	Buttons[4].Prepare(4, false, "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp", "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp");
-
-	WINDOW HelpWindow = WINDOW();
-	HelpWindow.Prepare("textures//gui//help.bmp");
-
-	lastTime = glfwGetTime();
-
-	while (!glfwWindowShouldClose(WindowInfo.Window))
-	{
-		for (int i = 0; i < ButtonsCount; i++)
+		if (WindowInfo.FullScreen)
 		{
-			if (Buttons[i].frames > 30)
+			/* Информация об экране, разрешение */
+			const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
+
+			WindowInfo.Width = VidMode->width; WindowInfo.HalfWidth = WindowInfo.Width / 2.0f;
+			WindowInfo.Height = VidMode->height; WindowInfo.HalfHeight = WindowInfo.Height / 2.0f;
+
+			/* Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
+			WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", Screen, NULL);
+		}
+		else
+		{
+			/* Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого) */
+			WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", NULL, NULL);
+
+			/* Информация об экране, разрешение */
+			const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
+
+			/* Окно в центр экрана */
+			glfwSetWindowPos(WindowInfo.Window, VidMode->width / 2 - WindowInfo.Width / 2, VidMode->height / 2 - WindowInfo.Height / 2);
+		}
+
+		if (!WindowInfo.Window)
+		{
+			printf("Can't open GLFW window.\n");
+			getchar();
+			glfwTerminate();
+		}
+
+		glfwMakeContextCurrent(WindowInfo.Window);
+
+		/* Включение вертикальной синхронизации */
+		if (WindowInfo.Vsync) glfwSwapInterval(1);
+
+		glfwSetKeyCallback(WindowInfo.Window, key_callback);
+		glfwSetScrollCallback(WindowInfo.Window, scroll_callback);
+
+		glewExperimental = true;
+		if (glewInit() != GLEW_OK)
+		{
+			printf("Can't init GLEW.\n");
+			getchar();
+			glfwTerminate();
+		}
+
+		if (GLEW_ARB_debug_output)
+		{
+			printf("OpenGL debug output Ok.\n");
+			glDebugMessageCallbackARB(&DebugOutputCallback, NULL);
+			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+		}
+		else
+		{
+			printf("OpenGL debug output doesn't work.\n");
+		}
+
+		glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
+
+		/* Скрыть курсор */
+		glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
+
+		/* Цвет фона, RGBA */
+		glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
+
+		/* Включаем буфер глубины */
+		glEnable(GL_DEPTH_TEST);
+
+		/* Выбираем фрагмент, ближайший к камере */
+		glDepthFunc(GL_LESS);
+
+		/* Отсечение невидимых граней */
+		glEnable(GL_CULL_FACE);
+
+		SCENE Scene = SCENE(WindowInfo, SkyBoxSize, Blinn);
+
+		TEXT Text = TEXT("textures//gui//Text.DDS");
+
+		int ButtonsCount = 5;
+		BUTTON *Buttons = new BUTTON[ButtonsCount];
+		Buttons[0].Prepare(0, false, "textures//gui//wireframe_inactive.bmp", "textures//gui//wireframe_inactivehover.bmp", "textures//gui//wireframe_active.bmp", "textures//gui//wireframe_activehover.bmp");
+		Buttons[1].Prepare(1, false, "textures//gui//rotations_inactive.bmp", "textures//gui//rotations_inactivehover.bmp", "textures//gui//rotations_active.bmp", "textures//gui//rotations_activehover.bmp");
+		Buttons[2].Prepare(2, false, "textures//gui//lights_inactive.bmp", "textures//gui//lights_inactivehover.bmp", "textures//gui//lights_active.bmp", "textures//gui//lights_activehover.bmp");
+		Buttons[3].Prepare(3, false, "textures//gui//blinn_inactive.bmp", "textures//gui//blinn_inactivehover.bmp", "textures//gui//blinn_active.bmp", "textures//gui//blinn_activehover.bmp");
+		Buttons[4].Prepare(4, false, "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp", "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp");
+
+		WINDOW HelpWindow = WINDOW();
+		HelpWindow.Prepare("textures//gui//help.bmp");
+
+		lastTime = glfwGetTime();
+
+		while (!glfwWindowShouldClose(WindowInfo.Window))
+		{
+			/* "Заморозка" кнопок */
+			for (int i = 0; i < ButtonsCount; i++)
 			{
-				Buttons[i].flag = true;
+				if (Buttons[i].frames > 30)
+				{
+					Buttons[i].flag = true;
+				}
 			}
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+			/* Подсчёт кадров в секунду и времени на отрисовку 1 кадра */
+			currentTime = glfwGetTime();
+			nbFrames++;
+		
+			if (currentTime - lastTime >= 0.01f)
+			{
+				sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
+				sprintf(text2, "Diploma at %d FPS", nbFrames);
+				glfwSetWindowTitle(WindowInfo.Window, text2);
+				nbFrames = 0;
+				lastTime += 1.0;
+			}
+
+			/* Проверка на нажатие кнопок */
+			glfwPollEvents();
+
+			/* Отрисовка сцены */
+			Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, Rotations, ShowLights, Blinn);
+			
+			/* Отрисовка GUI */
+			Text.Render(text, 0, 580, 12);
+			glfwGetCursorPos(WindowInfo.Window, &MouseX, &MouseY);
+
+			Buttons[0].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.9f, 0.05f, 0.08f);
+			Rotations = Buttons[1].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.72f, 0.05f, 0.08f);
+			ShowLights = Buttons[2].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.54f, 0.05f, 0.08f);
+			Blinn = Buttons[3].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.36f, 0.05f, 0.08f);
+			MirrorExample = Buttons[4].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.18f, 0.05f, 0.08f);
+
+			if (ShowHelp) HelpWindow.Render(WindowInfo, 0.0f, 0.0f, 0.8f, 0.8f);
+
+			for (int i = 0; i < ButtonsCount; i++) Buttons[i].frames++;
+
+			glfwSwapBuffers(WindowInfo.Window);
 		}
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		currentTime = glfwGetTime();
-		nbFrames++;
-
-		if (currentTime - lastTime >= 0.01f)
-		{
-			sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
-			//sprintf(text, "%d FPS", nbFrames);
-			sprintf(text2, "Diploma at %d FPS", nbFrames);
-			glfwSetWindowTitle(WindowInfo.Window, text2);
-			nbFrames = 0;
-			lastTime += 1.0;
-		}
-
-		glfwPollEvents();
-
-		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, Rotations, ShowLights, Blinn);
-		Text.Render(text, 0, 580, 12);
-
-		double MouseX, MouseY;
-		glfwGetCursorPos(WindowInfo.Window, &MouseX, &MouseY);
-
-		Buttons[0].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.9f, 0.05f, 0.08f);
-		Rotations = Buttons[1].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.72f, 0.05f, 0.08f);
-		ShowLights = Buttons[2].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.54f, 0.05f, 0.08f);
-		Blinn = Buttons[3].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.36f, 0.05f, 0.08f);
-		MirrorExample = Buttons[4].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.18f, 0.05f, 0.08f);
-
-		if (ShowHelp) HelpWindow.Render(WindowInfo, 0.0f, 0.0f, 0.8f, 0.8f);
-
-		for (int i = 0; i < ButtonsCount; i++) Buttons[i].frames++;
-
-		glfwSwapBuffers(WindowInfo.Window);
+		glfwTerminate();
 	}
-
-	glfwTerminate();
 }

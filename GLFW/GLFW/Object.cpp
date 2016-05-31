@@ -77,6 +77,7 @@ void OBJECT::PrepareSolidColor()
 }
 
 /* Рендеринг объекта сплошного цвета */
+/* Camera - позиция камеры */
 /* ProjectionMatrix - матрица проекции */
 /* ViewMatrix - матрица вида */
 void OBJECT::RenderSolidColor(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
@@ -249,6 +250,7 @@ void OBJECT::PrepareGradientColor()
 }
 
 /* Рендеринг объекта градиентного цвета */
+/* Camera - позиция камеры */
 /* ProjectionMatrix - матрица проекции */
 /* ViewMatrix - матрица вида */
 void OBJECT::RenderGradientColor(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
@@ -335,7 +337,7 @@ void OBJECT::RenderReflectionRefraction(vec3 Camera, mat4 ProjectionMatrix, mat4
 	glBindVertexArray(0);
 }
 
-/* Подготовка данных для цилиндра с картой нормалей */
+/* Подготовка данных для объекта с картой нормалей */
 void OBJECT::PrepareNormalMapping()
 {
 	LoadShaders("shaders//NormalMapping.vs", NULL, "shaders//NormalMapping.fs");
@@ -426,7 +428,8 @@ void OBJECT::PrepareNormalMapping()
 	glBindVertexArray(0);
 }
 
-/* Рендеринг цилиндра с картой нормалей */
+/* Рендеринг объекта с картой нормалей */
+/* Camera - позиция камеры */
 /* ProjectionMatrix - матрица проекции */
 /* ViewMatrix - матрица вида */
 void OBJECT::RenderNormalMapping(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)
@@ -628,6 +631,7 @@ bool OBJECT::LoadOBJ(const char *Path, vector<vec3> &Vertices, vector<vec2> &UVs
 
 /* Загрузка вершинного и фрагментного шейдеров */
 /* VertexShader - путь к вершинному шейдеру */
+/* GeometryShader - путь к геометрическому шейдеру */
 /* FragmentShader - путь к фрагментному (пиксельному) шейдеру */
 bool OBJECT::LoadShaders(const char *VertexShader, const char* GeometryShader, const char *FragmentShader)
 {
@@ -818,8 +822,7 @@ void OBJECT::ComputeTBT(vector<vec3> Vertices, vector<vec2> UVs, vector<vec3> No
 }
 
 /* Загрузка 6 CubeMap текстур, возвращает идентификатор загруженной текстуры */
-/* Порядок: +X (Право), -X (Лево), +Y (Верх), -Y (Низ), +Z (Перед), -Z (Зад) */
-/* faces - список изображений для каждой грани */
+/* faces - список изображений для каждой грани. Порядок: +X (Право), -X (Лево), +Y (Верх), -Y (Низ), +Z (Перед), -Z (Зад) */
 GLuint OBJECT::LoadCubeMap(vector<const GLchar*> faces)
 {
 	GLuint TextureID;
@@ -859,12 +862,12 @@ OBJECT::OBJECT(int lightscount)
 	PointLight = new pointLight[LightsCount];
 };
 
-/* Конструктор для объектов*/
+/* Конструктор для объектов */
 /* materialID - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
 /* path - путь к модели */
 OBJECT::OBJECT(int materialID, const char *path)
 {
-	sprintf(Name, path);
+	sprintf(Path, path);
 	Material.ID = materialID;
 	if (Material.ID == 4)
 	{
@@ -874,13 +877,13 @@ OBJECT::OBJECT(int materialID, const char *path)
 	ModelLoadedFlag = LoadOBJ(path, vertices, uvs, normals);
 }
 
-/* Конструктор для объектов*/
+/* Конструктор для объектов */
 /* materialID - материал: 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
 /* lightscount - число источников света */
 /* path - путь к модели */
 OBJECT::OBJECT(int materialID, int lightscount, bool blinn, const char *path)
 {
-	sprintf(Name, path);
+	sprintf(Path, path);
 	Material.ID = materialID;
 	if (Material.ID == 4)
 	{
@@ -1082,54 +1085,54 @@ vec3 OBJECT::getPosition()
 	return Position;
 }
 
-/* Задаёт материал */
+/* Задаёт материал объекта */
 /* 0 - сплошной цвет, 1 - градиентный цвет, 2 - стекло, 3 - зеркало,  4 - Normal Mapping */
 void OBJECT::setMaterial(int value) { Material.ID = value; }
 
-/* Возвращает материал */
+/* Возвращает материал объекта */
 int OBJECT::getMaterial() { return Material.ID; }
 
-/* Задаёт фоновый цвет */
+/* Задаёт фоновый цвет объекта */
 void OBJECT::setAmbientColor(float r, float g, float b) { Material.AmbientColor = vec3(r, g, b); }
 
-/* Задаёт фоновый цвет */
+/* Задаёт фоновый цвет объекта */
 void OBJECT::setAmbientColor(vec3 color) { Material.AmbientColor = color; }
 
-/* Возвращает фоновый */
+/* Возвращает фоновый цвет объекта */
 vec3 OBJECT::getAmbientColor() { return Material.AmbientColor; }
 
-/* Задаёт диффузный цвет */
+/* Задаёт диффузный цвет объекта */
 void OBJECT::setDiffuseColor(float r, float g, float b) { Material.DiffuseColor = vec3(r, g, b); }
 
-/* Задаёт диффузный цвет */
+/* Задаёт диффузный цвет объекта */
 void OBJECT::setDiffuseColor(vec3 color) { Material.DiffuseColor = color; }
 
-/* Возвращает диффузный цвет */
+/* Возвращает диффузный цвет объекта */
 vec3 OBJECT::getDiffuseColor() { return Material.DiffuseColor; }
 
-/* Задаёт отражённый цвет */
+/* Задаёт отражённый цвет объекта */
 void OBJECT::setSpecularColor(float r, float g, float b) { Material.SpecularColor = vec3(r, g, b); }
 
-/* Задаёт отражённый цвет */
+/* Задаёт отражённый цвет объекта */
 void OBJECT::setSpecularColor(vec3 color) { Material.SpecularColor = color; }
 
-/* Возвращает отражённый цвет */
+/* Возвращает отражённый цвет объекта */
 vec3 OBJECT::getSpecularColor() { return Material.SpecularColor; }
 
-/* Задаёт силу блеска */
+/* Задаёт силу блеска объекта */
 void OBJECT::setShinePower(float value) { Material.Shine = value; }
 
-/* Возвращает силу блеска */
+/* Возвращает силу блеска объекта */
 float OBJECT::getShinePower() { return Material.Shine; }
 
-/* Задаёт индекс преломления >= 1 */
+/* Задаёт индекс преломления объекта >= 1 */
 /* 1.0 - Воздух, 1.309 - лёд, 1.33 - вода, 1.52 - стекло (по-умолчанию), 2.42 - алмаз */
 void OBJECT::setRefractiveIndex(float value) { if (value < 1.0f) value = 1.0f; Material.RefractiveIndex = value; }
 
-/* Возвращает индекс преломления */
+/* Возвращает индекс преломления объекта */
 float OBJECT::getRefractiveIndex() { return Material.RefractiveIndex; }
 
-/* Задаёт диффузную текстуру */
+/* Задаёт диффузную текстуру объекта */
 void OBJECT::setDiffuseTexture(const char *path, bool DDS)
 {
 	if (DDS) DiffuseTexture = LoadDDS(path);
@@ -1137,7 +1140,7 @@ void OBJECT::setDiffuseTexture(const char *path, bool DDS)
 	if (DiffuseTexture > 0) DiffuseTextureFlag = true;
 }
 
-/* Задаёт карту отражений */
+/* Задаёт карту отражений объекта */
 void OBJECT::setSpecularTexture(const char *path, bool DDS)
 {
 	if (DDS) SpecularTexture = LoadDDS(path);
@@ -1145,7 +1148,7 @@ void OBJECT::setSpecularTexture(const char *path, bool DDS)
 	if (SpecularTexture > 0) SpecularTextureFlag = true;
 }
 
-/* задаёт карту нормалей */
+/* задаёт карту нормалей объекта */
 void OBJECT::setNormalTexture(const char *path)
 {
 	NormalTexture = LoadBMP(path);
@@ -1177,6 +1180,10 @@ void OBJECT::setLightsColors(vec3 color[]) { for (int i = 0; i < LightsCount; i+
 vec3 OBJECT::getLightColor(int id) { return PointLight[id].Color; }
 
 /* Задаёт свойства источника света по его ID */
+/* power - сила света */
+/* constcoeff - постоянный коэффициент затухания */
+/* lincoeff - линейный коэффициент затухания */
+/* quadcoeff - квадратичный коэффициент затухания */
 void OBJECT::setLightProperties(int id, float power, float constcoeff, float lincoeff, float quadcoeff)
 {
 	PointLight[id].Power = power;
@@ -1259,7 +1266,7 @@ void OBJECT::Prepare()
 	}
 	else
 	{
-		printf("Model %s is not loaded.\n", Name);
+		printf("Model %s is not loaded.\n", Path);
 	}
 }
 
@@ -1304,7 +1311,7 @@ void OBJECT::Render(vec3 CameraPosition, mat4 ProjectionMatrix, mat4 ViewMatrix)
 	}
 	else
 	{
-		printf("Model %s is not loaded.\n", Name);
+		printf("Model %s is not loaded.\n", Path);
 	}
 }
 
@@ -1491,6 +1498,7 @@ void OBJECT::PrepareSkyBox(float SkyBoxHalfSide)
 }
 
 /* Рендеринг Скайбокса */
+/* Camera - позиция камеры */
 /* ProjectionMatrix - матрица проекции */
 /* ViewMatrix - матрица вида */
 void OBJECT::RenderSkyBox(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatrix)

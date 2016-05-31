@@ -302,7 +302,10 @@ GLuint BUTTON::LoadShaders(const char *VertexShader, const char *FragmentShader)
 /* Конструктор по-умолчанию */
 BUTTON::BUTTON() {};
 
-/* Конструктор */
+/* Подготовка данных */
+/* function - функция кнопки */
+/* defaultstate - значение по-умолчанию */
+/* inactivetexturepath, inactivehovertexturepath, activetexturepath, activehovertexturepath - путь к текстурам */
 void BUTTON::Prepare(int function, bool defaultstate, const char* inactivetexturepath, const char* inactivehovertexturepath, const char* activetexturepath, const char* activehovertexturepath)
 {
 	Function = function;
@@ -351,8 +354,8 @@ BUTTON::~BUTTON()
 }
 
 /* Создаёт матрицу модели */
-/* position - позиция объекта */
-/* size - размер */
+/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+/* sizex, sizey - размер кнопки по X, по Y */
 void BUTTON::createModelMatrix(float x, float y, float sizex, float sizey)
 {
 	ModelMatrix = mat4(1.0f);
@@ -360,10 +363,11 @@ void BUTTON::createModelMatrix(float x, float y, float sizex, float sizey)
 	ModelMatrix *= scale(vec3(sizex, sizey, 1.0f));
 }
 
-/* Выводит текст на экран */
-/* Text - буфер */
-/* X, Y - координаты положения на экране */
-/* Size - размер */
+/* Выводит кнопку на экран */
+/* Winfo - информация об окне */
+/* mousex, mousey - координаты курсора */
+/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+/* sizex, sizey - размер кнопки по X, по Y */
 bool BUTTON::Render(windowInfo Winfo, double mousex, double mousey, float x, float y, float sizex, float sizey)
 {
 	bool Answer = Pressed, Wireframe = false;
@@ -604,7 +608,8 @@ GLuint WINDOW::LoadShaders(const char *VertexShader, const char *FragmentShader)
 /* Конструктор по-умолчанию */
 WINDOW::WINDOW() {};
 
-/* Конструктор */
+/* Подготовка данных */
+/* texturepath - путь к тестуре */
 void WINDOW::Prepare(const char* texturepath)
 {
 	ShaderID = LoadShaders("shaders//Gui.vs", "shaders//Gui.fs");
@@ -644,8 +649,8 @@ WINDOW::~WINDOW()
 }
 
 /* Создаёт матрицу модели */
-/* position - позиция объекта */
-/* size - размер */
+/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+/* sizex, sizey - размер кнопки по X, по Y */
 void WINDOW::createModelMatrix(float x, float y, float sizex, float sizey)
 {
 	ModelMatrix = mat4(1.0f);
@@ -653,10 +658,11 @@ void WINDOW::createModelMatrix(float x, float y, float sizex, float sizey)
 	ModelMatrix *= scale(vec3(sizex, sizey, 1.0f));
 }
 
-/* Выводит текст на экран */
-/* Text - буфер */
-/* X, Y - координаты положения на экране */
-/* Size - размер */
+/* Выводит окно на экран */
+/* Winfo - информация об окне */
+/* mousex, mousey - координаты курсора */
+/* x, y - позиция кнопки ([0;1], где [0:0] - центр экрана) */
+/* sizex, sizey - размер кнопки по X, по Y */
 void WINDOW::Render(windowInfo Winfo, float x, float y, float sizex, float sizey)
 {
 	createModelMatrix(x, y, sizex, sizey);

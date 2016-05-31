@@ -15,8 +15,9 @@ void CAMERA::CheckMove(GLFWwindow* window)
 
 /* Обработка клавиатуры для движения камеры №1 */
 /* window - указатель на окно */
-/* direction - направление камеры */
-/* right - вектор "вправо" для камеры */
+/* Position - новая позиция камеры */
+/* Direction - направление камеры */
+/* Right - вектор "вправо" для камеры */
 void CAMERA::CheckMove(GLFWwindow* window, vec3 &Position, vec3 Direction, vec3 Right)
 {
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { Position += normalize(Direction) * DeltaTime * Speed; }
@@ -53,8 +54,9 @@ mat4 CAMERA::getViewMatrix() { return ViewMatrix; }
 mat4 CAMERA::getViewMatrixAxes() { return ViewMatrixAxes; }
 
 /* Вычисление матриц вида и проекции, возвращает позицию камеры */
-/* window - указатель окна */
+/* WindowInfo - информация об окне */
 /* CameraMode - выбранная камера */
+/* FOV - field of view */
 vec3 CAMERA::ComputeViewMatrix(windowInfo WindowInfo, int CameraMode, float FOV)
 {
 	double CurrentTime, MouseX, MouseY;

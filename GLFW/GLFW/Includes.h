@@ -23,6 +23,10 @@
 using namespace std;
 using namespace glm;
 
+/* Информация об окне */
+/* Window - указатель */
+/* Width, Height - ширина, высота */
+/* FullScreen, Vsync, ShowCursor - во весь экран, вертикальная синхронизация, отображение курсора */
 struct windowInfo
 {
 	GLFWwindow* Window;
