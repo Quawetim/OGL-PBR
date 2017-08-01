@@ -197,6 +197,25 @@
     <ClInclude Include="src\TextureLoader.h" />
     <ClInclude Include="src\VboIndexer.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Object Include="resources\3dmodels\cube.obj" />
+    <Object Include="resources\3dmodels\cylinder.obj" />
+    <Object Include="resources\3dmodels\deadpool.obj" />
+    <Object Include="resources\3dmodels\diamond.obj" />
+    <Object Include="resources\3dmodels\planets\Earth.obj" />
+    <Object Include="resources\3dmodels\planets\Mercury.obj" />
+    <Object Include="resources\3dmodels\planets\Sol.obj" />
+    <Object Include="resources\3dmodels\planets\Venus.obj" />
+    <Object Include="resources\3dmodels\skybox.obj" />
+    <Object Include="resources\3dmodels\skydome.obj" />
+    <Object Include="resources\3dmodels\sphere_highpoly.obj" />
+    <Object Include="resources\3dmodels\sphere_lowpoly.obj" />
+    <Object Include="resources\3dmodels\teapot.obj" />
+    <Object Include="resources\3dmodels\torusknot.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="resources\3dmodels\planets\Scale.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
