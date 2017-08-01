@@ -167,6 +167,7 @@ void APIENTRY DebugOutputCallback(GLenum source, GLenum type, GLuint id, GLenum 
 	}
 
 	printf("Message : %s\n", message);
+    system("pause");
 }
 
 /* —читывание настроек из файла конфигурации */
@@ -357,18 +358,18 @@ void main()
 
 		SCENE Scene = SCENE(WindowInfo, SkyBoxSize, Blinn);
 
-		TEXT Text = TEXT("textures//gui//Text.DDS");
+		TEXT Text = TEXT("resources//textures//gui//Text.DDS");
 
 		int ButtonsCount = 5;
 		BUTTON *Buttons = new BUTTON[ButtonsCount];
-		Buttons[0].Prepare(0, false, "textures//gui//wireframe_inactive.bmp", "textures//gui//wireframe_inactivehover.bmp", "textures//gui//wireframe_active.bmp", "textures//gui//wireframe_activehover.bmp");
-		Buttons[1].Prepare(1, false, "textures//gui//rotations_inactive.bmp", "textures//gui//rotations_inactivehover.bmp", "textures//gui//rotations_active.bmp", "textures//gui//rotations_activehover.bmp");
-		Buttons[2].Prepare(2, false, "textures//gui//lights_inactive.bmp", "textures//gui//lights_inactivehover.bmp", "textures//gui//lights_active.bmp", "textures//gui//lights_activehover.bmp");
-		Buttons[3].Prepare(3, false, "textures//gui//blinn_inactive.bmp", "textures//gui//blinn_inactivehover.bmp", "textures//gui//blinn_active.bmp", "textures//gui//blinn_activehover.bmp");
-		Buttons[4].Prepare(4, false, "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp", "textures//gui//scene.bmp", "textures//gui//scene_hover.bmp");
+		Buttons[0].Prepare(0, false, "resources//textures//gui//wireframe_inactive.bmp", "resources//textures//gui//wireframe_inactivehover.bmp", "resources//textures//gui//wireframe_active.bmp", "resources//textures//gui//wireframe_activehover.bmp");
+		Buttons[1].Prepare(1, false, "resources//textures//gui//rotations_inactive.bmp", "resources//textures//gui//rotations_inactivehover.bmp", "resources//textures//gui//rotations_active.bmp", "resources//textures//gui//rotations_activehover.bmp");
+		Buttons[2].Prepare(2, false, "resources//textures//gui//lights_inactive.bmp", "resources//textures//gui//lights_inactivehover.bmp", "resources//textures//gui//lights_active.bmp", "resources//textures//gui//lights_activehover.bmp");
+		Buttons[3].Prepare(3, false, "resources//textures//gui//blinn_inactive.bmp", "resources//textures//gui//blinn_inactivehover.bmp", "resources//textures//gui//blinn_active.bmp", "resources//textures//gui//blinn_activehover.bmp");
+		Buttons[4].Prepare(4, false, "resources//textures//gui//scene.bmp", "resources//textures//gui//scene_hover.bmp", "resources//textures//gui//scene.bmp", "resources//textures//gui//scene_hover.bmp");
 
 		WINDOW HelpWindow = WINDOW();
-		HelpWindow.Prepare("textures//gui//help.bmp");
+		HelpWindow.Prepare("resources//textures//gui//help.bmp");
 
 		lastTime = glfwGetTime();
 

@@ -137,7 +137,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 
 	LightsCount = 3;
 
-	Skybox = OBJECT(0, "3dmodels//skybox.obj");
+	Skybox = OBJECT(0, "resources//3dmodels//skybox.obj");
 	Skybox.setLightsPositions(LightsPositions);
 	Skybox.setLightsColors(LightsColors);
 	Skybox.setLightsProperties(LightsProperties);
@@ -164,7 +164,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 		Lights = new OBJECT[LightsCount];
 		for (int i = 0; i < LightsCount; i++)
 		{
-			Lights[i] = OBJECT(0, "3dmodels//sphere_lowpoly.obj");
+			Lights[i] = OBJECT(0, "resources//3dmodels//sphere_lowpoly.obj");
 			Lights[i].Prepare();
 			Lights[i].setDiffuseColor(LightsColors[i]);
 			Lights[i].setPosition(LightsPositions[i]);
@@ -175,84 +175,84 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	ObjectsCount = 15;
 	Objects = new OBJECT[ObjectsCount];
 
-	Objects[0] = OBJECT(0, LightsCount, blinn, "3dmodels//cube.obj");
+	Objects[0] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cube.obj");
 	Objects[0].Prepare();
-	//Objects[0].setDiffuseTexture("textures//batman_diffuse.bmp", false);
-	Objects[0].setSpecularTexture("textures//batman_specular.bmp", false);
+	//Objects[0].setDiffuseTexture("resources//textures//batman_diffuse.bmp", false);
+	Objects[0].setSpecularTexture("resources//textures//batman_specular.bmp", false);
 	Objects[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 	Objects[0].createModelMatrix(vec3(0.0f, 6.0f, 3.0f), NULL, NULL, 0.5f);
 
-	Objects[1] = OBJECT(0, LightsCount, blinn, "3dmodels//sphere_lowpoly.obj");
+	Objects[1] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//sphere_lowpoly.obj");
 	Objects[1].Prepare();
 	Objects[1].setDiffuseColor(0.6f, 0.3f, 0.9f);
 	Objects[1].setPosition(0.0f, 6.0f, 0.0f);
 
-	Objects[2] = OBJECT(0, LightsCount, blinn, "3dmodels//cylinder.obj");
+	Objects[2] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cylinder.obj");
 	Objects[2].Prepare();
 	Objects[2].setDiffuseColor(0.1f, 0.9f, 0.8f);
 	Objects[2].setPosition(0.0f, 6.0f, -3.0f);
 
-	Objects[3] = OBJECT(1, LightsCount, blinn, "3dmodels//cube.obj");
+	Objects[3] = OBJECT(1, LightsCount, blinn, "resources//3dmodels//cube.obj");
 	Objects[3].Prepare();
 	Objects[3].setPosition(0.0f, 3.0f, 3.0f);
 
-	Objects[4] = OBJECT(1, LightsCount, blinn, "3dmodels//sphere_lowpoly.obj");
+	Objects[4] = OBJECT(1, LightsCount, blinn, "resources//3dmodels//sphere_lowpoly.obj");
 	Objects[4].Prepare();
 	Objects[4].setPosition(0.0f, 3.0f, 0.0f);
 
-	Objects[5] = OBJECT(1, LightsCount, blinn, "3dmodels//cylinder.obj");
+	Objects[5] = OBJECT(1, LightsCount, blinn, "resources//3dmodels//cylinder.obj");
 	Objects[5].Prepare();
 	Objects[5].setPosition(0.0f, 3.0f, -3.0f);
 
-	Objects[6] = OBJECT(2, "3dmodels//cube.obj");
+	Objects[6] = OBJECT(2, "resources//3dmodels//cube.obj");
 	Objects[6].Prepare();
 	Objects[6].setRefractiveIndex(1.1f);
 	Objects[6].setPosition(0.0f, 0.0f, 3.0f);
 
-	Objects[7] = OBJECT(2, "3dmodels//sphere_highpoly.obj");
+	Objects[7] = OBJECT(2, "resources//3dmodels//sphere_highpoly.obj");
 	Objects[7].Prepare();
 	Objects[7].setRefractiveIndex(2.42f);
 
-	Objects[8] = OBJECT(2, "3dmodels//cylinder.obj");
+	Objects[8] = OBJECT(2, "resources//3dmodels//cylinder.obj");
 	Objects[8].Prepare();
 	Objects[8].setRefractiveIndex(1.33f);
 	Objects[8].setPosition(0.0f, 0.0f, -3.0f);
 
-	Objects[9] = OBJECT(3, "3dmodels//cube.obj");
+	Objects[9] = OBJECT(3, "resources//3dmodels//cube.obj");
 	Objects[9].Prepare();
 	Objects[9].setPosition(0.0f, -3.0f, 3.0f);
 
-	Objects[10] = OBJECT(3, "3dmodels//sphere_lowpoly.obj");
+	Objects[10] = OBJECT(3, "resources//3dmodels//sphere_lowpoly.obj");
 	Objects[10].Prepare();
 	Objects[10].setPosition(0.0f, -3.0f, 0.0f);
 
-	Objects[11] = OBJECT(3, "3dmodels//cylinder.obj");
+	Objects[11] = OBJECT(3, "resources//3dmodels//cylinder.obj");
 	Objects[11].Prepare();
 	Objects[11].setPosition(0.0f, -3.0f, -3.0f);
 
-	Objects[12] = OBJECT(4, "3dmodels//cube.obj");
+	Objects[12] = OBJECT(4, "resources//3dmodels//cube.obj");
 	Objects[12].setLightPosition(0, 5.0f, -6.0f, 3.0f);
 	Objects[12].Prepare();
-	Objects[12].setDiffuseTexture("textures//brick_diffuse.bmp", false);
-	Objects[12].setSpecularTexture("textures//brick_specular.bmp", false);
-	Objects[12].setNormalTexture("textures//brick_normal.bmp");
+	Objects[12].setDiffuseTexture("resources//textures//brick_diffuse.bmp", false);
+	Objects[12].setSpecularTexture("resources//textures//brick_specular.bmp", false);
+	Objects[12].setNormalTexture("resources//textures//brick_normal.bmp");
 	Objects[12].setShinePower(32.0f);
 	Objects[12].setPosition(0.0f, -6.0f, 3.0f);
 
-	Objects[13] = OBJECT(4, "3dmodels//sphere_lowpoly.obj");
+	Objects[13] = OBJECT(4, "resources//3dmodels//sphere_lowpoly.obj");
 	Objects[13].setLightPosition(0, 5.0f, -6.0f, 0.0f);
 	Objects[13].Prepare();
-	Objects[13].setDiffuseTexture("textures//brick2_diffuse.bmp", false);
-	Objects[13].setSpecularTexture("textures//brick2_specular.bmp", false);
-	Objects[13].setNormalTexture("textures//brick2_normal.bmp");
+	Objects[13].setDiffuseTexture("resources//textures//brick2_diffuse.bmp", false);
+	Objects[13].setSpecularTexture("resources//textures//brick2_specular.bmp", false);
+	Objects[13].setNormalTexture("resources//textures//brick2_normal.bmp");
 	Objects[13].setPosition(0.0f, -6.0f, 0.0f);
 
-	Objects[14] = OBJECT(4, "3dmodels//cylinder.obj");
+	Objects[14] = OBJECT(4, "resources//3dmodels//cylinder.obj");
 	Objects[14].setLightPosition(0, 5.0f, -6.0f, -3.0f);
 	Objects[14].Prepare();
-	Objects[14].setDiffuseTexture("textures//diffuse.dds", true);
-	Objects[14].setSpecularTexture("textures//specular.dds", true);
-	Objects[14].setNormalTexture("textures//normal.bmp");
+	Objects[14].setDiffuseTexture("resources//textures//diffuse.dds", true);
+	Objects[14].setSpecularTexture("resources//textures//specular.dds", true);
+	Objects[14].setNormalTexture("resources//textures//normal.bmp");
 	Objects[14].setPosition(0.0f, -6.0f, -3.0f);
 
 	Objects[6].setCubeMapTexture(Skybox.getCubeMapTexture());
@@ -266,7 +266,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	ObjectsCountMirror = 7;
 	ObjectsMirror = new OBJECT[ObjectsCountMirror];
 
-	ObjectsMirror[0] = OBJECT(0, LightsCount, blinn, "3dmodels//cube.obj");
+	ObjectsMirror[0] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cube.obj");
 	ObjectsMirror[0].Prepare();
 	ObjectsMirror[0].setLightsPositions(LightsPositions);
 	ObjectsMirror[0].setLightsColors(LightsColors);
@@ -274,7 +274,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	ObjectsMirror[0].setDiffuseColor(0.9f, 0.0f, 0.5f);
 	ObjectsMirror[0].setPosition(0.0f, 0.0f, 10.0f);
 
-	ObjectsMirror[1] = OBJECT(0, LightsCount, blinn, "3dmodels//cube.obj");
+	ObjectsMirror[1] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cube.obj");
 	ObjectsMirror[1].Prepare();
 	ObjectsMirror[1].setLightsPositions(LightsPositions);
 	ObjectsMirror[1].setLightsColors(LightsColors);
@@ -282,7 +282,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	ObjectsMirror[1].setDiffuseColor(0.0f, 0.5f, 0.9f);
 	ObjectsMirror[1].setPosition(0.0f, 0.0f, -10.0f);
 
-	ObjectsMirror[2] = OBJECT(0, LightsCount, blinn, "3dmodels//cube.obj");
+	ObjectsMirror[2] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cube.obj");
 	ObjectsMirror[2].Prepare();
 	ObjectsMirror[2].setLightsPositions(LightsPositions);
 	ObjectsMirror[2].setLightsColors(LightsColors);
@@ -290,17 +290,17 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	ObjectsMirror[2].setDiffuseColor(0.3f, 0.8f, 0.5f);
 	ObjectsMirror[2].setPosition(5.0f, 0.0f, 0.0f);
 
-	ObjectsMirror[3] = OBJECT(0, LightsCount, blinn, "3dmodels//cube.obj");
+	ObjectsMirror[3] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cube.obj");
 	ObjectsMirror[3].Prepare();
 	ObjectsMirror[3].setLightsPositions(LightsPositions);
 	ObjectsMirror[3].setLightsColors(LightsColors);
 	ObjectsMirror[3].setLightsProperties(LightsProperties);
 	ObjectsMirror[3].setDiffuseColor(0.5f, 0.0f, 0.9f);
-	ObjectsMirror[3].setDiffuseTexture("textures//deadpool.bmp", false);
+	ObjectsMirror[3].setDiffuseTexture("resources//textures//deadpool.bmp", false);
 	//ObjectsMirror[3].setPosition(-5.0f, 0.0f, 0.0f);
 	ObjectsMirror[3].createModelMatrix(vec3(-5.0f, 0.0f, 0.0f), NULL, NULL, 1.0f);
 
-	ObjectsMirror[4] = OBJECT(1, LightsCount, blinn, "3dmodels//cylinder.obj");
+	ObjectsMirror[4] = OBJECT(1, LightsCount, blinn, "resources//3dmodels//cylinder.obj");
 	ObjectsMirror[4].Prepare();
 	ObjectsMirror[4].setLightsPositions(LightsPositions);
 	ObjectsMirror[4].setLightsColors(LightsColors);
@@ -309,7 +309,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	//ObjectsMirror[4].setPosition(0.0f, 15.0f, 0.0f);
 	ObjectsMirror[4].createModelMatrix(vec3(0.0f, 15.0f, 0.0f), NULL, NULL, 3.0f);
 
-	ObjectsMirror[5] = OBJECT(0, LightsCount, blinn, "3dmodels//cylinder.obj");
+	ObjectsMirror[5] = OBJECT(0, LightsCount, blinn, "resources//3dmodels//cylinder.obj");
 	ObjectsMirror[5].setLightsPositions(LightsPositions);
 	ObjectsMirror[5].setLightsColors(LightsColors);
 	ObjectsMirror[5].setLightsProperties(LightsProperties);
@@ -318,7 +318,7 @@ SCENE::SCENE(windowInfo Winfo, float skyboxsize, bool blinn)
 	ObjectsMirror[5].setPosition(0.0f, -15.0f, 0.0f);
 	//ObjectsMirror[5].createModelMatrix(vec3(0.0f, -15.0f, 0.0f), NULL, NULL, 3.0f);
 
-	ObjectsMirror[6] = OBJECT(3, "3dmodels//sphere_highpoly.obj");
+	ObjectsMirror[6] = OBJECT(3, "resources//3dmodels//sphere_highpoly.obj");
 	//ObjectsMirror[6].createModelMatrix(vec3(0.0f, 0.0f, 0.0f), NULL, NULL, 0.5f);
 	ObjectsMirror[6].Prepare();
 	//ObjectsMirror[6].setRefractiveIndex(1.1f);

@@ -110,7 +110,7 @@ TEXT::TEXT(const char *TexturePath)
 	glGenBuffers(1, &VertexBufferID);
 	glGenBuffers(1, &UVBufferID);
 
-	ShaderID = LoadShaders("shaders//Text.vs", "shaders//Text.fs");
+	ShaderID = LoadShaders("resources//shaders//Text.vs", "resources//shaders//Text.fs");
 
 	TextID = glGetUniformLocation(ShaderID, "Texture");
 }
@@ -311,7 +311,7 @@ void BUTTON::Prepare(int function, bool defaultstate, const char* inactivetextur
 	Function = function;
 	Pressed = defaultstate;
 
-	ShaderID = LoadShaders("shaders//Gui.vs", "shaders//Gui.fs");
+	ShaderID = LoadShaders("resources//shaders//Gui.vs", "resources//shaders//Gui.fs");
 
 	InactiveTexture = LoadBMP(inactivetexturepath);
 	InactiveHoverTexture = LoadBMP(inactivehovertexturepath);
@@ -612,7 +612,7 @@ WINDOW::WINDOW() {};
 /* texturepath - путь к тестуре */
 void WINDOW::Prepare(const char* texturepath)
 {
-	ShaderID = LoadShaders("shaders//Gui.vs", "shaders//Gui.fs");
+	ShaderID = LoadShaders("resources//shaders//Gui.vs", "resources//shaders//Gui.fs");
 
 	Texture = LoadBMP(texturepath);
 

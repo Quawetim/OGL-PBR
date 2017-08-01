@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Файлы исходного кода\shaders">
-      <UniqueIdentifier>{4c03f707-c17f-4622-b15f-a91e89bd376d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Файлы исходного кода\camera">
       <UniqueIdentifier>{bee323ba-54ac-40d2-b226-16ba9111aa2c}</UniqueIdentifier>
     </Filter>
@@ -37,107 +34,119 @@
     <Filter Include="Файлы исходного кода\config">
       <UniqueIdentifier>{fafb989c-55b7-42fb-a261-a55acb0f915a}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Файлы исходного кода\camera</Filter>
-    </ClCompile>
-    <ClCompile Include="VboIndexer.cpp">
-      <Filter>Файлы исходного кода\vboindexer</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureLoader.cpp">
-      <Filter>Файлы исходного кода\textureloader</Filter>
-    </ClCompile>
-    <ClCompile Include="Object.cpp">
-      <Filter>Файлы исходного кода\object</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Файлы исходного кода\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Gui.cpp">
-      <Filter>Файлы исходного кода\gui</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Includes.h">
-      <Filter>Файлы исходного кода</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Файлы исходного кода\camera</Filter>
-    </ClInclude>
-    <ClInclude Include="VboIndexer.h">
-      <Filter>Файлы исходного кода\vboindexer</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureLoader.h">
-      <Filter>Файлы исходного кода\textureloader</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>Файлы исходного кода\object</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Файлы исходного кода\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Gui.h">
-      <Filter>Файлы исходного кода\gui</Filter>
-    </ClInclude>
+    <Filter Include="Файлы ресурсов\shaders">
+      <UniqueIdentifier>{5e76a594-0090-4864-9a48-d5ee9b74957d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\shader">
+      <UniqueIdentifier>{4c03f707-c17f-4622-b15f-a91e89bd376d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
       <Filter>Файлы исходного кода</Filter>
     </None>
-    <None Include="shaders\SolidColor.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SolidColor.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\GradientColor.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\GradientColor.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Reflection.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Reflection.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Refraction.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Refraction.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SkyBox.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\SkyBox.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Text.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Text.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\NormalMapping.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\NormalMapping.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Gui.fs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
-    <None Include="shaders\Gui.vs">
-      <Filter>Файлы исходного кода\shaders</Filter>
-    </None>
     <None Include="config\config.ini">
       <Filter>Файлы исходного кода\config</Filter>
     </None>
+    <None Include="resources\shaders\GradientColor.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\GradientColor.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Gui.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Gui.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\NormalMapping.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\NormalMapping.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Reflection.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Reflection.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Refraction.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Refraction.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\RenderToTexture.fragmentshader">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\RenderToTexture.vertexshader">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\SkyBox.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\SkyBox.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\SolidColor.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\SolidColor.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Text.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\Text.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Main.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>Файлы исходного кода\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Gui.cpp">
+      <Filter>Файлы исходного кода\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object.cpp">
+      <Filter>Файлы исходного кода\object</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Scene.cpp">
+      <Filter>Файлы исходного кода\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TextureLoader.cpp">
+      <Filter>Файлы исходного кода\textureloader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VboIndexer.cpp">
+      <Filter>Файлы исходного кода\vboindexer</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Includes.h">
+      <Filter>Файлы исходного кода</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>Файлы исходного кода\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Gui.h">
+      <Filter>Файлы исходного кода\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object.h">
+      <Filter>Файлы исходного кода\object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Scene.h">
+      <Filter>Файлы исходного кода\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\TextureLoader.h">
+      <Filter>Файлы исходного кода\textureloader</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VboIndexer.h">
+      <Filter>Файлы исходного кода\vboindexer</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

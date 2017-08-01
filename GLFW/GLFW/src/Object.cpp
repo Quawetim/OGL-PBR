@@ -5,7 +5,7 @@
 /* Подготовка данных для объекта сплошного цвета */
 void OBJECT::PrepareSolidColor()
 {
-	LoadShaders("shaders//SolidColor.vs", NULL, "shaders//SolidColor.fs");
+	LoadShaders("resources//shaders//SolidColor.vs", NULL, "resources//shaders//SolidColor.fs");
 
 	ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 	ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -170,7 +170,7 @@ void OBJECT::RenderSolidColor(vec3 Camera, mat4 ProjectionMatrix, mat4 ViewMatri
 /* Подготовка данных для объекта градиентного цвета */
 void OBJECT::PrepareGradientColor()
 {
-	LoadShaders("shaders//GradientColor.vs", NULL, "shaders//GradientColor.fs");
+	LoadShaders("resources//shaders//GradientColor.vs", NULL, "resources//shaders//GradientColor.fs");
 
 	float *colorbuffer_data = new float[vertices.size() * sizeof(vec3) * 3];
 
@@ -340,7 +340,7 @@ void OBJECT::RenderReflectionRefraction(vec3 Camera, mat4 ProjectionMatrix, mat4
 /* Подготовка данных для объекта с картой нормалей */
 void OBJECT::PrepareNormalMapping()
 {
-	LoadShaders("shaders//NormalMapping.vs", NULL, "shaders//NormalMapping.fs");
+	LoadShaders("resources//shaders//NormalMapping.vs", NULL, "resources//shaders//NormalMapping.fs");
 
 	ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 	ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -1245,13 +1245,13 @@ void OBJECT::Prepare()
 			}
 			case 2:
 			{
-				LoadShaders("shaders//Refraction.vs", NULL, "shaders//Refraction.fs");
+				LoadShaders("resources//shaders//Refraction.vs", NULL, "resources//shaders//Refraction.fs");
 				PrepareReflectionRefraction();
 				break;
 			}
 			case 3:
 			{
-				LoadShaders("shaders//Reflection.vs", NULL, "shaders//Reflection.fs");
+				LoadShaders("resources//shaders//Reflection.vs", NULL, "resources//shaders//Reflection.fs");
 				PrepareReflectionRefraction();
 				break;
 			}
@@ -1318,7 +1318,7 @@ void OBJECT::Render(vec3 CameraPosition, mat4 ProjectionMatrix, mat4 ViewMatrix)
 /* Инициализация координатных осей */
 void OBJECT::PrepareAxes()
 {
-	LoadShaders("shaders//GradientColor.vs", NULL, "shaders//GradientColor.fs");
+	LoadShaders("resources//shaders//GradientColor.vs", NULL, "resources//shaders//GradientColor.fs");
 
 	ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 	ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -1413,7 +1413,7 @@ void OBJECT::RenderAxes(mat4 ViewMatrix)
 /* Инициализация Скайбокса */
 void OBJECT::PrepareSkyBox(float SkyBoxHalfSide)
 {
-	LoadShaders("shaders//SkyBox.vs", NULL, "shaders//SkyBox.fs");
+	LoadShaders("resources//shaders//SkyBox.vs", NULL, "resources//shaders//SkyBox.fs");
 
 	ProjectionMatrixID = glGetUniformLocation(ShaderID, "P");
 	ViewMatrixID = glGetUniformLocation(ShaderID, "V");
@@ -1488,12 +1488,12 @@ void OBJECT::PrepareSkyBox(float SkyBoxHalfSide)
 	glBindVertexArray(0);
 
 	vector<const GLchar*> faces;
-	faces.push_back("textures//skybox//right.jpg");
-	faces.push_back("textures//skybox//left.jpg");
-	faces.push_back("textures//skybox//top.jpg");
-	faces.push_back("textures//skybox//bottom.jpg");
-	faces.push_back("textures//skybox//back.jpg");
-	faces.push_back("textures//skybox//front.jpg");
+	faces.push_back("resources//textures//skybox//right.jpg");
+	faces.push_back("resources//textures//skybox//left.jpg");
+	faces.push_back("resources//textures//skybox//top.jpg");
+	faces.push_back("resources//textures//skybox//bottom.jpg");
+	faces.push_back("resources//textures//skybox//back.jpg");
+	faces.push_back("resources//textures//skybox//front.jpg");
 	CubeMapTexture = LoadCubeMap(faces);
 }
 

@@ -95,6 +95,10 @@
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
       <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command> xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+ xcopy /s /y "$(ProjectDir)glew32.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -107,6 +111,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -125,7 +130,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SOIL.lib;opengl32.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
   </ItemDefinitionGroup>
@@ -147,24 +152,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="Gui.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Object.cpp" />
-    <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="TextureLoader.cpp" />
-    <ClCompile Include="VboIndexer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="Gui.h" />
-    <ClInclude Include="Includes.h" />
-    <ClInclude Include="Object.h" />
-    <ClInclude Include="Scene.h" />
-    <ClInclude Include="TextureLoader.h" />
-    <ClInclude Include="VboIndexer.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\..\README.md" />
     <None Include="config\config.ini">
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</DeploymentContent>
@@ -173,22 +160,42 @@
       <FileType>Document</FileType>
       <DeploymentContent>false</DeploymentContent>
     </None>
-    <None Include="shaders\Gui.fs" />
-    <None Include="shaders\Gui.vs" />
-    <None Include="shaders\SolidColor.fs" />
-    <None Include="shaders\SolidColor.vs" />
-    <None Include="shaders\Reflection.fs" />
-    <None Include="shaders\Reflection.vs" />
-    <None Include="shaders\Refraction.fs" />
-    <None Include="shaders\Refraction.vs" />
-    <None Include="shaders\SkyBox.fs" />
-    <None Include="shaders\SkyBox.vs" />
-    <None Include="shaders\GradientColor.fs" />
-    <None Include="shaders\GradientColor.vs" />
-    <None Include="shaders\Text.fs" />
-    <None Include="shaders\Text.vs" />
-    <None Include="shaders\NormalMapping.fs" />
-    <None Include="shaders\NormalMapping.vs" />
+    <None Include="resources\shaders\GradientColor.fs" />
+    <None Include="resources\shaders\GradientColor.vs" />
+    <None Include="resources\shaders\Gui.fs" />
+    <None Include="resources\shaders\Gui.vs" />
+    <None Include="resources\shaders\NormalMapping.fs" />
+    <None Include="resources\shaders\NormalMapping.vs" />
+    <None Include="resources\shaders\Reflection.fs" />
+    <None Include="resources\shaders\Reflection.vs" />
+    <None Include="resources\shaders\Refraction.fs" />
+    <None Include="resources\shaders\Refraction.vs" />
+    <None Include="resources\shaders\RenderToTexture.fragmentshader" />
+    <None Include="resources\shaders\RenderToTexture.vertexshader" />
+    <None Include="resources\shaders\SkyBox.fs" />
+    <None Include="resources\shaders\SkyBox.vs" />
+    <None Include="resources\shaders\SolidColor.fs" />
+    <None Include="resources\shaders\SolidColor.vs" />
+    <None Include="resources\shaders\Text.fs" />
+    <None Include="resources\shaders\Text.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\Gui.cpp" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Object.cpp" />
+    <ClCompile Include="src\Scene.cpp" />
+    <ClCompile Include="src\TextureLoader.cpp" />
+    <ClCompile Include="src\VboIndexer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\Gui.h" />
+    <ClInclude Include="src\Includes.h" />
+    <ClInclude Include="src\Object.h" />
+    <ClInclude Include="src\Scene.h" />
+    <ClInclude Include="src\TextureLoader.h" />
+    <ClInclude Include="src\VboIndexer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
