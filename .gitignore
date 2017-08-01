@@ -47,7 +47,7 @@ artifacts/
 *_i.h
 *.ilk
 *.meta
-#*.obj
+*.obj
 *.pch
 *.pdb
 *.pgc
@@ -210,3 +210,6 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+
+# Res
+!/GLFW/GLFW/resources/
