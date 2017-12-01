@@ -7,8 +7,21 @@
 class TEXT
 {
 private:
+    FT_Library _ft;
+    FT_Face _face;
+
+    struct Character
+    {
+        GLuint TextureID;
+        ivec2 Size;
+        ivec2 Bearing;
+        GLuint Advance;
+    };
+
+    map<wchar_t, Character> Characters;
+
 	/* VAO - Vertex Array Object*/
-	GLuint VAO;
+	GLuint VAO, VBO;
 
 	/* Указатели для шейдера*/
 	GLuint ShaderID, TextID, TextureID, VertexBufferID, UVBufferID;
@@ -19,12 +32,11 @@ private:
 	GLuint LoadShaders(const char *VertexShader, const char *FragmentShader);
 
 public:
-	/* Конструктор по-умолчанию */
-	TEXT();
-
 	/* Конструктор */
 	/* TexturePath - путь к текстуре */
 	TEXT(const char *TexturePath);
+
+    TEXT(const char *FontPath, int FontSize);
 
 	/* Деструктор */
 	~TEXT();
@@ -34,6 +46,8 @@ public:
 	/* X, Y - координаты положения на экране */
 	/* Size - размер */
 	void Render(const char *Text, int X, int Y, int Size);
+
+    void RenderFreeType(const wchar_t *Text, vec3 Color, float Scale, float X, float Y);
 };
 
 class BUTTON

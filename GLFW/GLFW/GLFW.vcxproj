@@ -71,12 +71,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <ExecutablePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\dll;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <ExecutablePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\dll;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -93,11 +99,12 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;SOIL.lib;freetype271.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command> xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
- xcopy /s /y "$(ProjectDir)glew32.dll" "$(OutDir)"</Command>
+      <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,9 +137,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;SOIL.lib;freetype271.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -178,6 +190,8 @@
     <None Include="resources\shaders\SolidColor.vs" />
     <None Include="resources\shaders\Text.fs" />
     <None Include="resources\shaders\Text.vs" />
+    <None Include="resources\shaders\TextFreeType.fs" />
+    <None Include="resources\shaders\TextFreeType.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Camera.cpp" />
@@ -196,22 +210,6 @@
     <ClInclude Include="src\Scene.h" />
     <ClInclude Include="src\TextureLoader.h" />
     <ClInclude Include="src\VboIndexer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="resources\3dmodels\cube.obj" />
-    <Object Include="resources\3dmodels\cylinder.obj" />
-    <Object Include="resources\3dmodels\deadpool.obj" />
-    <Object Include="resources\3dmodels\diamond.obj" />
-    <Object Include="resources\3dmodels\planets\Earth.obj" />
-    <Object Include="resources\3dmodels\planets\Mercury.obj" />
-    <Object Include="resources\3dmodels\planets\Sol.obj" />
-    <Object Include="resources\3dmodels\planets\Venus.obj" />
-    <Object Include="resources\3dmodels\skybox.obj" />
-    <Object Include="resources\3dmodels\skydome.obj" />
-    <Object Include="resources\3dmodels\sphere_highpoly.obj" />
-    <Object Include="resources\3dmodels\sphere_lowpoly.obj" />
-    <Object Include="resources\3dmodels\teapot.obj" />
-    <Object Include="resources\3dmodels\torusknot.obj" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\3dmodels\planets\Scale.txt" />

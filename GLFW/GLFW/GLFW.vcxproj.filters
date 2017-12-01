@@ -105,6 +105,12 @@
     <None Include="resources\shaders\Text.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
+    <None Include="resources\shaders\TextFreeType.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\TextFreeType.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp">
@@ -151,50 +157,6 @@
     <ClInclude Include="src\VboIndexer.h">
       <Filter>Файлы исходного кода\vboindexer</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Object Include="resources\3dmodels\cube.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\cylinder.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\deadpool.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\diamond.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\skybox.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\skydome.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\sphere_highpoly.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\sphere_lowpoly.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\teapot.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\torusknot.obj">
-      <Filter>Файлы ресурсов</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\planets\Earth.obj">
-      <Filter>Файлы ресурсов\planets</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\planets\Mercury.obj">
-      <Filter>Файлы ресурсов\planets</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\planets\Sol.obj">
-      <Filter>Файлы ресурсов\planets</Filter>
-    </Object>
-    <Object Include="resources\3dmodels\planets\Venus.obj">
-      <Filter>Файлы ресурсов\planets</Filter>
-    </Object>
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\3dmodels\planets\Scale.txt">

@@ -98,9 +98,6 @@ GLuint TEXT::LoadShaders(const char *VertexShader, const char *FragmentShader)
 	return ProgramID;
 }
 
-/* Конструктор по-умолчанию */
-TEXT::TEXT() {};
-
 /* Конструктор */
 /* TexturePath - путь к текстуре */
 TEXT::TEXT(const char *TexturePath)
@@ -113,6 +110,104 @@ TEXT::TEXT(const char *TexturePath)
 	ShaderID = LoadShaders("resources//shaders//Text.vs", "resources//shaders//Text.fs");
 
 	TextID = glGetUniformLocation(ShaderID, "Texture");
+}
+
+TEXT::TEXT(const char *FontPath, int FontSize)
+{
+    if (FT_Init_FreeType(&_ft))
+    {
+        cout << "<Error> Can't init FreeType lib." << endl;
+    }
+    else
+    {       
+        if (FT_New_Face(_ft, FontPath, 0, &_face))
+        {
+            cout << "<Error> Can't find font " << FontPath << endl;
+        }
+        else
+        {
+            ShaderID = LoadShaders("resources//shaders//TextFreeType.vs", "resources//shaders//TextFreeType.fs");        
+
+            FT_Set_Pixel_Sizes(_face, 0, FontSize);
+          
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+            //Латиница
+            for (int i = 32; i < 127; i++) // коды unicode
+            {
+                if (FT_Load_Char(_face, i, FT_LOAD_RENDER))
+                {
+                    cout << "<Error> Can't load character" << endl;
+                    continue;
+                }
+
+                GLuint texture;
+                glGenTextures(1, &texture);
+                glBindTexture(GL_TEXTURE_2D, texture);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, _face->glyph->bitmap.width, _face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, _face->glyph->bitmap.buffer);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                Character character =
+                {
+                    texture,
+                    ivec2(_face->glyph->bitmap.width, _face->glyph->bitmap.rows),
+                    ivec2(_face->glyph->bitmap_left, _face->glyph->bitmap_top),
+                    _face->glyph->advance.x
+                };
+
+                Characters.insert(pair<wchar_t, Character>(i, character));
+            }
+
+            //Кириллица
+            for (int i = 1040; i < 1104; i++) // коды unicode
+            {
+                if (FT_Load_Char(_face, i, FT_LOAD_RENDER))
+                {
+                    cout << "<Error> Can't load character" << endl;
+                    continue;
+                }
+
+                GLuint texture;
+                glGenTextures(1, &texture);
+                glBindTexture(GL_TEXTURE_2D, texture);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, _face->glyph->bitmap.width, _face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, _face->glyph->bitmap.buffer);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+                Character character =
+                {
+                    texture,
+                    ivec2(_face->glyph->bitmap.width, _face->glyph->bitmap.rows),
+                    ivec2(_face->glyph->bitmap_left, _face->glyph->bitmap_top),
+                    _face->glyph->advance.x
+                };
+
+                Characters.insert(pair<wchar_t, Character>(i, character));
+            }
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            FT_Done_Face(_face);
+            FT_Done_FreeType(_ft);                        
+
+            glGenVertexArrays(1, &VAO);
+            glGenBuffers(1, &VBO);
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+    }
 }
 
 /* Деструктор */
@@ -130,76 +225,126 @@ TEXT::~TEXT()
 /* Size - размер */
 void TEXT::Render(const char *Text, int X, int Y, int Size)
 {
-	int length = strlen(Text);
-	float uv_x, uv_y;
-	char character;
+    int length = strlen(Text);
+    float uv_x, uv_y;
+    char character;
 
-	vector<vec2> vertices, UVs;
-	vec2 vertex_up_left, vertex_up_right, vertex_down_right, vertex_down_left, uv_up_left, uv_up_right, uv_down_right, uv_down_left;
+    vector<vec2> vertices, UVs;
+    vec2 vertex_up_left, vertex_up_right, vertex_down_right, vertex_down_left, uv_up_left, uv_up_right, uv_down_right, uv_down_left;
 
-	for (int i = 0; i < length; i++)
-	{
-		vertex_up_left = vec2(X + i*Size, Y + Size);
-		vertex_up_right = vec2(X + i*Size + Size, Y + Size);
-		vertex_down_right = vec2(X + i*Size + Size, Y);
-		vertex_down_left = vec2(X + i*Size, Y);
+    for (int i = 0; i < length; i++)
+    {
+        vertex_up_left = vec2(X + i*Size, Y + Size);
+        vertex_up_right = vec2(X + i*Size + Size, Y + Size);
+        vertex_down_right = vec2(X + i*Size + Size, Y);
+        vertex_down_left = vec2(X + i*Size, Y);
 
-		vertices.push_back(vertex_up_left);
-		vertices.push_back(vertex_down_left);
-		vertices.push_back(vertex_up_right);
+        vertices.push_back(vertex_up_left);
+        vertices.push_back(vertex_down_left);
+        vertices.push_back(vertex_up_right);
 
-		vertices.push_back(vertex_down_right);
-		vertices.push_back(vertex_up_right);
-		vertices.push_back(vertex_down_left);
+        vertices.push_back(vertex_down_right);
+        vertices.push_back(vertex_up_right);
+        vertices.push_back(vertex_down_left);
 
-		character = Text[i];
-		uv_x = (character % 16) / 16.0f;
-		uv_y = (character / 16) / 16.0f;
+        character = Text[i];
+        uv_x = (character % 16) / 16.0f;
+        uv_y = (character / 16) / 16.0f;
 
-		uv_up_left = vec2(uv_x, uv_y);
-		uv_up_right = vec2(uv_x + 1.0f / 16.0f, uv_y);
-		uv_down_right = vec2(uv_x + 1.0f / 16.0f, (uv_y + 1.0f / 16.0f));
-		uv_down_left = vec2(uv_x, (uv_y + 1.0f / 16.0f));
+        uv_up_left = vec2(uv_x, uv_y);
+        uv_up_right = vec2(uv_x + 1.0f / 16.0f, uv_y);
+        uv_down_right = vec2(uv_x + 1.0f / 16.0f, (uv_y + 1.0f / 16.0f));
+        uv_down_left = vec2(uv_x, (uv_y + 1.0f / 16.0f));
 
-		UVs.push_back(uv_up_left);
-		UVs.push_back(uv_down_left);
-		UVs.push_back(uv_up_right);
+        UVs.push_back(uv_up_left);
+        UVs.push_back(uv_down_left);
+        UVs.push_back(uv_up_right);
 
-		UVs.push_back(uv_down_right);
-		UVs.push_back(uv_up_right);
-		UVs.push_back(uv_down_left);
-	}
+        UVs.push_back(uv_down_right);
+        UVs.push_back(uv_up_right);
+        UVs.push_back(uv_down_left);
+    }
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec2), &vertices[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, UVBufferID);
-	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(vec2), &UVs[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec2), &vertices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, UVBufferID);
+    glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(vec2), &UVs[0], GL_STATIC_DRAW);
 
-	glUseProgram(ShaderID);
+    glUseProgram(ShaderID);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, TextureID);
-	glUniform1i(TextID, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, TextureID);
+    glUniform1i(TextID, 0);
 
-	glEnableVertexAttribArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, VertexBufferID);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, UVBufferID);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+    glEnableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, UVBufferID);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
-	glDisable(GL_BLEND);
+    glDisable(GL_BLEND);
 
-	glBindVertexArray(0);
+    glBindVertexArray(0);
+}
+
+void TEXT::RenderFreeType(const wchar_t *Text, vec3 Color, float Scale, float X, float Y)
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glUseProgram(ShaderID);
+
+    mat4 projection = ortho(0.0f, static_cast<GLfloat>(1280), 0.0f, static_cast<GLfloat>(800));
+    glUniformMatrix4fv(glGetUniformLocation(ShaderID, "projection"), 1, GL_FALSE, value_ptr(projection));
+
+    glUniform3f(glGetUniformLocation(ShaderID, "TextColor"), Color.x, Color.y, Color.z);
+    glActiveTexture(GL_TEXTURE0);
+    glBindVertexArray(VAO);
+
+    //wchar_t::const_iterator c;
+    //for (c = Text.begin(); c != Text.end(); c++)
+    int len = wcslen(Text);
+    for (int i = 0; i < len; i++)
+    {
+        Character ch = Characters[Text[i]];
+
+        float xpos = X + ch.Bearing.x * Scale;
+        float ypos = Y - (ch.Size.y - ch.Bearing.y) * Scale;
+
+        float w = ch.Size.x * Scale;
+        float h = ch.Size.y * Scale;
+
+        float vertices[6][4] = 
+        {
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos,     ypos,       0.0f, 1.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+
+            { xpos,     ypos + h,   0.0f, 0.0f },
+            { xpos + w, ypos,       1.0f, 1.0f },
+            { xpos + w, ypos + h,   1.0f, 0.0f }            
+        };
+
+        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        X += (ch.Advance >> 6) * Scale;
+    }
+
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 /* Загрузка вершинного и фрагментного шейдеров */

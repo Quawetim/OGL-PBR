@@ -18,7 +18,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <SOIL/SOIL.h>
 
-#include <string.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <string>
 
 using namespace std;
 using namespace glm;

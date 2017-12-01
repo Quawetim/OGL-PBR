@@ -360,6 +360,13 @@ void main()
 
 		TEXT Text = TEXT("resources//textures//gui//Text.DDS");
 
+        int fontSize = 32;
+        int margin = 30;
+        int spacing = 5;
+        //vec3 textColor = vec3(0.43f, 0.15f, 0.91f);
+        vec3 textColor = vec3(0.43f, 0.87f, 0.51f);
+        TEXT FreeType = TEXT("resources//fonts//comic.ttf", fontSize);
+
 		int ButtonsCount = 5;
 		BUTTON *Buttons = new BUTTON[ButtonsCount];
 		Buttons[0].Prepare(0, false, "resources//textures//gui//wireframe_inactive.bmp", "resources//textures//gui//wireframe_inactivehover.bmp", "resources//textures//gui//wireframe_active.bmp", "resources//textures//gui//wireframe_activehover.bmp");
@@ -406,7 +413,12 @@ void main()
 			Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, Rotations, ShowLights, Blinn);
 			
 			/* Îòğèñîâêà GUI */
-			Text.Render(text, 0, 580, 12);
+			Text.Render(text, 0, 580, 12);           
+            FreeType.RenderFreeType(L"ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß", textColor, 1.0, 0, WindowInfo.Height - margin - fontSize);
+            FreeType.RenderFreeType(L"àáâãäå¸æçèéêëìíîïğñòóôõö÷øùúûüışÿ", textColor, 1.0, 0, WindowInfo.Height - margin - fontSize - spacing - fontSize);
+            FreeType.RenderFreeType(L"ABCDEFGHIJKLMNOPQRSTUVWXYZ", textColor, 1.0, 0, WindowInfo.Height - margin - fontSize - spacing - fontSize - spacing - fontSize);
+            FreeType.RenderFreeType(L"abcdefghijklmnopqrstuvwxyz", textColor, 1.0, 0, WindowInfo.Height - margin - fontSize - spacing - fontSize - spacing - fontSize - spacing - fontSize);
+            FreeType.RenderFreeType(L"1234567890,.!?/:;-=+<>{}()\"\\@#¹$^&*`~[]|", textColor, 1.0, 0, WindowInfo.Height - margin - fontSize - spacing - fontSize - spacing - fontSize - spacing - fontSize - spacing - fontSize);
 			glfwGetCursorPos(WindowInfo.Window, &MouseX, &MouseY);
 
 			Buttons[0].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.9f, 0.05f, 0.08f);
