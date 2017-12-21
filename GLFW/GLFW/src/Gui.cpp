@@ -223,7 +223,7 @@ TEXT::~TEXT()
 /* Text - буфер */
 /* X, Y - координаты положения на экране */
 /* Size - размер */
-void TEXT::Render(const char *Text, int X, int Y, int Size)
+void TEXT::Render(const char *Text, vec3 Color, int X, int Y, int Size)
 {
     int length = strlen(Text);
     float uv_x, uv_y;
@@ -274,6 +274,8 @@ void TEXT::Render(const char *Text, int X, int Y, int Size)
     glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(vec2), &UVs[0], GL_STATIC_DRAW);
 
     glUseProgram(ShaderID);
+
+    glUniform3f(glGetUniformLocation(ShaderID, "TextColor"), Color.x, Color.y, Color.z);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, TextureID);
@@ -340,7 +342,7 @@ void TEXT::RenderFreeType(const wchar_t *Text, vec3 Color, float Scale, float X,
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        X += (ch.Advance >> 6) * Scale;
+        X += (ch.Advance / 64) * Scale;
     }
 
     glBindVertexArray(0);

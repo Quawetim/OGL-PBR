@@ -45,7 +45,7 @@ public:
 	/* Text - буфер */
 	/* X, Y - координаты положения на экране */
 	/* Size - размер */
-	void Render(const char *Text, int X, int Y, int Size);
+	void Render(const char *Text, vec3 Color, int X, int Y, int Size);
 
     void RenderFreeType(const wchar_t *Text, vec3 Color, float Scale, float X, float Y);
 };
