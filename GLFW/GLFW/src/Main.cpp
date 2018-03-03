@@ -265,6 +265,8 @@ unsigned int loadTexture(char const * path)
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
+    stbi_set_flip_vertically_on_load(true);
+
     int width, height, nrComponents;
     unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
     if (data)
@@ -526,9 +528,9 @@ void main()
 
         Shader shader("resources//tmp//parallax_mapping.vs", "resources//tmp//parallax_mapping.fs");
 
-        unsigned int diffuseMap = loadTexture("resources//tmp//rings_diffuse.jpg");
-        unsigned int normalMap = loadTexture("resources//tmp//rings_normal2.jpg");
-        unsigned int heightMap = loadTexture("resources//tmp//rings_disp.jpg");
+        unsigned int diffuseMap = loadTexture("resources//tmp//parallax_diffuse.jpg");
+        unsigned int normalMap = loadTexture("resources//tmp//parallax_normal.jpg");
+        unsigned int heightMap = loadTexture("resources//tmp//parallax_disp.jpg");
 
         shader.use();
         shader.setInt("diffuseMap", 0);
@@ -537,9 +539,9 @@ void main()
 
         vec3 lightPos(0.5f, 1.0f, 0.3f);
 
-        float angle = 25;
+        float angle = 0;
         bool up = true;
-        bool stop = true;
+        bool stop = false;
 
         //***********************************************************//
 
@@ -595,7 +597,7 @@ void main()
 
 			glfwGetCursorPos(WindowInfo.Window, &MouseX, &MouseY);
 
-			//Buttons[0].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.9f, 0.05f, 0.08f);
+			Buttons[0].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.9f, 0.05f, 0.08f);
 			//Rotations = Buttons[1].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.72f, 0.05f, 0.08f);
 			//ShowLights = Buttons[2].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.54f, 0.05f, 0.08f);
 			//Blinn = Buttons[3].Render(WindowInfo, MouseX, MouseY, 0.91f, 0.36f, 0.05f, 0.08f);
@@ -603,7 +605,7 @@ void main()
 
 			//if (ShowHelp) HelpWindow.Render(WindowInfo, 0.0f, 0.0f, 0.8f, 0.8f);
 
-			//for (int i = 0; i < ButtonsCount; i++) Buttons[i].frames++;
+			for (int i = 0; i < ButtonsCount; i++) Buttons[i].frames++;
 
 
             //***********************************************************//
@@ -628,7 +630,7 @@ void main()
                 }
                 else
                 {
-                    if (angle < 50) angle += 0.1f;
+                    if (angle < 60) angle += 0.1f;
                     else up = true;
                 }
             }
@@ -636,7 +638,7 @@ void main()
             shader.setMat4("model", model);
             shader.setVec3("viewPos", vec3(0.0f, 0.0f, 3.0f));
             shader.setVec3("lightPos", lightPos);
-            shader.setFloat("heightScale", 0.005);
+            shader.setFloat("heightScale", 0.003);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, diffuseMap);
             glActiveTexture(GL_TEXTURE1);
