@@ -835,9 +835,9 @@ GLuint OBJECT::LoadCubeMap(vector<const GLchar*> faces)
 
 	for (unsigned int i = 0; i < faces.size(); i++)
 	{
-		Image = SOIL_load_image(faces[i], &Width, &Height, 0, SOIL_LOAD_RGB);
+		//Image = SOIL_load_image(faces[i], &Width, &Height, 0, SOIL_LOAD_RGB);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Image);
-		SOIL_free_image_data(Image);
+		//SOIL_free_image_data(Image);
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
