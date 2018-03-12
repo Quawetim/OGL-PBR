@@ -139,6 +139,10 @@
       <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
+    <PostBuildEvent>
+      <Command> xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+ xcopy /s /y "$(ProjectDir)glew32.dll" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
