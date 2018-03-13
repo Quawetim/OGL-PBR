@@ -1,6 +1,7 @@
-#include "includes/Includes.h"
-#include "callbacks/Callbacks.h"
-#include "config/Config.h"
+#include "includes\Includes.h"
+#include "callbacks\Callbacks.h"
+#include "config\Config.h"
+#include "shader\Shader.h"
 //#include "Camera.h"
 //#include "Object.h"
 //#include "Scene.h"
@@ -10,14 +11,16 @@
 
 int main()
 {
+    logger.start("MAIN");
+
     if (!glfwInit())
     {
-        std::cout << "Failed to initialize GLFW" << std::endl;
-        system("pause");
+        logger.log("MAIN", errorType::error, "Failed to initialize GLFW.");
+        logger.stop("MAIN");
         return Q_ERROR_INIT_GLFW;
     }
 
-    // OpenGL 4.5       
+    // OpenGL 4.3       
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         
@@ -62,8 +65,8 @@ int main()
 
     if (!WindowInfo.Window)
     {
-    	std::cout << "Failed to initialize WINDOW" << std::endl;
-        system("pause");
+        logger.log("MAIN", errorType::error, "Failed to initialize WINDOW.");
+        logger.stop("MAIN");
         glfwTerminate();
         return Q_ERROR_INIT_WINDOW;
     }
@@ -72,8 +75,8 @@ int main()
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        system("pause");
+        logger.log("MAIN", errorType::error, "Failed to initialize GLAD.");
+        logger.stop("MAIN");
         return Q_ERROR_INIT_GLAD;
     }
 
@@ -94,8 +97,8 @@ int main()
     }
     else
     {
-        std::cout << "Failed to initialize GL DebugOutput" << std::endl;
-        system("pause");
+        logger.log("MAIN", errorType::error, "Failed to initialize GL DebugOutput.");
+        logger.stop("MAIN");       
         glfwTerminate();
         return Q_ERROR_INIT_DEBUG_OUTPUT;
     }
@@ -107,8 +110,8 @@ int main()
     glfwSetScrollCallback(WindowInfo.Window, ScrollCallback);
 
     // Скрыть курсор, поместить в центр экрана
-    glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
+    //glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
 
     glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
 
@@ -124,22 +127,54 @@ int main()
     //	Выбираем фрагмент, ближайший к камере
     glDepthFunc(GL_LESS);    
 
+    //***********************************************//
+
+    Shader testShader("resources//shaders//testShader.vs", "resources//shaders//testShader.fs");
+    
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.5f,  0.5f, 0.0f,
+        0.5f, 0.5f, 0.0f,
+        -0.5f, 0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f
+    };
+
+    unsigned int VBO, VAO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    //***********************************************//
+
     // Главный цикл
+    logger.log("MAIN", errorType::info, "Initialization complete. Entering main loop.");
     while (!glfwWindowShouldClose(WindowInfo.Window))
     {
         // Очистить экран
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        testShader.activate();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
         // Меняем кадр
         glfwSwapBuffers(WindowInfo.Window);
-        
-        // Проверяем ввод и ошибки
         glfwPollEvents();
     }    
 
     // Выход из программы.
     glfwTerminate();
-    return Q_SUCCESS;
+    logger.stop("MAIN", false);
+    return Q_GOOD_EXIT;
 
 	//int nbFrames = 0;
 	//double currentTime, lastTime, MouseX, MouseY;

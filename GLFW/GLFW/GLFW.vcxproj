@@ -93,6 +93,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -186,6 +187,8 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <None Include="resources\shaders\SkyBox.vs" />
     <None Include="resources\shaders\SolidColor.fs" />
     <None Include="resources\shaders\SolidColor.vs" />
+    <None Include="resources\shaders\testShader.fs" />
+    <None Include="resources\shaders\testShader.vs" />
     <None Include="resources\shaders\Text.fs" />
     <None Include="resources\shaders\Text.vs" />
     <None Include="resources\shaders\TextFreeType.fs" />
@@ -199,13 +202,17 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\config\Config.cpp" />
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\includes\Includes.cpp" />
+    <ClCompile Include="src\logger\Logger.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\shader\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\callbacks\Callbacks.h" />
     <ClInclude Include="src\config\Config.h" />
     <ClInclude Include="src\errorcodes\ErrorCodes.h" />
     <ClInclude Include="src\includes\Includes.h" />
+    <ClInclude Include="src\logger\Logger.h" />
+    <ClInclude Include="src\shader\Shader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

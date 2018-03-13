@@ -1,5 +1,5 @@
 #pragma once
-#include "../includes/Includes.h"
+#include "..\includes\Includes.h"
 
 ///<summary>ќбработка клавиатуры.</summary>
 ///<param name = 'window'>”казатель на окно.</param>

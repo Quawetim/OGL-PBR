@@ -1,5 +1,5 @@
 #pragma once
-#include "../includes/Includes.h"
+#include "..\includes\Includes.h"
 
 ///<summary>Считывание настроек из файла конфигурации. 
 ///<para>Задаёт дефолтные настройки, если файл конфигурации не найден.</para>

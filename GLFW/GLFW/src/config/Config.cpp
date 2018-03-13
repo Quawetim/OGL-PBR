@@ -8,18 +8,19 @@
 void ReadConfig(windowInfo &Winfo, int &Reflection_res)
 {
     std::ifstream fin;
-    fin.open("config/config.ini");
+    fin.open("config\\config.ini");
 
     // Настройки по-умолчанию
     if (!fin)
     {
+        logger.log("ReadConfig", errorType::warning, "Config file not found.");
         Winfo.FullScreen = false; Winfo.Vsync = true; Winfo.ShowCursor = false;
         Winfo.Width = 800; Winfo.Height = 600;
         Winfo.HalfWidth = Winfo.Width / 2.0f; Winfo.HalfHeight = Winfo.Height / 2.0f;
     }
     else
     {
-        string s;
+        std::string s;
 
         while (!fin.eof())
         {

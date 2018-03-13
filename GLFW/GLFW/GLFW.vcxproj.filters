@@ -25,14 +25,20 @@
     <Filter Include="Файлы исходного кода\callbacks">
       <UniqueIdentifier>{7ff630ab-080f-4ea4-b5e0-f678e0c49f1b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Файлы исходного кода\errorcodes">
-      <UniqueIdentifier>{37d106e9-b95c-440c-8ae6-1107745f5b39}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Файлы исходного кода\glad">
       <UniqueIdentifier>{c6aa936f-f891-45ad-9924-87a21369bc4f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Файлы исходного кода\includes">
       <UniqueIdentifier>{13ec6b6a-fd73-4ff7-9241-5ddbcd24162d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\shader">
+      <UniqueIdentifier>{459d8d48-0642-4c7f-aeb7-5cbe7289d943}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\errorcodes">
+      <UniqueIdentifier>{37d106e9-b95c-440c-8ae6-1107745f5b39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\logger">
+      <UniqueIdentifier>{4f81d8bc-2bcd-4494-999d-85518db76ced}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +108,12 @@
     <None Include="resources\shaders\TextFreeType.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
+    <None Include="resources\shaders\testShader.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\testShader.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="resources\3dmodels\planets\Scale.txt">
@@ -124,6 +136,12 @@
     <ClCompile Include="src\callbacks\Callbacks.cpp">
       <Filter>Файлы исходного кода\callbacks</Filter>
     </ClCompile>
+    <ClCompile Include="src\shader\Shader.cpp">
+      <Filter>Файлы исходного кода\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logger\Logger.cpp">
+      <Filter>Файлы исходного кода\logger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -132,11 +150,17 @@
     <ClInclude Include="src\callbacks\Callbacks.h">
       <Filter>Файлы исходного кода\callbacks</Filter>
     </ClInclude>
+    <ClInclude Include="src\includes\Includes.h">
+      <Filter>Файлы исходного кода\includes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\shader\Shader.h">
+      <Filter>Файлы исходного кода\shader</Filter>
+    </ClInclude>
     <ClInclude Include="src\errorcodes\ErrorCodes.h">
       <Filter>Файлы исходного кода\errorcodes</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\Includes.h">
-      <Filter>Файлы исходного кода\includes</Filter>
+    <ClInclude Include="src\logger\Logger.h">
+      <Filter>Файлы исходного кода\logger</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
