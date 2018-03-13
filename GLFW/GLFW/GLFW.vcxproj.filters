@@ -13,35 +13,26 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Файлы исходного кода\camera">
-      <UniqueIdentifier>{bee323ba-54ac-40d2-b226-16ba9111aa2c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Файлы исходного кода\textureloader">
-      <UniqueIdentifier>{7a5a74e2-b88c-45a5-92a6-f97f682e2e0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Файлы исходного кода\vboindexer">
-      <UniqueIdentifier>{7cefda55-e422-4b54-bc58-0a2c8bc32877}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Файлы исходного кода\object">
-      <UniqueIdentifier>{282c7860-f42b-4f5a-b747-b8fbd0837804}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Файлы исходного кода\scene">
-      <UniqueIdentifier>{a063ce22-4eab-41d2-855d-05cb203414b6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Файлы исходного кода\gui">
-      <UniqueIdentifier>{47a4d890-5c4b-47cb-989d-86e58341ee67}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Файлы исходного кода\config">
       <UniqueIdentifier>{fafb989c-55b7-42fb-a261-a55acb0f915a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Файлы ресурсов\shaders">
       <UniqueIdentifier>{5e76a594-0090-4864-9a48-d5ee9b74957d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Файлы исходного кода\shader">
-      <UniqueIdentifier>{4c03f707-c17f-4622-b15f-a91e89bd376d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Файлы ресурсов\planets">
       <UniqueIdentifier>{a40f8594-0f84-4689-a48f-5860eb0773e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\callbacks">
+      <UniqueIdentifier>{7ff630ab-080f-4ea4-b5e0-f678e0c49f1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\errorcodes">
+      <UniqueIdentifier>{37d106e9-b95c-440c-8ae6-1107745f5b39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\glad">
+      <UniqueIdentifier>{c6aa936f-f891-45ad-9924-87a21369bc4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\includes">
+      <UniqueIdentifier>{13ec6b6a-fd73-4ff7-9241-5ddbcd24162d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -113,54 +104,39 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Main.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>Файлы исходного кода\camera</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Gui.cpp">
-      <Filter>Файлы исходного кода\gui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Object.cpp">
-      <Filter>Файлы исходного кода\object</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Scene.cpp">
-      <Filter>Файлы исходного кода\scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\TextureLoader.cpp">
-      <Filter>Файлы исходного кода\textureloader</Filter>
-    </ClCompile>
-    <ClCompile Include="src\VboIndexer.cpp">
-      <Filter>Файлы исходного кода\vboindexer</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Includes.h">
-      <Filter>Файлы исходного кода</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
-      <Filter>Файлы исходного кода\camera</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Gui.h">
-      <Filter>Файлы исходного кода\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Object.h">
-      <Filter>Файлы исходного кода\object</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Scene.h">
-      <Filter>Файлы исходного кода\scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\TextureLoader.h">
-      <Filter>Файлы исходного кода\textureloader</Filter>
-    </ClInclude>
-    <ClInclude Include="src\VboIndexer.h">
-      <Filter>Файлы исходного кода\vboindexer</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="resources\3dmodels\planets\Scale.txt">
       <Filter>Файлы ресурсов\planets</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\glad\glad.c">
+      <Filter>Файлы исходного кода\glad</Filter>
+    </ClCompile>
+    <ClCompile Include="src\includes\Includes.cpp">
+      <Filter>Файлы исходного кода\includes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Main.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config\Config.cpp">
+      <Filter>Файлы исходного кода\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\callbacks\Callbacks.cpp">
+      <Filter>Файлы исходного кода\callbacks</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\config\Config.h">
+      <Filter>Файлы исходного кода\config</Filter>
+    </ClInclude>
+    <ClInclude Include="src\callbacks\Callbacks.h">
+      <Filter>Файлы исходного кода\callbacks</Filter>
+    </ClInclude>
+    <ClInclude Include="src\errorcodes\ErrorCodes.h">
+      <Filter>Файлы исходного кода\errorcodes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\includes\Includes.h">
+      <Filter>Файлы исходного кода\includes</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
