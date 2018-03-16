@@ -9,8 +9,10 @@
 //#include "VboIndexer.h"
 //#include "Gui.h"
 
+extern Logger logger;
+
 int main()
-{
+{    
     logger.start("MAIN");
 
     if (!glfwInit())
@@ -19,7 +21,7 @@ int main()
         logger.stop("MAIN");
         return Q_ERROR_INIT_GLFW;
     }
-
+    
     // OpenGL 4.3       
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -84,6 +86,7 @@ int main()
     int GL_Current_Version_Minor = GLVersion.minor;
 
     // Debug output
+#ifdef _DEBUG
     GLint gl_context_flags;
     glGetIntegerv(GL_CONTEXT_FLAGS, &gl_context_flags);
     if (gl_context_flags & GL_CONTEXT_FLAG_DEBUG_BIT)
@@ -102,6 +105,7 @@ int main()
         glfwTerminate();
         return Q_ERROR_INIT_DEBUG_OUTPUT;
     }
+#endif
 
     // Callbacks
     glfwSetErrorCallback(GLFWErrorCallback);

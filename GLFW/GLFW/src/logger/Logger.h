@@ -7,13 +7,9 @@ class Logger
 private:
     std::ofstream _fout;
 
-    // Вывод ошибок на экран
-    bool _to_screen;  
-
 public:
     ///<summary>Конструктор.</summary>
     ///<param name = 'to_screen'>Вывод ошибок на экран.</param>
-    Logger(bool to_screen);
     Logger();
     ~Logger();
 
@@ -32,5 +28,3 @@ public:
     ///<param name = 'error'>Завершение работы из-за ошибки.</param>
     void stop(std::string source, bool error = true);
 };
-
-extern Logger logger;

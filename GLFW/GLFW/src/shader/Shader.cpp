@@ -1,5 +1,7 @@
 #include "Shader.h"
 
+extern Logger logger;
+
 ///<summary>Проверка на ошибки компиляции шейдера.</summary>
 ///<param name = 'id'>Идентификатор шейдера.</param>
 ///<param name = 'type'>Тип шейдера.</param>

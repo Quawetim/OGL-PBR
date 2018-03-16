@@ -1,11 +1,10 @@
 #include "Logger.h"
 #include <windows.h>
 
-Logger logger(true);
+Logger logger;
 
 ///<summary>Инициализация.</summary>
-///<param name = 'to_screen'>Вывод ошибок на экран.</param>
-Logger::Logger(bool to_screen) : _to_screen(to_screen) 
+Logger::Logger()
 {
     CreateDirectory(L"log", NULL);
 
@@ -13,13 +12,15 @@ Logger::Logger(bool to_screen) : _to_screen(to_screen)
     
     if (!_fout)
     {
+#ifdef _DEBUG
         std::cout << "Failed to initialize Logger." << std::endl;
         system("pause");
+#else
+        MessageBox(NULL, L"Failed to initialize Logger.", L"ERROR:Logger", MB_OK | MB_ICONERROR);
+#endif
         exit(Q_BAD_EXIT);
     }
 };
-
-Logger::Logger() {};
 
 Logger::~Logger() 
 {
@@ -42,24 +43,36 @@ void Logger::log(std::string source, enum errorType error_type, std::string mess
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    if (this->_to_screen)
-    {
-        switch (error_type)
-        {
-            case errorType::info:       std::cout << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
-            case errorType::warning:    std::cout << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
-            case errorType::error:      std::cout << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;           
-            default:                    std::cout << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
-        }
-    }
+    std::stringstream ss_msg, ss_src;
 
     switch (error_type)
     {
-        case errorType::info:       _fout << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
-        case errorType::warning:    _fout << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
-        case errorType::error:      _fout << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
-        default:                    _fout << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
+        case errorType::info:       ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
+        case errorType::warning:    ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
+        case errorType::error:      ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
+        default:                    ss_msg << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
     }
+
+    _fout << ss_msg.str();
+
+#ifdef _DEBUG
+    std::cout << ss_msg.str();
+#else
+    if (error_type == errorType::error)
+    {
+        std::wstring w_msg, w_src;
+
+        ss_src << "ERROR:" << source;
+
+        std::string src;
+        src = ss_src.str();
+
+        w_msg = std::wstring(message.begin(), message.end());
+        w_src = std::wstring(src.begin(), src.end());
+
+        MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
+    }
+#endif
 }
 
 ///<summary>Логирует запуск программы.</summary>
@@ -76,12 +89,11 @@ void Logger::start(std::string source)
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    if (this->_to_screen)
-    {
-        std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
-    }
-
     _fout << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
+
+#ifdef _DEBUG
+    std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
+#endif   
 }
 
 ///<summary>Логирует завершение программы.</summary>
@@ -99,12 +111,14 @@ void Logger::stop(std::string source, bool error)
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    if (this->_to_screen)
-    {
-        std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
-        if (error) system("pause");
-    }
-
     _fout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
     _fout << "---------------------------------------------------" << std::endl;
+
+#ifdef _DEBUG
+    if (error)
+    {
+        std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
+        system("pause");
+    }
+#endif   
 }

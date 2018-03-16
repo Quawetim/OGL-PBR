@@ -1,0 +1,23 @@
+[16.03.2018 | 20:47:20] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:47:20] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 20:47:21] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 20:49:09] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:49:09] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 20:49:10] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 20:50:04] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:50:04] <ERROR><MAIN> Failed to initialize GL DebugOutput.
+[16.03.2018 | 20:50:10] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 20:50:43] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:50:51] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:51:21] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:52:40] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:52:40] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 20:52:43] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 20:52:49] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:52:49] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 20:52:53] <INFO><MAIN> Program stops.
+---------------------------------------------------

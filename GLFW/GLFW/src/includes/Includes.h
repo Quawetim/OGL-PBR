@@ -11,7 +11,7 @@
 #include <ctime>
 
 #include <glad\glad.h>
-#include <GL\glfw3.h>
+#include <GLFW\glfw3.h>
 #include <glm\glm.hpp>
 #include <glm\gtc\matrix_transform.hpp>
 #include <glm\gtx\transform.hpp>
