@@ -19,14 +19,8 @@
     <Filter Include="Файлы ресурсов\shaders">
       <UniqueIdentifier>{5e76a594-0090-4864-9a48-d5ee9b74957d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Файлы ресурсов\planets">
-      <UniqueIdentifier>{a40f8594-0f84-4689-a48f-5860eb0773e7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Файлы исходного кода\callbacks">
       <UniqueIdentifier>{7ff630ab-080f-4ea4-b5e0-f678e0c49f1b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Файлы исходного кода\glad">
-      <UniqueIdentifier>{c6aa936f-f891-45ad-9924-87a21369bc4f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Файлы исходного кода\includes">
       <UniqueIdentifier>{13ec6b6a-fd73-4ff7-9241-5ddbcd24162d}</UniqueIdentifier>
@@ -40,6 +34,18 @@
     <Filter Include="Файлы исходного кода\logger">
       <UniqueIdentifier>{4f81d8bc-2bcd-4494-999d-85518db76ced}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\glad">
+      <UniqueIdentifier>{c6aa936f-f891-45ad-9924-87a21369bc4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\std_image">
+      <UniqueIdentifier>{5f69427a-6b5d-41f2-8da9-c2c8270b3a6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\camera">
+      <UniqueIdentifier>{99cabd88-3310-40ae-a596-c45a24c2f9a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\model">
+      <UniqueIdentifier>{a7f337d4-8b1c-4821-af95-c7427bd9c152}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -48,77 +54,12 @@
     <None Include="config\config.ini">
       <Filter>Файлы исходного кода\config</Filter>
     </None>
-    <None Include="resources\shaders\GradientColor.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\GradientColor.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Gui.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Gui.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\NormalMapping.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\NormalMapping.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Reflection.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Reflection.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Refraction.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Refraction.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\RenderToTexture.fragmentshader">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\RenderToTexture.vertexshader">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\SkyBox.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\SkyBox.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\SolidColor.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\SolidColor.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Text.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\Text.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\TextFreeType.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\TextFreeType.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
     <None Include="resources\shaders\testShader.fs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
     <None Include="resources\shaders\testShader.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="resources\3dmodels\planets\Scale.txt">
-      <Filter>Файлы ресурсов\planets</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\glad\glad.c">
@@ -142,6 +83,9 @@
     <ClCompile Include="src\logger\Logger.cpp">
       <Filter>Файлы исходного кода\logger</Filter>
     </ClCompile>
+    <ClCompile Include="src\stb_image\stb_image.cpp">
+      <Filter>Файлы исходного кода\std_image</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -162,5 +106,22 @@
     <ClInclude Include="src\logger\Logger.h">
       <Filter>Файлы исходного кода\logger</Filter>
     </ClInclude>
+    <ClInclude Include="src\camera\Camera.h">
+      <Filter>Файлы исходного кода\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\Mesh.h">
+      <Filter>Файлы исходного кода\model</Filter>
+    </ClInclude>
+    <ClInclude Include="src\model\Model.h">
+      <Filter>Файлы исходного кода\model</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GLFW.rc">
+      <Filter>Файлы ресурсов</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

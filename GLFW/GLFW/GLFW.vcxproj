@@ -71,18 +71,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <ExecutablePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\dll;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SolutionDir)/GLFW/dll;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)/GLFW/lib;$(LibraryPath)</LibraryPath>
+    <TargetName>Diploma</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <ExecutablePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\dll;$(ExecutablePath)</ExecutablePath>
-    <IncludePath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Quawetim\Documents\Visual Studio 2015\Rep\glfw\GLFW\GLFW\lib;$(LibraryPath)</LibraryPath>
+    <ExecutablePath>$(SolutionDir)/GLFW/dll;$(ExecutablePath)</ExecutablePath>
+    <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)/GLFW/lib;$(LibraryPath)</LibraryPath>
+    <TargetName>Diploma</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -99,7 +101,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;SOIL.lib;freetype271.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;freetype271.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
@@ -136,7 +138,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;SOIL.lib;freetype271.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;freetype271.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
@@ -171,31 +173,8 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <FileType>Document</FileType>
       <DeploymentContent>false</DeploymentContent>
     </None>
-    <None Include="resources\shaders\GradientColor.fs" />
-    <None Include="resources\shaders\GradientColor.vs" />
-    <None Include="resources\shaders\Gui.fs" />
-    <None Include="resources\shaders\Gui.vs" />
-    <None Include="resources\shaders\NormalMapping.fs" />
-    <None Include="resources\shaders\NormalMapping.vs" />
-    <None Include="resources\shaders\Reflection.fs" />
-    <None Include="resources\shaders\Reflection.vs" />
-    <None Include="resources\shaders\Refraction.fs" />
-    <None Include="resources\shaders\Refraction.vs" />
-    <None Include="resources\shaders\RenderToTexture.fragmentshader" />
-    <None Include="resources\shaders\RenderToTexture.vertexshader" />
-    <None Include="resources\shaders\SkyBox.fs" />
-    <None Include="resources\shaders\SkyBox.vs" />
-    <None Include="resources\shaders\SolidColor.fs" />
-    <None Include="resources\shaders\SolidColor.vs" />
     <None Include="resources\shaders\testShader.fs" />
     <None Include="resources\shaders\testShader.vs" />
-    <None Include="resources\shaders\Text.fs" />
-    <None Include="resources\shaders\Text.vs" />
-    <None Include="resources\shaders\TextFreeType.fs" />
-    <None Include="resources\shaders\TextFreeType.vs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="resources\3dmodels\planets\Scale.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\callbacks\Callbacks.cpp" />
@@ -205,14 +184,22 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\logger\Logger.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
+    <ClCompile Include="src\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\callbacks\Callbacks.h" />
+    <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\config\Config.h" />
     <ClInclude Include="src\errorcodes\ErrorCodes.h" />
     <ClInclude Include="src\includes\Includes.h" />
     <ClInclude Include="src\logger\Logger.h" />
+    <ClInclude Include="src\model\Mesh.h" />
+    <ClInclude Include="src\model\Model.h" />
     <ClInclude Include="src\shader\Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GLFW.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

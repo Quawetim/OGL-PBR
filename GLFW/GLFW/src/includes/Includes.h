@@ -10,13 +10,14 @@
 #include <sstream>
 #include <ctime>
 
-#include <glad\glad.h>
+#include <GLAD\glad.h>
+
 #include <GLFW\glfw3.h>
-#include <glm\glm.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-#include <glm\gtx\transform.hpp>
-#include <glm\gtc\type_ptr.hpp>
-//#include <SOIL\SOIL.h>
+
+#include <GLM\glm.hpp>
+#include <GLM\gtc\matrix_transform.hpp>
+#include <GLM\gtx\transform.hpp>
+#include <GLM\gtc\type_ptr.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -28,7 +29,7 @@
 //using namespace glm;
 
 // Структура, которая хранит информацию об окне
-struct windowInfo
+struct QWindowInfo
 {
     // Указатель на окно
 	GLFWwindow* Window;
@@ -56,34 +57,40 @@ struct windowInfo
 };
 
 // Структура, которая хранит информацию об окне
-extern windowInfo WindowInfo;
+extern QWindowInfo windowInfo;
 
 // Тип ошибки для Logger
-enum errorType { info, warning, error };
+enum QErrorType { info, warning, error };
 
-// CameraMode - выбранная камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированная
+// Выбранная камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированная
 extern int CameraMode;
 
-// GenTextureSize - размер генерируемой текстуры
+// Размер генерируемой текстуры
 extern int GenTextureSize;
 
-// FOV - field of view
+// Field of view
 extern float FOV;
 
-// SkyBoxSize - размер скайбокса
+// Размер скайбокса
 extern float SkyBoxSize;
 
-// Rotations - переключение вращений
+// Переключение вращений
 extern bool Rotations;
 
-// ShowLights - переключение отображения источников света
+// Переключение отображения источников света
 extern bool ShowLights;
 
-// Blinn - переключение модели освещения
+// Переключение модели освещения
 extern bool Blinn;
 
-// MirrorExample - true = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map
+// Mtrue = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map
 extern bool MirrorExample;
 
-// ShowHelp - переключение отображения справки
+// Переключение отображения справки
 extern bool ShowHelp;
+
+// Время, прошедшее между текущим кадром и предыдущим
+extern double deltaTime;
+
+// Время, затраченное на отрисовку предыдущего кадра
+extern double lastFrameTime;

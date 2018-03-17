@@ -6,4 +6,4 @@
 ///</summary>
 ///<param name = 'Winfo'>Считанные даные об окне.</param>
 ///<param name = 'Reflection_res'>Размер карты отражений.</param>
-void ReadConfig(windowInfo &Winfo, int &Reflection_res);
+void ReadConfig(QWindowInfo &Winfo, int &Reflection_res);

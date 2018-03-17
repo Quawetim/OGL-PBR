@@ -31,7 +31,7 @@ Logger::~Logger()
 ///<param name = 'source'>Вывод ошибок на экран.</param>
 ///<param name = 'error_type'>Тип ошибки.</param>
 ///<param name = 'message'>Сообщение.</param>
-void Logger::log(std::string source, enum errorType error_type, std::string message)
+void Logger::log(std::string source, enum QErrorType error_type, std::string message)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -47,9 +47,9 @@ void Logger::log(std::string source, enum errorType error_type, std::string mess
 
     switch (error_type)
     {
-        case errorType::info:       ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
-        case errorType::warning:    ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
-        case errorType::error:      ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
+        case QErrorType::info:       ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
+        case QErrorType::warning:    ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
+        case QErrorType::error:      ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
         default:                    ss_msg << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
     }
 
@@ -58,7 +58,7 @@ void Logger::log(std::string source, enum errorType error_type, std::string mess
 #ifdef _DEBUG
     std::cout << ss_msg.str();
 #else
-    if (error_type == errorType::error)
+    if (error_type == QErrorType::error)
     {
         std::wstring w_msg, w_src;
 

@@ -16,7 +16,7 @@ void Shader::checkCompileErrors(unsigned int id, std::string type)
         if (!success)
         {
             glGetShaderInfoLog(id, 1024, NULL, log);
-            logger.log("SHADER::checkCompileErrors", errorType::error, std::string("Shader compilation error. Type: " + type + "\n" + log));
+            logger.log("SHADER::checkCompileErrors", QErrorType::error, std::string("Shader compilation error. Type: " + type + "\n" + log));
         }
     }
     else
@@ -25,7 +25,7 @@ void Shader::checkCompileErrors(unsigned int id, std::string type)
         if (!success)
         {
             glGetProgramInfoLog(id, 1024, NULL, log);
-            logger.log("SHADER::checkCompileErrors", errorType::error, std::string("Program linking error. Type: " + type + "\n" + log));
+            logger.log("SHADER::checkCompileErrors", QErrorType::error, std::string("Program linking error. Type: " + type + "\n" + log));
         }
     }
 }
@@ -59,9 +59,9 @@ Shader::Shader(const std::string vs_path, const std::string fs_path)
     }
     catch (std::ifstream::failure e)
     {
-        logger.log("SHADER::Shader", errorType::error, "Can't read shader file.");
-        logger.log("SHADER::Shader", errorType::info, std::string("VS_PATH: " + vs_path));
-        logger.log("SHADER::Shader", errorType::info, std::string("FS_PATH: " + fs_path));
+        logger.log("SHADER::Shader", QErrorType::error, "Can't read shader file.");
+        logger.log("SHADER::Shader", QErrorType::info, std::string("VS_PATH: " + vs_path));
+        logger.log("SHADER::Shader", QErrorType::info, std::string("FS_PATH: " + fs_path));
     }
 
     const char* vShaderCode = vs_code.c_str();

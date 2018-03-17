@@ -7,7 +7,7 @@ extern Logger logger;
 ///</summary>
 ///<param name = 'Winfo'>Считанные даные об окне.</param>
 ///<param name = 'Reflection_res'>Размер карты отражений.</param>
-void ReadConfig(windowInfo &Winfo, int &Reflection_res)
+void ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
 {
     std::ifstream fin;
     fin.open("config\\config.ini");
@@ -15,7 +15,7 @@ void ReadConfig(windowInfo &Winfo, int &Reflection_res)
     // Настройки по-умолчанию
     if (!fin)
     {
-        logger.log("ReadConfig", errorType::warning, "Config file not found.");
+        logger.log("ReadConfig", QErrorType::warning, "Config file not found.");
         Winfo.FullScreen = false; Winfo.Vsync = true; Winfo.ShowCursor = false;
         Winfo.Width = 800; Winfo.Height = 600;
         Winfo.HalfWidth = Winfo.Width / 2.0f; Winfo.HalfHeight = Winfo.Height / 2.0f;

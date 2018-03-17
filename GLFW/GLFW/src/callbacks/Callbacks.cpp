@@ -39,16 +39,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     // Отображение курсора при удерживании CTRL
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
-        WindowInfo.ShowCursor = true;
+        windowInfo.ShowCursor = true;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
     // Скрытие курсора при отпускании CTRL
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
     {
-        WindowInfo.ShowCursor = false;
+        windowInfo.ShowCursor = false;
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPos(window, WindowInfo.Width / 2, WindowInfo.Height / 2);
+        glfwSetCursorPos(window, windowInfo.Width / 2, windowInfo.Height / 2);
     }
 
     // Отображение справки при удерживании F1

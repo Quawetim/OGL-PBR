@@ -17,7 +17,7 @@ public:
     ///<param name = 'source'>Вывод ошибок на экран.</param>
     ///<param name = 'error_type'>Тип ошибки.</param>
     ///<param name = 'message'>Сообщение.</param>
-    void log(std::string source, enum errorType error_type, std::string message);
+    void log(std::string source, enum QErrorType error_type, std::string message);
 
     ///<summary>Логирует запуск программы.</summary>
     ///<param name = 'source'>Вывод ошибок на экран.</param>

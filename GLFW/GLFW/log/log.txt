@@ -21,3 +21,23 @@
 [16.03.2018 | 20:52:49] <INFO><MAIN> Initialization complete. Entering main loop.
 [16.03.2018 | 20:52:53] <INFO><MAIN> Program stops.
 ---------------------------------------------------
+[16.03.2018 | 20:55:21] <INFO><MAIN> Program starts.
+[16.03.2018 | 20:55:21] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 20:55:23] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 21:14:04] <INFO><MAIN> Program starts.
+[16.03.2018 | 21:14:04] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 21:14:05] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 21:14:28] <INFO><MAIN> Program starts.
+[16.03.2018 | 21:14:28] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 21:14:29] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[16.03.2018 | 21:14:34] <INFO><MAIN> Program starts.
+[16.03.2018 | 21:14:34] <INFO><MAIN> Initialization complete. Entering main loop.
+[16.03.2018 | 21:14:35] <INFO><MAIN> Program stops.
+---------------------------------------------------
+[17.03.2018 | 20:13:40] <INFO><MAIN> Program starts.
+[17.03.2018 | 20:13:43] <INFO><MAIN> Initialization complete. Entering main loop.
+[17.03.2018 | 20:13:45] <INFO><MAIN> Program stops.
+---------------------------------------------------

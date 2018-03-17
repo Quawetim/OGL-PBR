@@ -17,7 +17,7 @@ int main()
 
     if (!glfwInit())
     {
-        logger.log("MAIN", errorType::error, "Failed to initialize GLFW.");
+        logger.log("MAIN", QErrorType::error, "Failed to initialize GLFW.");
         logger.stop("MAIN");
         return Q_ERROR_INIT_GLFW;
     }
@@ -36,48 +36,45 @@ int main()
 #endif
 
     // Create window section
-    ReadConfig(WindowInfo, GenTextureSize);
-    GLFWmonitor *Screen = glfwGetPrimaryMonitor();
+    ReadConfig(windowInfo, GenTextureSize);
+    GLFWmonitor *screen = glfwGetPrimaryMonitor();
 
-    if (WindowInfo.FullScreen)
-    {
-        // Параметры монитора
-        const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
+    // Параметры монитора
+    const GLFWvidmode *vidMode = glfwGetVideoMode(screen);
 
-        WindowInfo.Width = VidMode->width; WindowInfo.HalfWidth = WindowInfo.Width / 2.0f;
-        WindowInfo.Height = VidMode->height; WindowInfo.HalfHeight = WindowInfo.Height / 2.0f;
+    if (windowInfo.FullScreen)
+    {        
+        windowInfo.Width = vidMode->width; windowInfo.HalfWidth = windowInfo.Width / 2.0f;
+        windowInfo.Height = vidMode->height; windowInfo.HalfHeight = windowInfo.Height / 2.0f;
         
         // Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
-        WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", Screen, NULL);
+        windowInfo.Window = glfwCreateWindow(windowInfo.Width, windowInfo.Height, "Diploma", screen, NULL);
     }
     else
     {
         // Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
-        WindowInfo.Window = glfwCreateWindow(WindowInfo.Width, WindowInfo.Height, "Diploma", NULL, NULL);
-
-        // Параметры монитора
-        const GLFWvidmode *VidMode = glfwGetVideoMode(Screen);
-
-        // Окно в центр экрана
-        glfwSetWindowPos(WindowInfo.Window, VidMode->width / 2 - WindowInfo.Width / 2, VidMode->height / 2 - WindowInfo.Height / 2);
+        windowInfo.Window = glfwCreateWindow(windowInfo.Width, windowInfo.Height, "Diploma", NULL, NULL);             
     }
 
     // Vsync
-    if (WindowInfo.Vsync) glfwSwapInterval(1);
+    if (windowInfo.Vsync) glfwSwapInterval(1);
 
-    if (!WindowInfo.Window)
+    if (!windowInfo.Window)
     {
-        logger.log("MAIN", errorType::error, "Failed to initialize WINDOW.");
+        logger.log("MAIN", QErrorType::error, "Failed to initialize WINDOW.");
         logger.stop("MAIN");
         glfwTerminate();
         return Q_ERROR_INIT_WINDOW;
-    }
+    }   
 
-    glfwMakeContextCurrent(WindowInfo.Window); 
+    // Окно в центр экрана
+    glfwSetWindowPos(windowInfo.Window, vidMode->width / 2 - windowInfo.Width / 2, vidMode->height / 2 - windowInfo.Height / 2);
+
+    glfwMakeContextCurrent(windowInfo.Window); 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        logger.log("MAIN", errorType::error, "Failed to initialize GLAD.");
+        logger.log("MAIN", QErrorType::error, "Failed to initialize GLAD.");
         logger.stop("MAIN");
         return Q_ERROR_INIT_GLAD;
     }
@@ -100,7 +97,7 @@ int main()
     }
     else
     {
-        logger.log("MAIN", errorType::error, "Failed to initialize GL DebugOutput.");
+        logger.log("MAIN", QErrorType::error, "Failed to initialize GL DebugOutput.");
         logger.stop("MAIN");       
         glfwTerminate();
         return Q_ERROR_INIT_DEBUG_OUTPUT;
@@ -109,15 +106,16 @@ int main()
 
     // Callbacks
     glfwSetErrorCallback(GLFWErrorCallback);
-    glfwSetFramebufferSizeCallback(WindowInfo.Window, FramebufferSizeCallback);
-    glfwSetKeyCallback(WindowInfo.Window, KeyCallback);
-    glfwSetScrollCallback(WindowInfo.Window, ScrollCallback);
+    glfwSetFramebufferSizeCallback(windowInfo.Window, FramebufferSizeCallback);
+    glfwSetKeyCallback(windowInfo.Window, KeyCallback);
+    glfwSetScrollCallback(windowInfo.Window, ScrollCallback);
 
     // Скрыть курсор, поместить в центр экрана
+    //windowInfo.ShowCursor = false;
     //glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
 
-    glViewport(0, 0, WindowInfo.Width, WindowInfo.Height);
+    glViewport(0, 0, windowInfo.Width, windowInfo.Height);
 
     // Цвет фона, RGBA
     glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
@@ -160,9 +158,16 @@ int main()
     //***********************************************//
 
     // Главный цикл
-    logger.log("MAIN", errorType::info, "Initialization complete. Entering main loop.");
-    while (!glfwWindowShouldClose(WindowInfo.Window))
+    double currentFrameTime = 0.0;
+
+    logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
+
+    while (!glfwWindowShouldClose(windowInfo.Window))
     {
+        currentFrameTime = glfwGetTime();
+        deltaTime = currentFrameTime - lastFrameTime;
+        lastFrameTime = currentFrameTime;
+
         // Очистить экран
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -170,8 +175,9 @@ int main()
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
+        
         // Меняем кадр
-        glfwSwapBuffers(WindowInfo.Window);
+        glfwSwapBuffers(windowInfo.Window);
         glfwPollEvents();
     }    
 
