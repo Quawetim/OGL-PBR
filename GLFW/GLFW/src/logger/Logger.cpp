@@ -3,14 +3,14 @@
 
 Logger logger;
 
-///<summary>Инициализация.</summary>
+///<summary>Конструктор.</summary>
 Logger::Logger()
 {
     CreateDirectory(L"log", NULL);
 
-    this->_fout.open("log\\log.txt", std::ios::app);
+    this->logfile.open("log\\log.txt", std::ios::app);
     
-    if (!_fout)
+    if (!logfile)
     {
 #ifdef _DEBUG
         std::cout << "Failed to initialize Logger." << std::endl;
@@ -24,11 +24,11 @@ Logger::Logger()
 
 Logger::~Logger() 
 {
-    this->_fout.close();
+    this->logfile.close();
 };
 
 ///<summary>Логирует ошибку.</summary>
-///<param name = 'source'>Вывод ошибок на экран.</param>
+///<param name = 'source'>Источник.</param>
 ///<param name = 'error_type'>Тип ошибки.</param>
 ///<param name = 'message'>Сообщение.</param>
 void Logger::log(std::string source, enum QErrorType error_type, std::string message)
@@ -47,13 +47,13 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 
     switch (error_type)
     {
-        case QErrorType::info:       ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
-        case QErrorType::warning:    ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
-        case QErrorType::error:      ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
+        case QErrorType::info:      ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
+        case QErrorType::warning:   ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
+        case QErrorType::error:     ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
         default:                    ss_msg << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
     }
 
-    _fout << ss_msg.str();
+    this->logfile << ss_msg.str();
 
 #ifdef _DEBUG
     std::cout << ss_msg.str();
@@ -75,8 +75,19 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 #endif
 }
 
+///<summary>Логирует ошибку из stringstream.</summary>
+///<param name = 'ss'>Поток.</param>
+void Logger::log(std::stringstream ss)
+{
+    this->logfile << ss.str();
+
+#ifdef _DEBUG
+    std::cout << ss.str();
+#endif
+}
+
 ///<summary>Логирует запуск программы.</summary>
-///<param name = 'source'>Вывод ошибок на экран.</param>
+///<param name = 'source'>Источник.</param>
 void Logger::start(std::string source)
 {
     time_t rawtime;
@@ -89,7 +100,7 @@ void Logger::start(std::string source)
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    _fout << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
+    this->logfile << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
 
 #ifdef _DEBUG
     std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
@@ -97,9 +108,10 @@ void Logger::start(std::string source)
 }
 
 ///<summary>Логирует завершение программы.</summary>
-///<param name = 'source'>Вывод ошибок на экран.</param>
+///<param name = 'source'>Источник.</param>
+///<param name = 'message'>Сообщение.</param>
 ///<param name = 'error'>Завершение работы из-за ошибки.</param>
-void Logger::stop(std::string source, bool error)
+void Logger::stop(std::string source, bool error, std::string message)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -111,14 +123,28 @@ void Logger::stop(std::string source, bool error)
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    _fout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
-    _fout << "---------------------------------------------------" << std::endl;
+    this->logfile << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
+    this->logfile << "---------------------------------------------------" << std::endl;
 
-#ifdef _DEBUG
+
     if (error)
     {
+#ifdef _DEBUG
         std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
         system("pause");
+#else
+        std::stringstream ss_src;
+        std::wstring w_msg, w_src;
+
+        ss_src << "ERROR:" << source;
+
+        std::string src;
+        src = ss_src.str();
+
+        w_msg = std::wstring(message.begin(), message.end());
+        w_src = std::wstring(src.begin(), src.end());
+
+        MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
+#endif 
     }
-#endif   
 }

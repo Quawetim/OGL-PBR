@@ -101,57 +101,62 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 ///<param name = 'userParam'>Параметры.</param>
 void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
-    std::cout << "**************************" << std::endl;
-    std::cout << "Debug message (" << id << "): " << message << std::endl;
+    std::stringstream ss;
+
+    ss << "**************************" << std::endl;
+    ss << "Debug message (" << id << "): " << message << std::endl;
 
     switch (source)
     {
-        case GL_DEBUG_SOURCE_API:               std::cout << "Source: API"; break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     std::cout << "Source: Window System"; break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER:   std::cout << "Source: Shader Compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:       std::cout << "Source: Third Party"; break;
-        case GL_DEBUG_SOURCE_APPLICATION:       std::cout << "Source: Application"; break;
-        case GL_DEBUG_SOURCE_OTHER:             std::cout << "Source: Other"; break;
+        case GL_DEBUG_SOURCE_API:               ss << "Source: API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     ss << "Source: Window System"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER:   ss << "Source: Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:       ss << "Source: Third Party"; break;
+        case GL_DEBUG_SOURCE_APPLICATION:       ss << "Source: Application"; break;
+        case GL_DEBUG_SOURCE_OTHER:             ss << "Source: Other"; break;
         default:
             {
-                std::cout << "Source: Unknown"; break;
+                ss << "Source: Unknown"; break;
             }
     }
 
-    std::cout << std::endl;
+    ss << std::endl;
 
     switch (type)
     {
-        case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behavior"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behavior"; break;
-        case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Perfomance"; break;
-        case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
-        case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
-        case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+        case GL_DEBUG_TYPE_ERROR:               ss << "Type: Error"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: ss << "Type: Deprecated Behavior"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  ss << "Type: Undefined Behavior"; break;
+        case GL_DEBUG_TYPE_PORTABILITY:         ss << "Type: Portability"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         ss << "Type: Perfomance"; break;
+        case GL_DEBUG_TYPE_MARKER:              ss << "Type: Marker"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          ss << "Type: Push Group"; break;
+        case GL_DEBUG_TYPE_POP_GROUP:           ss << "Type: Pop Group"; break;
+        case GL_DEBUG_TYPE_OTHER:               ss << "Type: Other"; break;
         default:
             {
-                std::cout << "Type: Unknown"; break;
+                ss << "Type: Unknown"; break;
             }
     }
 
-    std::cout << std::endl;
+    ss << std::endl;
 
     switch (severity)
     {
-        case GL_DEBUG_SEVERITY_NOTIFICATION:    std::cout << "Severity: Notification"; break;
-        case GL_DEBUG_SEVERITY_LOW:             std::cout << "Severity: Low"; break;
-        case GL_DEBUG_SEVERITY_MEDIUM:          std::cout << "Severity: Medium"; break;
-        case GL_DEBUG_SEVERITY_HIGH:            std::cout << "Severity: High"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:    ss << "Severity: Notification"; break;
+        case GL_DEBUG_SEVERITY_LOW:             ss << "Severity: Low"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:          ss << "Severity: Medium"; break;
+        case GL_DEBUG_SEVERITY_HIGH:            ss << "Severity: High"; break;
         default:
             {
-                std::cout << "Severity: Unknown"; break;
+                ss << "Severity: Unknown"; break;
             }
     }
 
-    std::cout << std::endl;
+    ss << std::endl;
+    ss << "**************************" << std::endl;
+
+
 }
 
 ///<summary>Обработка ошибок GLFW.</summary>

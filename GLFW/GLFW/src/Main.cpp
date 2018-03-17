@@ -1,13 +1,7 @@
 #include "includes\Includes.h"
 #include "callbacks\Callbacks.h"
 #include "config\Config.h"
-#include "shader\Shader.h"
-//#include "Camera.h"
-//#include "Object.h"
-//#include "Scene.h"
-//#include "TextureLoader.h"
-//#include "VboIndexer.h"
-//#include "Gui.h"
+#include "model\Mesh.h"
 
 extern Logger logger;
 
@@ -133,28 +127,36 @@ int main()
 
     Shader testShader("resources//shaders//testShader.vs", "resources//shaders//testShader.fs");
     
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.5f,  0.5f, 0.0f,
-        0.5f, 0.5f, 0.0f,
-        -0.5f, 0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f
-    };
+    std::vector<QVertexData> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<QTexture> textures;
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    QVertexData v;
+    v.position = glm::vec3(-0.5f, -0.5f, 0.0f);
+    vertices.push_back(v);
+    v.position = glm::vec3(0.5f, -0.5f, 0.0f);
+    vertices.push_back(v);
+    v.position = glm::vec3(0.5f, 0.5f, 0.0f);
+    vertices.push_back(v);
+    v.position = glm::vec3(-0.5f, 0.5f, 0.0f);
+    vertices.push_back(v);
 
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    unsigned int ind;
+    ind = 0;
+    indices.push_back(ind);
+    ind = 1;
+    indices.push_back(ind);
+    ind = 2;
+    indices.push_back(ind);
+    ind = 0;
+    indices.push_back(ind);
+    ind = 2;
+    indices.push_back(ind);
+    ind = 3;
+    indices.push_back(ind);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    Mesh mesh(vertices, indices, textures);
+
     //***********************************************//
 
     // Главный цикл
@@ -171,10 +173,7 @@ int main()
         // Очистить экран
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        testShader.activate();
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+        mesh.drawMesh(testShader);
         
         // Меняем кадр
         glfwSwapBuffers(windowInfo.Window);

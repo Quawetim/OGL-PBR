@@ -183,6 +183,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\includes\Includes.cpp" />
     <ClCompile Include="src\logger\Logger.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\model\Mesh.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\stb_image\stb_image.cpp" />
   </ItemGroup>

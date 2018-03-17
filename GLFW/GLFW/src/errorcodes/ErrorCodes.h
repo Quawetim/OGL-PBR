@@ -6,3 +6,4 @@
 #define Q_ERROR_INIT_WINDOW                     3
 #define Q_ERROR_INIT_GLAD                       4
 #define Q_ERROR_INIT_DEBUG_OUTPUT               5
+#define Q_ERROR_UNEXPECTED_TEXTURE_TYPE         6

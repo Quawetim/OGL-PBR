@@ -25,8 +25,42 @@
 #include "..\errorcodes\ErrorCodes.h"
 #include "..\logger\Logger.h"
 
-//using namespace std;
-//using namespace glm;
+#include "..\shader\Shader.h"
+
+// Структура хранящая параметры вершин
+struct QVertexData
+{
+    // Позиция вершины
+    glm::vec3 position;
+
+    // Вектор нормали
+    glm::vec3 normal;
+
+    // Текстурные координаты
+    glm::vec3 textureCoords;
+
+    // Касательная
+    glm::vec3 tangent;
+
+    // Бикасательная
+    glm::vec3 bitangent;
+};
+
+// Тип текстуры
+enum QTextureType { diffuse, specular, normal };
+
+// Структура, хранящая информацию о текстуре
+struct QTexture
+{
+    // Идентификатор
+    unsigned int id;
+
+    // Тип: diffuse, specular, normal etc.
+    QTextureType type;
+
+    // Путь к текстуре
+    std::string path;
+};
 
 // Структура, которая хранит информацию об окне
 struct QWindowInfo
