@@ -10,6 +10,8 @@ private:
 public:
     ///<summary>Конструктор.</summary>
     Logger();
+
+    ///<summary>Деструктор.</summary>
     ~Logger();
 
     ///<summary>Логирует ошибку.</summary>

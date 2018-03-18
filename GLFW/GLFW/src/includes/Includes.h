@@ -19,6 +19,10 @@
 #include <GLM\gtx\transform.hpp>
 #include <GLM\gtc\type_ptr.hpp>
 
+#include <assimp\Importer.hpp>
+#include <assimp\scene.h>
+#include <assimp\postprocess.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
@@ -37,7 +41,7 @@ struct QVertexData
     glm::vec3 normal;
 
     // Текстурные координаты
-    glm::vec3 textureCoords;
+    glm::vec2 textureCoords;
 
     // Касательная
     glm::vec3 tangent;

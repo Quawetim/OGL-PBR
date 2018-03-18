@@ -2,6 +2,7 @@
 #include "callbacks\Callbacks.h"
 #include "config\Config.h"
 #include "model\Mesh.h"
+#include "model\Model.h"
 
 extern Logger logger;
 
@@ -118,14 +119,14 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     //	Отсечение невидимых граней
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
 
     //	Выбираем фрагмент, ближайший к камере
     glDepthFunc(GL_LESS);    
 
     //***********************************************//
 
-    Shader testShader("resources//shaders//testShader.vs", "resources//shaders//testShader.fs");
+    Shader shader("resources//shaders//testShader.vs", "resources//shaders//testShader.fs");
     
     std::vector<QVertexData> vertices;
     std::vector<unsigned int> indices;
@@ -155,7 +156,16 @@ int main()
     ind = 3;
     indices.push_back(ind);
 
-    Mesh mesh(vertices, indices, textures);
+    Mesh rectangle(vertices, indices, textures); 
+
+    //Model nanosuit("resources/nanosuit/nanosuit.obj");
+
+    Model cube("resources/3dmodels/cube.obj");
+    Model sphere_lowpoly("resources/3dmodels/sphere_lowpoly.obj");
+    Model sphere_highpoly("resources/3dmodels/sphere_highpoly.obj");
+    Model cylinder("resources/3dmodels/cylinder.obj");
+
+    shader.setBool("textureFlag", false);
 
     //***********************************************//
 
@@ -163,7 +173,10 @@ int main()
     double currentFrameTime = 0.0;
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
-
+   
+    glm::mat4 M;
+    glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.Width / (float)windowInfo.Height, 0.05f, 500.0f);
+    glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     while (!glfwWindowShouldClose(windowInfo.Window))
     {
         currentFrameTime = glfwGetTime();
@@ -172,8 +185,132 @@ int main()
 
         // Очистить экран
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Кубы
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(-3.0f, 6.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cube.drawModel(shader);
 
-        mesh.drawMesh(testShader);
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(-3.0f, 3.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cube.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(-3.0f, 0.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cube.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(-3.0f, -3.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cube.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(-3.0f, -6.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cube.drawModel(shader);
+
+        // Сферы
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(0.0f, 6.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        sphere_highpoly.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(0.0f, 3.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        sphere_highpoly.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        sphere_highpoly.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(0.0f, -3.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        sphere_highpoly.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(0.0f, -6.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        sphere_highpoly.drawModel(shader);
+
+        // Цилиндры
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(3.0f, 6.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cylinder.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(3.0f, 3.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cylinder.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(3.0f, 0.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cylinder.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(3.0f, -3.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cylinder.drawModel(shader);
+
+        M = glm::mat4(1.0f);
+        //M = glm::scale(glm::vec3(0.5f));
+        M = glm::translate(M, glm::vec3(3.0f, -6.0f, 0.0f));
+        shader.setMat4("P", P);
+        shader.setMat4("V", V);
+        shader.setMat4("M", M);
+        cylinder.drawModel(shader);
+
+        /*shader.setMat4("M", M);
+        shader.setBool("textureFlag", false);
+        rectangle.drawMesh(shader);*/
         
         // Меняем кадр
         glfwSwapBuffers(windowInfo.Window);

@@ -59,7 +59,7 @@ Shader::Shader(const std::string vs_path, const std::string fs_path)
     }
     catch (std::ifstream::failure e)
     {
-        logger.log("SHADER::Shader", QErrorType::error, "Can't read shader file.");
+        logger.log("SHADER::Shader", QErrorType::error, "Shader file not found.");
         logger.log("SHADER::Shader", QErrorType::info, std::string("VS_PATH: " + vs_path));
         logger.log("SHADER::Shader", QErrorType::info, std::string("FS_PATH: " + fs_path));
     }
@@ -92,8 +92,6 @@ Shader::Shader(const std::string vs_path, const std::string fs_path)
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 }
-
-Shader::~Shader() {};
 
 ///<summary>Возвращает идентификатор шейдера.</summary>
 unsigned int Shader::getID()
@@ -129,4 +127,12 @@ void Shader::setInt(const std::string &name, int value) const
 void Shader::setFloat(const std::string &name, float value) const
 {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+///<summary>Задаёт (передаёт) значение переменной типа mat4 в шейдере по имени.</summary>
+///<param name = 'name'>Имя переменной в шейдере.</param>
+///<param name = 'mat'>Задаваемое значение.</param>
+void Shader::setMat4(const std::string &name, const glm::mat4 mat) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }

@@ -34,11 +34,11 @@ public:
     void drawMesh(Shader shader);
 
     ///<summary>Возвращает вершины меша.</summary>
-    std::vector<QVertexData> getVertices();
+    std::vector<QVertexData> getVertices() const;
 
     ///<summary>Возвращает индексы вершин меша.</summary>
-    std::vector<unsigned int> getIndices();
+    std::vector<unsigned int> getIndices() const;
 
     ///<summary>Возвращает текстуры меша.</summary>
-    std::vector<QTexture> getTextures();
+    std::vector<QTexture> getTextures() const;
 };

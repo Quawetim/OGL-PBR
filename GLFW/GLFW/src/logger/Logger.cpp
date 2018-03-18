@@ -22,6 +22,7 @@ Logger::Logger()
     }
 };
 
+///<summary>Деструктор.</summary>
 Logger::~Logger() 
 {
     this->logfile.close();

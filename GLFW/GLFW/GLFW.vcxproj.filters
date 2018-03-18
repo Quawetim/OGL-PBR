@@ -46,6 +46,9 @@
     <Filter Include="Файлы исходного кода\model">
       <UniqueIdentifier>{a7f337d4-8b1c-4821-af95-c7427bd9c152}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\texture loader">
+      <UniqueIdentifier>{9136bf69-4f16-428f-bc3b-1455eefd267a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -89,6 +92,12 @@
     <ClCompile Include="src\model\Mesh.cpp">
       <Filter>Файлы исходного кода\model</Filter>
     </ClCompile>
+    <ClCompile Include="src\model\Model.cpp">
+      <Filter>Файлы исходного кода\model</Filter>
+    </ClCompile>
+    <ClCompile Include="src\texture_loader\TextureLoader.cpp">
+      <Filter>Файлы исходного кода\texture loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -120,6 +129,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\texture_loader\TextureLoader.h">
+      <Filter>Файлы исходного кода\texture loader</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -19,7 +19,6 @@ public:
     ///<param name = 'vs_path'>Путь к вершинному шейдеру.</param>
     ///<param name = 'fs_path'>Путь к фрагментному шейдеру.</param>
     Shader(const std::string vs_path, const std::string fs_path);
-    ~Shader();
 
     ///<summary>Возвращает идентификатор шейдера.</summary>
     unsigned int getID();
@@ -41,4 +40,9 @@ public:
     ///<param name = 'name'>Имя переменной в шейдере.</param>
     ///<param name = 'value'>Задаваемое значение.</param>
     void setFloat(const std::string &name, float value) const;
+
+    ///<summary>Задаёт (передаёт) значение переменной типа mat4 в шейдере по имени.</summary>
+    ///<param name = 'name'>Имя переменной в шейдере.</param>
+    ///<param name = 'mat'>Задаваемое значение.</param>
+    void setMat4(const std::string &name, const glm::mat4 mat) const;
 };

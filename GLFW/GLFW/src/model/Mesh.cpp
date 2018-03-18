@@ -69,19 +69,19 @@ void Mesh::drawMesh(Shader shader)
             case QTextureType::diffuse:     
                 {
                     number = std::to_string(diffuseNumber++);
-                    name = "diffuse";
+                    name = "diffuseMap";
                     break;
                 }
             case QTextureType::specular:    
                 {
                     number = std::to_string(specularNumber++);
-                    name = "specular";
+                    name = "specularMap";
                     break;
                 }
             case QTextureType::normal:     
                 {
                     number = std::to_string(normalNumber++);
-                    name = "normal";
+                    name = "normalMap";
                     break;
                 }
             default:
@@ -92,7 +92,8 @@ void Mesh::drawMesh(Shader shader)
                 }
         }
 
-        shader.setInt(("material." + name + number).c_str(), i);
+        //shader.setInt(("material." + name + number).c_str(), i);
+        shader.setInt(std::string(name + number), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
 
@@ -105,4 +106,22 @@ void Mesh::drawMesh(Shader shader)
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
+
+///<summary>Возвращает вершины меша.</summary>
+std::vector<QVertexData> Mesh::getVertices() const
+{
+    return this->vertices;
+}
+
+///<summary>Возвращает индексы вершин меша.</summary>
+std::vector<unsigned int> Mesh::getIndices() const
+{
+    return this->indices;
+}
+
+///<summary>Возвращает текстуры меша.</summary>
+std::vector<QTexture> Mesh::getTextures() const
+{
+    return this->textures;
 }

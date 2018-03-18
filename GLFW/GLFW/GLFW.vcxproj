@@ -184,8 +184,10 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\logger\Logger.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\model\Mesh.cpp" />
+    <ClCompile Include="src\model\Model.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\stb_image\stb_image.cpp" />
+    <ClCompile Include="src\texture_loader\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -198,6 +200,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\model\Mesh.h" />
     <ClInclude Include="src\model\Model.h" />
     <ClInclude Include="src\shader\Shader.h" />
+    <ClInclude Include="src\texture_loader\TextureLoader.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GLFW.rc" />
