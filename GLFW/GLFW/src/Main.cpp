@@ -3,8 +3,7 @@
 #include "config\Config.h"
 #include "model\Mesh.h"
 #include "model\Model.h"
-
-extern Logger logger;
+#include "texture_loader\TextureLoader.h"
 
 int main()
 {
@@ -126,7 +125,7 @@ int main()
 
     //***********************************************//
 
-    Shader shader("resources//shaders//testShader.vs", "resources//shaders//testShader.fs");
+    Shader shader("resources/shaders/material.vs", "resources/shaders/material.fs");
     
     std::vector<QVertexData> vertices;
     std::vector<unsigned int> indices;
@@ -156,16 +155,32 @@ int main()
     ind = 3;
     indices.push_back(ind);
 
-    Mesh rectangle(vertices, indices, textures); 
+    Mesh rectangle("rectangle", vertices, indices, textures); 
 
     //Model nanosuit("resources/nanosuit/nanosuit.obj");
 
+    QTexture testTexture;
+    testTexture.type = QTextureType::diffuse;
+    testTexture.path = "resources/textures/test.bmp";
+    testTexture.id = QTextureLoader::loadTexture(testTexture.path);
+    
     Model cube("resources/3dmodels/cube.obj");
-    Model sphere_lowpoly("resources/3dmodels/sphere_lowpoly.obj");
-    Model sphere_highpoly("resources/3dmodels/sphere_highpoly.obj");
-    Model cylinder("resources/3dmodels/cylinder.obj");
+    cube.setTestTexture(testTexture);
 
-    shader.setBool("textureFlag", false);
+    Model sphere_lowpoly("resources/3dmodels/sphere_lowpoly.obj");
+    sphere_lowpoly.setTestTexture(testTexture);
+
+    Model sphere_highpoly("resources/3dmodels/sphere_highpoly.obj");
+    sphere_highpoly.setTestTexture(testTexture);
+
+    Model cylinder("resources/3dmodels/cylinder.obj");
+    cylinder.setTestTexture(testTexture);
+    
+    //  @TODO:
+    //  setPosition, setScale, setRotation для Model
+    //  Модуль камеры    
+    //  Material shader
+    //  Оси
 
     //***********************************************//
 
@@ -174,7 +189,8 @@ int main()
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
    
-    glm::mat4 M;
+    glm::mat4 M, M1;
+    M1 = glm::translate(M, glm::vec3(0.0f, 6.0f, 0.0f));
     glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.Width / (float)windowInfo.Height, 0.05f, 500.0f);
     glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     while (!glfwWindowShouldClose(windowInfo.Window))
@@ -188,124 +204,81 @@ int main()
         
         // Кубы
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(-3.0f, 6.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cube.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(-3.0f, 3.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cube.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(-3.0f, 0.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cube.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(-3.0f, -3.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cube.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(-3.0f, -6.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cube.drawModel(shader);
 
         // Сферы
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(0.0f, 6.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        float sc = 0.1 * (std::sin(glfwGetTime()) + 9.0f);
+        M = glm::scale(M, glm::vec3(sc));
+        shader.setProjectionViewModelMatrices(P, V, M);
         sphere_highpoly.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(0.0f, 3.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         sphere_highpoly.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         sphere_highpoly.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(0.0f, -3.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         sphere_highpoly.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(0.0f, -6.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         sphere_highpoly.drawModel(shader);
 
         // Цилиндры
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(3.0f, 6.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cylinder.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(3.0f, 3.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cylinder.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(3.0f, 0.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cylinder.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(3.0f, -3.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cylinder.drawModel(shader);
 
         M = glm::mat4(1.0f);
-        //M = glm::scale(glm::vec3(0.5f));
         M = glm::translate(M, glm::vec3(3.0f, -6.0f, 0.0f));
-        shader.setMat4("P", P);
-        shader.setMat4("V", V);
-        shader.setMat4("M", M);
+        shader.setProjectionViewModelMatrices(P, V, M);
         cylinder.drawModel(shader);
 
         /*shader.setMat4("M", M);

@@ -173,8 +173,10 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <FileType>Document</FileType>
       <DeploymentContent>false</DeploymentContent>
     </None>
-    <None Include="resources\shaders\testShader.fs" />
-    <None Include="resources\shaders\testShader.vs" />
+    <None Include="resources\shaders\material.fs" />
+    <None Include="resources\shaders\material.vs" />
+    <None Include="resources\shaders\test.fs" />
+    <None Include="resources\shaders\test.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\callbacks\Callbacks.cpp" />

@@ -13,6 +13,9 @@ private:
     // Element buffer object
     unsigned int EBO;
 
+    // Имя меша
+    std::string name;
+
     // Вершины меша
     std::vector<QVertexData> vertices;
 
@@ -22,23 +25,63 @@ private:
     // Текстуры
     std::vector<QTexture> textures;
 
-    // Цвет по-умолчанию
-    glm::vec3 color = glm::vec3(0.5f, 0.5f, 0.5f);
+    bool diffuseMap_flag = true, specularMap_flag = true, normalMap_flag = true;
+
+    // Ambient цвет
+    glm::vec3 ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+
+    // Diffuse цвет
+    glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
+
+    // Specular цвет
+    glm::vec3 specularColor = glm::vec3(0.9f, 0.9f, 0.9f);
+
+    // Сила (яркость) блика
+    float shinePower = 8.0f;
 
 public:
     ///<summary>Конструктор.</summary>
+    ///<param name = 'name'>Имя меша.</param>
     ///<param name = 'vertices'>Вершины меша.</param>
     ///<param name = 'indices'>Индексы вершин.</param>
     ///<param name = 'textures'>Текстуры.</param>
-    Mesh(std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
+    Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
 
     ///<summary>Отрисовка меша.</summary>
     ///<param name = 'shader'>Шейдер.</param>
     void drawMesh(Shader shader);
 
-    ///<summary>Задаёт цвет меша в RGB формате.</summary>
+    ///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
     ///<para name = 'red'>Красная компонента цвета.</para>
     ///<para name = 'green'>Зелёная компонента цвета.</para>
     ///<para name = 'blue'>Синяя компонента цвета.</para>
-    void setMeshColor(unsigned char red, unsigned char green, unsigned char blue);
+    void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+    ///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
+    ///<para name = 'red'>Красная компонента цвета.</para>
+    ///<para name = 'green'>Зелёная компонента цвета.</para>
+    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+    ///<summary>Задаёт specular цвет меша в RGB формате.</summary>
+    ///<para name = 'red'>Красная компонента цвета.</para>
+    ///<para name = 'green'>Зелёная компонента цвета.</para>
+    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+    ///<summary>Задаёт силу (яркость) блика.</summary>
+    ///<para name = 'value'>Значение.</para>
+    void setShinePower(const float value);
+
+    ///<summary>Задаёт флаг использования текстуры меша.</summary>
+    ///<para name = 'type'>Тип текстуры.</para>
+    ///<para name = 'use'>Использовать текстуру или нет.</para>
+    void Mesh::setTextureFlag(const QTextureType type, const bool use);
+
+    ///<summary>Задаёт мешу тестовую текстуру.</summary>
+    ///<para name = 'texture'>Текстура.</para>
+    void setTestTexture(QTexture texture);
+
+    ///<summary>Возвращает имя меша.</summary>
+    std::string getName() const;
 };

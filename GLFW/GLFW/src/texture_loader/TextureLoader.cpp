@@ -1,7 +1,5 @@
 #include "TextureLoader.h"
 
-extern Logger logger;
-
 ///<summary>Загрузка текстуры из файла.</summary>
 ///<para name ='path'>Путь к текстуре.</para>
 unsigned int QTextureLoader::loadTexture(std::string path)

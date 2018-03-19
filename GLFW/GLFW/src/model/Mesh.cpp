@@ -1,13 +1,13 @@
 #include "Mesh.h"
 
-extern Logger logger;
-
 ///<summary>Конструктор.</summary>
+///<param name = 'name'>Имя меша.</param>
 ///<param name = 'vertices'>Вершины меша.</param>
 ///<param name = 'indices'>Индексы вершин.</param>
 ///<param name = 'textures'>Текстуры.</param>
-Mesh::Mesh(std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures)
+Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures)
 {
+    this->name = name;
     this->vertices = vertices;
     this->indices = indices;
     this->textures = textures;
@@ -59,9 +59,24 @@ void Mesh::drawMesh(Shader shader)
 
     std::string number, name;
 
+    // Push material params
+    shader.setVec3("material.ambientColor", this->ambientColor);
+    shader.setVec3("material.diffuseColor", this->diffuseColor);
+    shader.setVec3("material.specularColor", this->specularColor);
+    shader.setFloat("material.shinePower", this->shinePower);
+
+    // Push texture flags
+    shader.setBool("diffuseMap1_flag", false);
+    shader.setBool("specularMap1_flag", false);
+    shader.setBool("normalMap1_flag", false);
+
     // Push textures, i = texture unit
     for (size_t i = 0; i < textures.size(); i++)
     {
+        if (textures[i].type == QTextureType::diffuse && !this->diffuseMap_flag) continue;
+        if (textures[i].type == QTextureType::specular && !this->specularMap_flag) continue;
+        if (textures[i].type == QTextureType::normal && !this->normalMap_flag) continue;
+
         glActiveTexture(GL_TEXTURE0 + i);
 
         name = mapTextureType.find(textures[i].type)->second;
@@ -79,7 +94,7 @@ void Mesh::drawMesh(Shader shader)
                 }
         }
 
-        //shader.setInt(("material." + name + number).c_str(), i);
+        shader.setBool(std::string(name + number + "_flag"), true);
         shader.setInt(std::string(name + number), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
@@ -94,11 +109,62 @@ void Mesh::drawMesh(Shader shader)
     glBindVertexArray(0);
 }
 
-///<summary>Задаёт цвет меша в RGB формате.</summary>
+///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
 ///<para name = 'red'>Красная компонента цвета.</para>
 ///<para name = 'green'>Зелёная компонента цвета.</para>
 ///<para name = 'blue'>Синяя компонента цвета.</para>
-void Mesh::setMeshColor(unsigned char red, unsigned char green, unsigned char blue)
+void Mesh::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-    this->color = glm::vec3(red/255, green/255, blue/255);
+    this->ambientColor = glm::vec3(red / 255, green / 255, blue / 255);
+}
+
+///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
+///<para name = 'red'>Красная компонента цвета.</para>
+///<para name = 'green'>Зелёная компонента цвета.</para>
+///<para name = 'blue'>Синяя компонента цвета.</para>
+void Mesh::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+    this->diffuseColor = glm::vec3(red/255, green/255, blue/255);
+}
+
+///<summary>Задаёт specular цвет меша в RGB формате.</summary>
+///<para name = 'red'>Красная компонента цвета.</para>
+///<para name = 'green'>Зелёная компонента цвета.</para>
+///<para name = 'blue'>Синяя компонента цвета.</para>
+void Mesh::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+    this->specularColor = glm::vec3(red / 255, green / 255, blue / 255);
+}
+
+///<summary>Задаёт силу (яркость) блика.</summary>
+///<para name = 'value'>Значение.</para>
+void Mesh::setShinePower(const float value)
+{
+    this->shinePower = value;
+}
+
+///<summary>Задаёт флаг использования текстуры меша.</summary>
+///<para name = 'type'>Тип текстуры.</para>
+///<para name = 'use'>Использовать текстуру или нет.</para>
+void Mesh::setTextureFlag(const QTextureType type, const bool use)
+{
+    switch (type)
+    {
+        case QTextureType::diffuse:     this->diffuseMap_flag = use; break;
+        case QTextureType::specular:    this->specularMap_flag = use; break;
+        case QTextureType::normal:      this->normalMap_flag = use; break;
+    }
+}
+
+///<summary>Задаёт мешу тестовую текстуру.</summary>
+///<para name = 'texture'>Текстура.</para>
+void Mesh::setTestTexture(QTexture texture)
+{
+    this->textures.push_back(texture);
+}
+
+///<summary>Возвращает имя меша.</summary>
+std::string Mesh::getName() const
+{
+    return this->name;
 }

@@ -42,3 +42,5 @@ double deltaTime = 0.0;
 
 // Время, затраченное на отрисовку предыдущего кадра
 double lastFrameTime = 0.0;
+
+Logger logger;

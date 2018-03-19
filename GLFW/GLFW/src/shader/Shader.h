@@ -12,7 +12,7 @@ private:
     ///<summary>Проверка на ошибки компиляции шейдера.</summary>
     ///<param name = 'id'>Идентификатор шейдера.</param>
     ///<param name = 'type'>Тип шейдера.</param>
-    void checkCompileErrors(unsigned int id, std::string type);
+    void checkCompilationErrors(unsigned int id, std::string type);
 
 public:
     ///<summary>Конструктор.</summary>
@@ -29,20 +29,43 @@ public:
     ///<summary>Задаёт (передаёт) значение переменной типа bool в шейдере по имени.</summary>
     ///<param name = 'name'>Имя переменной в шейдере.</param>
     ///<param name = 'value'>Задаваемое значение.</param>
-    void setBool(const std::string &name, bool value) const;
+    void setBool(const std::string &name, const bool value) const;
     
     ///<summary>Задаёт (передаёт) значение переменной типа int в шейдере по имени.</summary>
     ///<param name = 'name'>Имя переменной в шейдере.</param>
     ///<param name = 'value'>Задаваемое значение.</param>
-    void setInt(const std::string &name, int value) const;
+    void setInt(const std::string &name, const int value) const;
     
     ///<summary>Задаёт (передаёт) значение переменной типа float в шейдере по имени.</summary>
     ///<param name = 'name'>Имя переменной в шейдере.</param>
     ///<param name = 'value'>Задаваемое значение.</param>
-    void setFloat(const std::string &name, float value) const;
+    void setFloat(const std::string &name, const float value) const;
+
+    ///<summary>Задаёт (передаёт) значение переменной типа vec3 в шейдере по имени.</summary>
+    ///<param name = 'name'>Имя переменной в шейдере.</param>
+    ///<param name = 'value'>Задаваемое значение.</param>
+    void setVec3(const std::string &name, const glm::vec3 &value) const;
 
     ///<summary>Задаёт (передаёт) значение переменной типа mat4 в шейдере по имени.</summary>
     ///<param name = 'name'>Имя переменной в шейдере.</param>
     ///<param name = 'mat'>Задаваемое значение.</param>
-    void setMat4(const std::string &name, const glm::mat4 mat) const;
+    void setMat4(const std::string &name, const glm::mat4 &mat) const;
+
+    ///<summary>Задаёт (передаёт) матрицу проекции.</summary>
+    ///<para name = 'projectionMatrix'>Матрица проекции.</para>
+    void setProjectionMatrix(const glm::mat4 projectionMatrix) const;
+
+    ///<summary>Задаёт (передаёт) матрицу вида.</summary>
+    ///<para name = 'viewMatrix'>Матрица вида.</para>
+    void setViewMatrix(const glm::mat4 viewMatrix) const;
+
+    ///<summary>Задаёт (передаёт) матрицу модели.</summary>
+    ///<para name = 'modelMatrix'>Матрица модели.</para>
+    void setModelMatrix(const glm::mat4 modelMatrix) const;
+
+    ///<summary>Задаёт (передаёт) матрицы проекции, вида и модели.</summary>
+    ///<para name = 'projectionMatrix'>Матрица проекции.</para>
+    ///<para name = 'viewMatrix'>Матрица вида.</para>
+    ///<para name = 'modelMatrix'>Матрица модели.</para>
+    void setProjectionViewModelMatrices(const glm::mat4 projectionMatrix, const glm::mat4 viewMatrix, const glm::mat4 modelMatrix) const;
 };

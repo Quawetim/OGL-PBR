@@ -39,9 +39,40 @@ public:
     ///<para name ='shader'>Шейдер.</para>
     void drawModel(Shader shader);
 
-    ///<summary>Задаёт цвет всей модели в RGB формате.</summary>
+    ///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
     ///<para name = 'red'>Красная компонента цвета.</para>
     ///<para name = 'green'>Зелёная компонента цвета.</para>
     ///<para name = 'blue'>Синяя компонента цвета.</para>
-    void setModelColor(unsigned char red, unsigned char green, unsigned char blue);
+    void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+    ///<summary>Задаёт diffuse цвет всем мешам модели в RGB формате.</summary>
+    ///<para name = 'red'>Красная компонента цвета.</para>
+    ///<para name = 'green'>Зелёная компонента цвета.</para>
+    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+    ///<summary>Задаёт specular цвет всем мешам модели в RGB формате.</summary>
+    ///<para name = 'red'>Красная компонента цвета.</para>
+    ///<para name = 'green'>Зелёная компонента цвета.</para>
+    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+    ///<summary>Задаёт силу (яркость) блика всем мешам модели.</summary>
+    ///<para name = 'value'>Значение.</para>
+    void setShinePower(const float value);
+
+    ///<summary>Задаёт флаг использования текстуры меша name.</summary>
+    ///<para name = 'mesh_name'>Имя меша.</para>
+    ///<para name = 'texture_type'>Тип текстуры флага.</para>
+    ///<para name = 'use'>Использовать текстуру или нет.</para>
+    void setTextureFlag(const std::string mesh_name, const QTextureType texture_type, const bool use);
+
+    ///<summary>Задаёт флаг использования текстуры всех мешей модели.</summary>
+    ///<para name = 'type'>Тип текстуры.</para>
+    ///<para name = 'use'>Использовать текстуру или нет.</para>
+    void setTextureFlag(const QTextureType type, const bool use);
+
+    ///<summary>Задаёт всем мешам тестовую текстуру.</summary>
+    ///<para name = 'texture'>Текстура.</para>
+    void setTestTexture(QTexture texture);
 };

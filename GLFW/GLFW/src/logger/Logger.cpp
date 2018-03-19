@@ -1,8 +1,6 @@
 #include "Logger.h"
 #include <windows.h>
 
-Logger logger;
-
 ///<summary>Конструктор.</summary>
 Logger::Logger()
 {

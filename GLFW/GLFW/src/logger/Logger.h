@@ -34,3 +34,5 @@ public:
     ///<param name = 'error'>Завершение работы из-за ошибки.</param>
     void stop(std::string source, bool error = true, std::string message = "These are not the droids you are looking for.");
 };
+
+extern Logger logger;

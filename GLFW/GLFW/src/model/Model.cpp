@@ -1,8 +1,6 @@
 #include "Model.h"
 #include "..\texture_loader\TextureLoader.h"
 
-extern Logger logger;
-
 ///<summary>Конструктор.</summary>
 ///<para name ='path'>Путь к модели.</para>
 Model::Model(std::string path)
@@ -16,7 +14,7 @@ Model::Model(std::string path)
         return;
     }
 
-    dir = path.substr(0, path.find_last_of('/'));
+    this->dir = path.substr(0, path.find_last_of('/'));
 
     handleNode(scene->mRootNode, scene);
 }
@@ -27,7 +25,7 @@ void Model::drawModel(Shader shader)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
-        meshes[i].drawMesh(shader);
+        this->meshes[i].drawMesh(shader);
     }
 }
 
@@ -53,9 +51,12 @@ void Model::handleNode(aiNode *node, const aiScene *scene)
 ///<para name ='scene'>Сцена assimp.</para>
 Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
 {
+    std::string name;
     std::vector<QVertexData> vertices;
     std::vector<unsigned int> indices;
     std::vector<QTexture> textures;
+
+    name = mesh->mName.C_Str();
 
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
@@ -127,7 +128,7 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
         textures.insert(textures.end(), normalMap.begin(), normalMap.end());
     }
 
-    return Mesh(vertices, indices, textures);
+    return Mesh(name, vertices, indices, textures);
 }
 
 ///<summary>Загрузка текстур модели.</summary>
@@ -171,14 +172,88 @@ std::vector<QTexture> Model::loadMaterialTextures(aiMaterial *material, aiTextur
     return textures;
 }
 
-///<summary>Задаёт цвет всей модели в RGB формате.</summary>
+///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
 ///<para name = 'red'>Красная компонента цвета.</para>
 ///<para name = 'green'>Зелёная компонента цвета.</para>
 ///<para name = 'blue'>Синяя компонента цвета.</para>
-void Model::setModelColor(unsigned char red, unsigned char green, unsigned char blue)
+void Model::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
-        meshes[i].setMeshColor(red, green, blue);
+        this->meshes[i].setAmbientColor(red, green, blue);
+    }
+}
+
+///<summary>Задаёт diffuse цвет всем мешам модели в RGB формате.</summary>
+///<para name = 'red'>Красная компонента цвета.</para>
+///<para name = 'green'>Зелёная компонента цвета.</para>
+///<para name = 'blue'>Синяя компонента цвета.</para>
+void Model::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        this->meshes[i].setDiffuseColor(red, green, blue);
+    }
+}
+
+///<summary>Задаёт specular цвет всем мешам модели в RGB формате.</summary>
+///<para name = 'red'>Красная компонента цвета.</para>
+///<para name = 'green'>Зелёная компонента цвета.</para>
+///<para name = 'blue'>Синяя компонента цвета.</para>
+void Model::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        this->meshes[i].setSpecularColor(red, green, blue);
+    }
+}
+
+///<summary>Задаёт силу (яркость) блика всем мешам модели.</summary>
+///<para name = 'value'>Значение.</para>
+void Model::setShinePower(const float value)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        this->meshes[i].setShinePower(value);
+    }
+}
+
+///<summary>Задаёт флаг использования текстуры меша name.</summary>
+///<para name = 'mesh_name'>Имя меша.</para>
+///<para name = 'texture_type'>Тип текстуры флага.</para>
+///<para name = 'use'>Использовать текстуру или нет.</para>
+void Model::setTextureFlag(const std::string mesh_name, const QTextureType texture_type, const bool use)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        if (this->meshes[i].getName() == mesh_name)
+        {
+            this->meshes[i].setTextureFlag(texture_type, use);
+            return;
+        }
+    }
+
+    std::string msg = "Mesh " + mesh_name + " not found.";
+    logger.log("setTextureFlag", QErrorType::warning, msg);
+}
+
+///<summary>Задаёт флаг использования текстуры всех мешей модели.</summary>
+///<para name = 'type'>Тип текстуры.</para>
+///<para name = 'use'>Использовать текстуру или нет.</para>
+void Model::setTextureFlag(const QTextureType type, const bool use)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        this->meshes[i].setTextureFlag(type, use);
+    }
+}
+
+///<summary>Задаёт всем мешам тестовую текстуру.</summary>
+///<para name = 'texture'>Текстура.</para>
+void Model::setTestTexture(QTexture texture)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        this->meshes[i].setTestTexture(texture);
     }
 }

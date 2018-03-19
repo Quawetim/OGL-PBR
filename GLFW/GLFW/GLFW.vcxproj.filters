@@ -57,10 +57,16 @@
     <None Include="config\config.ini">
       <Filter>Файлы исходного кода\config</Filter>
     </None>
-    <None Include="resources\shaders\testShader.fs">
+    <None Include="resources\shaders\material.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
-    <None Include="resources\shaders\testShader.vs">
+    <None Include="resources\shaders\material.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\test.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\test.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
   </ItemGroup>
