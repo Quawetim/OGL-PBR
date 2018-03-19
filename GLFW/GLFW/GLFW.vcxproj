@@ -190,7 +190,6 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\texture_loader\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="src\callbacks\Callbacks.h" />
     <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\config\Config.h" />
@@ -199,6 +198,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\logger\Logger.h" />
     <ClInclude Include="src\model\Mesh.h" />
     <ClInclude Include="src\model\Model.h" />
+    <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\texture_loader\TextureLoader.h" />
   </ItemGroup>

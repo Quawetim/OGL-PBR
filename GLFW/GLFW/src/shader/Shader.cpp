@@ -41,6 +41,7 @@ Shader::Shader(const std::string vs_path, const std::string fs_path)
 
     vs_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fs_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    
     try
     {
         vs_file.open(vs_path);

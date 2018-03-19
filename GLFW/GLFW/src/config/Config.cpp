@@ -7,7 +7,7 @@ extern Logger logger;
 ///</summary>
 ///<param name = 'Winfo'>Считанные даные об окне.</param>
 ///<param name = 'Reflection_res'>Размер карты отражений.</param>
-void ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
+void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
 {
     std::ifstream fin;
     fin.open("config\\config.ini");

@@ -38,4 +38,10 @@ public:
     ///<summary>Отрисовка модели.</summary>
     ///<para name ='shader'>Шейдер.</para>
     void drawModel(Shader shader);
+
+    ///<summary>Задаёт цвет всей модели в RGB формате.</summary>
+    ///<para name = 'red'>Красная компонента цвета.</para>
+    ///<para name = 'green'>Зелёная компонента цвета.</para>
+    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    void setModelColor(unsigned char red, unsigned char green, unsigned char blue);
 };

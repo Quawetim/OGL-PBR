@@ -7,7 +7,7 @@
 extern Logger logger;
 
 int main()
-{    
+{
     logger.start("MAIN");
 
     if (!glfwInit())
@@ -31,7 +31,7 @@ int main()
 #endif
 
     // Create window section
-    ReadConfig(windowInfo, GenTextureSize);
+    QConfig::ReadConfig(windowInfo, GenTextureSize);
     GLFWmonitor *screen = glfwGetPrimaryMonitor();
 
     // Параметры монитора

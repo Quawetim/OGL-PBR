@@ -3,6 +3,13 @@
 // —труктура, котора€ хранит информацию об окне
 QWindowInfo windowInfo = QWindowInfo();
 
+const std::map<QTextureType, std::string> mapTextureType = 
+{ 
+    {QTextureType::diffuse, "diffuseMap"}, 
+    {QTextureType::specular, "specularMap"}, 
+    {QTextureType::normal, "normalMap"} 
+};
+
 // ¬ыбранна€ камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированна€
 int CameraMode = 2;
 

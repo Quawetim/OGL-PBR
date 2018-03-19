@@ -4,7 +4,7 @@ extern Logger logger;
 
 ///<summary>Загрузка текстуры из файла.</summary>
 ///<para name ='path'>Путь к текстуре.</para>
-unsigned int TextureLoader::loadTexture(std::string path)
+unsigned int QTextureLoader::loadTexture(std::string path)
 {
     unsigned int ID;
 
@@ -44,3 +44,4 @@ unsigned int TextureLoader::loadTexture(std::string path)
 
     return ID;
 }
+

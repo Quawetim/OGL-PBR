@@ -22,6 +22,9 @@ private:
     // Текстуры
     std::vector<QTexture> textures;
 
+    // Цвет по-умолчанию
+    glm::vec3 color = glm::vec3(0.5f, 0.5f, 0.5f);
+
 public:
     ///<summary>Конструктор.</summary>
     ///<param name = 'vertices'>Вершины меша.</param>
@@ -33,12 +36,9 @@ public:
     ///<param name = 'shader'>Шейдер.</param>
     void drawMesh(Shader shader);
 
-    ///<summary>Возвращает вершины меша.</summary>
-    std::vector<QVertexData> getVertices() const;
-
-    ///<summary>Возвращает индексы вершин меша.</summary>
-    std::vector<unsigned int> getIndices() const;
-
-    ///<summary>Возвращает текстуры меша.</summary>
-    std::vector<QTexture> getTextures() const;
+    ///<summary>Задаёт цвет меша в RGB формате.</summary>
+    ///<para name = 'red'>Красная компонента цвета.</para>
+    ///<para name = 'green'>Зелёная компонента цвета.</para>
+    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    void setMeshColor(unsigned char red, unsigned char green, unsigned char blue);
 };

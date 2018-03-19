@@ -25,7 +25,7 @@ Model::Model(std::string path)
 ///<para name ='shader'>Шейдер.</para>
 void Model::drawModel(Shader shader)
 {
-    for (unsigned int i = 0; i < meshes.size(); i++)
+    for (size_t i = 0; i < this->meshes.size(); i++)
     {
         meshes[i].drawMesh(shader);
     }
@@ -36,13 +36,13 @@ void Model::drawModel(Shader shader)
 ///<para name ='scene'>Сцена assimp.</para>
 void Model::handleNode(aiNode *node, const aiScene *scene)
 {
-    for (unsigned int i = 0; i < node->mNumMeshes; i++)
+    for (size_t i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         this->meshes.push_back(handleMesh(mesh, scene));
     }
 
-    for (unsigned int i = 0; i < node->mNumChildren; i++)
+    for (size_t i = 0; i < node->mNumChildren; i++)
     {
         handleNode(node->mChildren[i], scene);
     }
@@ -57,7 +57,7 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
     std::vector<unsigned int> indices;
     std::vector<QTexture> textures;
 
-    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+    for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
         QVertexData vertex;
 
@@ -77,22 +77,39 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
         {
             vertex.tangent = glm::vec3(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z);
         }
+        else
+        {
+            vertex.tangent = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
 
         if (mesh->mBitangents)
         {
             vertex.bitangent = glm::vec3(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z);
         }
+        else
+        {
+            vertex.bitangent = glm::vec3(0.0f, 0.0f, 0.0f);
+        }
 
         vertices.push_back(vertex);
     }
 
-    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    for (size_t i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
         
-        for (unsigned int j = 0; j < face.mNumIndices; j++)
+        if (face.mNumIndices > 0)
         {
-            indices.push_back(face.mIndices[j]);
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            {
+                indices.push_back(face.mIndices[j]);
+            }
+        }
+        else
+        {
+            std::string mesh_name = mesh->mName.C_Str();
+            std::string msg = "Indices of not found. MESH:" + mesh_name;
+            logger.log("handleMesh", QErrorType::error, msg);
         }
     }
 
@@ -120,12 +137,11 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
 std::vector<QTexture> Model::loadMaterialTextures(aiMaterial *material, aiTextureType type, QTextureType textureType)
 {
     std::vector<QTexture> textures;
-    TextureLoader texture_loader;
 
-    for (unsigned int i = 0; i < material->GetTextureCount(type); i++)
+    for (size_t i = 0; i < material->GetTextureCount(type); i++)
     {
         aiString s;
-        bool skip = false;
+        bool skip_loading = false;
 
         material->GetTexture(type, i, &s);
 
@@ -134,16 +150,16 @@ std::vector<QTexture> Model::loadMaterialTextures(aiMaterial *material, aiTextur
             if (std::strcmp(loaded_textures[j].path.data(), s.C_Str()) == 0)
             {
                 textures.push_back(loaded_textures[j]);
-                skip = true;
+                skip_loading = true;
                 break;
             }
         }
 
-        if (!skip)
+        if (!skip_loading)
         {
             QTexture texture;
   
-            texture.id = texture_loader.loadTexture(std::string(dir + "/" + s.C_Str()));
+            texture.id = QTextureLoader::loadTexture(std::string(dir + "/" + s.C_Str()));
             texture.type = textureType;
             texture.path = s.C_Str();
 
@@ -153,4 +169,16 @@ std::vector<QTexture> Model::loadMaterialTextures(aiMaterial *material, aiTextur
     }
 
     return textures;
+}
+
+///<summary>Задаёт цвет всей модели в RGB формате.</summary>
+///<para name = 'red'>Красная компонента цвета.</para>
+///<para name = 'green'>Зелёная компонента цвета.</para>
+///<para name = 'blue'>Синяя компонента цвета.</para>
+void Model::setModelColor(unsigned char red, unsigned char green, unsigned char blue)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        meshes[i].setMeshColor(red, green, blue);
+    }
 }

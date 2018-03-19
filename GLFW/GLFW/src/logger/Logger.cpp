@@ -18,7 +18,7 @@ Logger::Logger()
 #else
         MessageBox(NULL, L"Failed to initialize Logger.", L"ERROR:Logger", MB_OK | MB_ICONERROR);
 #endif
-        exit(Q_BAD_EXIT);
+        exit(Q_ERROR_INIT_LOGGER);
     }
 };
 
@@ -58,6 +58,11 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 
 #ifdef _DEBUG
     std::cout << ss_msg.str();
+
+    if (error_type == QErrorType::error)
+    {
+        logger.stop("log", true, "Error occurred.");
+    }
 #else
     if (error_type == QErrorType::error)
     {
@@ -133,6 +138,7 @@ void Logger::stop(std::string source, bool error, std::string message)
 #ifdef _DEBUG
         std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
         system("pause");
+        exit(Q_BAD_EXIT);
 #else
         std::stringstream ss_src;
         std::wstring w_msg, w_src;
@@ -146,6 +152,7 @@ void Logger::stop(std::string source, bool error, std::string message)
         w_src = std::wstring(src.begin(), src.end());
 
         MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
+        exit(Q_BAD_EXIT);
 #endif 
     }
 }

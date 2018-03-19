@@ -53,6 +53,9 @@ struct QVertexData
 // Тип текстуры
 enum QTextureType { diffuse, specular, normal };
 
+// Задаёт соответствие QTextureType и string
+extern const std::map<QTextureType, std::string> mapTextureType;
+
 // Структура, хранящая информацию о текстуре
 struct QTexture
 {

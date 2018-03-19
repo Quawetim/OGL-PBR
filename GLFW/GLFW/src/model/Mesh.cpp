@@ -60,30 +60,17 @@ void Mesh::drawMesh(Shader shader)
     std::string number, name;
 
     // Push textures, i = texture unit
-    for (unsigned int i = 0; i < textures.size(); i++)
+    for (size_t i = 0; i < textures.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i);
 
+        name = mapTextureType.find(textures[i].type)->second;
+
         switch (textures[i].type)
-        {
-            case QTextureType::diffuse:     
-                {
-                    number = std::to_string(diffuseNumber++);
-                    name = "diffuseMap";
-                    break;
-                }
-            case QTextureType::specular:    
-                {
-                    number = std::to_string(specularNumber++);
-                    name = "specularMap";
-                    break;
-                }
-            case QTextureType::normal:     
-                {
-                    number = std::to_string(normalNumber++);
-                    name = "normalMap";
-                    break;
-                }
+        {           
+            case QTextureType::diffuse:     number = std::to_string(diffuseNumber++); break;
+            case QTextureType::specular:    number = std::to_string(specularNumber++); break;
+            case QTextureType::normal:      number = std::to_string(normalNumber++); break;
             default:
                 {
                     logger.log("drawMesh", QErrorType::error, "Unexpected texture type");
@@ -100,7 +87,6 @@ void Mesh::drawMesh(Shader shader)
     glActiveTexture(GL_TEXTURE0);
 
     // Draw mesh
-
     shader.activate();
 
     glBindVertexArray(VAO);
@@ -108,20 +94,11 @@ void Mesh::drawMesh(Shader shader)
     glBindVertexArray(0);
 }
 
-///<summary>Возвращает вершины меша.</summary>
-std::vector<QVertexData> Mesh::getVertices() const
+///<summary>Задаёт цвет меша в RGB формате.</summary>
+///<para name = 'red'>Красная компонента цвета.</para>
+///<para name = 'green'>Зелёная компонента цвета.</para>
+///<para name = 'blue'>Синяя компонента цвета.</para>
+void Mesh::setMeshColor(unsigned char red, unsigned char green, unsigned char blue)
 {
-    return this->vertices;
-}
-
-///<summary>Возвращает индексы вершин меша.</summary>
-std::vector<unsigned int> Mesh::getIndices() const
-{
-    return this->indices;
-}
-
-///<summary>Возвращает текстуры меша.</summary>
-std::vector<QTexture> Mesh::getTextures() const
-{
-    return this->textures;
+    this->color = glm::vec3(red/255, green/255, blue/255);
 }
