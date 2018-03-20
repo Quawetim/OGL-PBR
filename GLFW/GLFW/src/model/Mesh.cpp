@@ -149,12 +149,12 @@ void Mesh::rotateMesh(const double angle, const glm::vec3 axis)
 ///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
 void Mesh::scaleMesh(const float scaleXYZ)
 {
-    this->scale += glm::vec3(scaleXYZ * deltaTime);
+    this->scale += glm::vec3(scaleXYZ * (float)deltaTime);
 
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("setScale", QErrorType::error, "Scale = 0");
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("scaleMesh", QErrorType::error, "Scale = 0");
     else
     {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("setScale", QErrorType::warning, "Scale < 0");
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("scaleMesh", QErrorType::warning, "Scale < 0");
     }
 
     this->scaleMatrix = glm::scale(this->scale);
@@ -168,10 +168,10 @@ void Mesh::scaleMesh(const float scaleX, const float scaleY, const float scaleZ)
 {
     this->scale += glm::vec3(scaleX * deltaTime, scaleY * deltaTime, scaleZ * deltaTime);
 
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("setScale", QErrorType::error, "Scale = 0");
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("scaleMesh", QErrorType::error, "Scale = 0");
     else
     {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("setScale", QErrorType::warning, "Scale < 0");
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("scaleMesh", QErrorType::warning, "Scale < 0");
     }
 
     this->scaleMatrix = glm::scale(this->scale);

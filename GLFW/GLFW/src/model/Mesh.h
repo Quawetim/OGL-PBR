@@ -27,9 +27,14 @@ private:
 
     // Матрица модели
     glm::mat4 modelMatrix;
-
+    
+    // Матрица перемещенния
     glm::mat4 translationMatrix;
+
+    // Матрица вращения
     glm::mat4 rotationMatrix;
+
+    // Матрица размера
     glm::mat4 scaleMatrix;
 
     // Текущая позиция меша

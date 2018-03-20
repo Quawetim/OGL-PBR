@@ -5,14 +5,41 @@
 class Model
 {
 private:
+    // Имя модели
+    std::string name;
+
+    // Директория в которой лежит модель
+    std::string dir;
+
     // Меши, из который состоит модель.
     std::vector<Mesh> meshes;
 
     // Уже загруженные в память текстуры
-    std::vector<QTexture> loaded_textures;
+    std::vector<QTexture> loaded_textures;    
 
-    // Директория в которой лежит модель
-    std::string dir;
+    // Матрица модели
+    glm::mat4 modelMatrix;
+
+    // Матрица перемещенния
+    glm::mat4 translationMatrix;
+
+    // Матрица вращения
+    glm::mat4 rotationMatrix;
+
+    // Матрица размера
+    glm::mat4 scaleMatrix;
+
+    // Текущая позиция меша
+    glm::vec3 position;
+
+    // Угол поворота
+    double rotationAngle;
+
+    // Ось поворота
+    glm::vec3 rotationAxis;
+
+    // Коэффициент размера по каждой из осей
+    glm::vec3 scale;
 
     ///<summary>Обработка узла модели.</summary>
     ///<param name ='node'>Узел assimp.</param>
@@ -38,6 +65,27 @@ public:
     ///<summary>Отрисовка модели.</summary>
     ///<param name ='shader'>Шейдер.</param>
     void drawModel(Shader shader);
+
+    ///<summary>Двигает модель в направлении оси с заданной скоростью.</summary>
+    ///<param name = 'velocityX'>Скорость по оси x.</param>
+    ///<param name = 'velocityY'>Скорость по оси y.</param>
+    ///<param name = 'velocityZ'>Скорость по оси z.</param>
+    void moveModel(const float velocityX, const float velocityY, const float velocityZ);
+
+    ///<summary>Вращает модель с заданной скоростью.</summary>
+    ///<param name = 'angle'>Скорость поворота в градусах.</param>
+    ///<param name = 'axis'>Ось вращения.</param>
+    void rotateModel(const double angle, const glm::vec3 axis);
+
+    ///<summary>Изменяет размер модели с заданной скоростью.</summary>
+    ///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
+    void scaleModel(const float scaleXYZ);
+
+    ///<summary>Изменяет размер модели с заданной скоростью.</summary>
+    ///<param name = 'scaleX'>Скорость изменения размера по X.</param>
+    ///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
+    ///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
+    void scaleModel(const float scaleX, const float scaleY, const float scaleZ);
 
     ///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
     ///<param name = 'red'>Красная компонента цвета.</param>
@@ -75,4 +123,26 @@ public:
     ///<summary>Задаёт всем мешам тестовую текстуру.</summary>
     ///<param name = 'texture'>Текстура.</param>
     void setTestTexture(QTexture texture);
+
+    ///<summary>Задаёт позицию модели.</summary>
+    ///<param name = 'position'>Позиция.</param>
+    void setPosition(glm::vec3 position);
+
+    ///<summary>Задаёт поворот модели.</summary>
+    ///<param name = 'angle'>Угол поворота в градусах.</param>
+    ///<param name = 'axis'>Ось поворота.</param>
+    void setRotation(const double angle, const glm::vec3 axis);
+
+    ///<summary>Задаёт размер модели от исходного.</summary>
+    ///<param name = 'scale'>Коэффициент размера.</param>
+    void setScale(const glm::vec3 scale);
+
+    ///<summary>Возвращает имя модели.</summary>
+    std::string getName() const;
+
+    ///<summary>Возвращает матрицу модели.</summary>
+    glm::mat4 getModelMatrix();
+
+    ///<summary>Возвращает позицию модели.</summary>
+    glm::vec3 getPosition() const;
 };

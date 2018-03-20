@@ -5,6 +5,15 @@
 ///<param name ='path'>Путь к модели.</param>
 Model::Model(std::string path)
 {
+    this->modelMatrix = glm::mat4(1.0f);
+    this->translationMatrix = glm::mat4(1.0f);
+    this->rotationMatrix = glm::mat4(1.0f);
+    this->scaleMatrix = glm::mat4(1.0f);
+    this->position = glm::vec3(0.0f);
+    this->rotationAngle = 0.0f;
+    this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->scale = glm::vec3(1.0f);
+
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
@@ -14,19 +23,13 @@ Model::Model(std::string path)
         return;
     }
 
-    this->dir = path.substr(0, path.find_last_of('/'));
+    int dot_pos = path.find_last_of('.');
+    int last_slash_pos = path.find_last_of('/');
+
+    this->name = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    this->dir = path.substr(0, last_slash_pos);
 
     handleNode(scene->mRootNode, scene);
-}
-
-///<summary>Отрисовка модели.</summary>
-///<param name ='shader'>Шейдер.</param>
-void Model::drawModel(Shader shader)
-{
-    for (size_t i = 0; i < this->meshes.size(); i++)
-    {
-        this->meshes[i].drawMesh(shader);
-    }
 }
 
 ///<summary>Обработка узла модели.</summary>
@@ -98,7 +101,7 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
     for (size_t i = 0; i < mesh->mNumFaces; i++)
     {
         aiFace face = mesh->mFaces[i];
-        
+
         if (face.mNumIndices > 0)
         {
             for (unsigned int j = 0; j < face.mNumIndices; j++)
@@ -117,7 +120,7 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
     if (mesh->mMaterialIndex >= 0)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-        
+
         std::vector<QTexture> diffuseMap = loadMaterialTextures(material, aiTextureType_DIFFUSE, QTextureType::diffuse);
         textures.insert(textures.end(), diffuseMap.begin(), diffuseMap.end());
 
@@ -129,6 +132,75 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
     }
 
     return Mesh(name, vertices, indices, textures);
+}
+
+///<summary>Отрисовка модели.</summary>
+///<param name ='shader'>Шейдер.</param>
+void Model::drawModel(Shader shader)
+{
+    for (size_t i = 0; i < this->meshes.size(); i++)
+    {
+        this->meshes[i].drawMesh(shader);
+    }
+}
+
+///<summary>Двигает модель в направлении оси с заданной скоростью.</summary>
+///<param name = 'velocityX'>Скорость по оси x.</param>
+///<param name = 'velocityY'>Скорость по оси y.</param>
+///<param name = 'velocityZ'>Скорость по оси z.</param>
+void Model::moveModel(const float velocityX, const float velocityY, const float velocityZ)
+{
+    this->position += glm::vec3(velocityX * deltaTime, velocityY * deltaTime, velocityZ * deltaTime);
+    this->translationMatrix = glm::translate(this->position);
+}
+
+///<summary>Вращает модель с заданной скоростью.</summary>
+///<param name = 'angle'>Скорость поворота в градусах.</param>
+///<param name = 'axis'>Ось вращения.</param>
+void Model::rotateModel(const double angle, const glm::vec3 axis)
+{
+    this->rotationAngle += angle * deltaTime;
+    this->rotationAxis = axis;
+
+    if (this->rotationAngle == 360) this->rotationAngle = 0;
+    else
+    {
+        if (this->rotationAngle > 360) this->rotationAngle -= 360;
+    }
+
+    this->rotationMatrix = glm::rotate((float)glm::radians(this->rotationAngle), this->rotationAxis);
+}
+
+///<summary>Изменяет размер модели с заданной скоростью.</summary>
+///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
+void Model::scaleModel(const float scaleXYZ)
+{
+    this->scale += glm::vec3(scaleXYZ * (float)deltaTime);
+
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Model::scaleModel", QErrorType::error, "Scale = 0");
+    else
+    {
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Model::scaleModel", QErrorType::warning, "Scale < 0");
+    }
+
+    this->scaleMatrix = glm::scale(this->scale);
+}
+
+///<summary>Изменяет размер модели с заданной скоростью.</summary>
+///<param name = 'scaleX'>Скорость изменения размера по X.</param>
+///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
+///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
+void Model::scaleModel(const float scaleX, const float scaleY, const float scaleZ)
+{
+    this->scale += glm::vec3(scaleX * deltaTime, scaleY * deltaTime, scaleZ * deltaTime);
+
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Model::scaleModel", QErrorType::error, "Scale = 0");
+    else
+    {
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Model::scaleModel", QErrorType::warning, "Scale < 0");
+    }
+
+    this->scaleMatrix = glm::scale(this->scale);
 }
 
 ///<summary>Загрузка текстур модели.</summary>
@@ -256,4 +328,64 @@ void Model::setTestTexture(QTexture texture)
     {
         this->meshes[i].setTestTexture(texture);
     }
+}
+
+///<summary>Задаёт позицию модели.</summary>
+///<param name = 'position'>Позиция.</param>
+void Model::setPosition(glm::vec3 position)
+{
+    this->position = position;
+    this->translationMatrix = glm::translate(this->position);
+}
+
+///<summary>Задаёт поворот модели.</summary>
+///<param name = 'angle'>Угол поворота в градусах.</param>
+///<param name = 'axis'>Ось поворота.</param>
+void Model::setRotation(const double angle, const glm::vec3 axis)
+{
+    this->rotationAngle = angle;
+    this->rotationAxis = axis;
+
+    if (this->rotationAngle == 360) this->rotationAngle = 0;
+    else
+    {
+        if (this->rotationAngle > 360) this->rotationAngle -= 360;
+    }
+
+    this->rotationMatrix = glm::rotate((float)glm::radians(this->rotationAngle), this->rotationAxis);
+}
+
+///<summary>Задаёт размер модели от исходного.</summary>
+///<param name = 'scale'>Коэффициент размера.</param>
+void Model::setScale(const glm::vec3 scale)
+{
+    this->scale = scale;
+
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Model::setScale", QErrorType::error, "Scale = 0");
+    else
+    {
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Model::setScale", QErrorType::warning, "Scale < 0");
+    }
+
+    this->scaleMatrix = glm::scale(this->scale);
+}
+
+///<summary>Возвращает имя модели.</summary>
+std::string Model::getName() const
+{
+    return this->name;
+}
+
+///<summary>Возвращает матрицу модели.</summary>
+glm::mat4 Model::getModelMatrix()
+{
+    this->modelMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+
+    return this->modelMatrix;
+}
+
+///<summary>Возвращает позицию модели.</summary>
+glm::vec3 Model::getPosition() const
+{
+    return this->position;
 }
