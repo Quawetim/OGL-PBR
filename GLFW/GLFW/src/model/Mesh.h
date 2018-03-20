@@ -25,7 +25,33 @@ private:
     // Текстуры
     std::vector<QTexture> textures;
 
-    bool diffuseMap_flag = true, specularMap_flag = true, normalMap_flag = true;
+    // Матрица модели
+    glm::mat4 modelMatrix;
+
+    glm::mat4 translationMatrix;
+    glm::mat4 rotationMatrix;
+    glm::mat4 scaleMatrix;
+
+    // Текущая позиция меша
+    glm::vec3 position;
+
+    // Угол поворота
+    double rotationAngle;
+
+    // Ось поворота
+    glm::vec3 rotationAxis;
+
+    // Коэффициент размера по каждой из осей
+    glm::vec3 scale;
+
+    // Флаг отрисовки diffuseMap
+    bool diffuseMap_flag = true;
+
+    // Флаг отрисовки specularMap
+    bool specularMap_flag = true;
+
+    // Флаг отрисовки normalMap
+    bool normalMap_flag = true;
 
     // Ambient цвет
     glm::vec3 ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
@@ -51,37 +77,77 @@ public:
     ///<param name = 'shader'>Шейдер.</param>
     void drawMesh(Shader shader);
 
+    ///<summary>Двигает меш в направлении оси с заданной скоростью.</summary>
+    ///<param name = 'velocityX'>Скорость по оси x.</param>
+    ///<param name = 'velocityY'>Скорость по оси y.</param>
+    ///<param name = 'velocityZ'>Скорость по оси z.</param>
+    void moveMesh(const float velocityX, const float velocityY, const float velocityZ);
+
+    ///<summary>Вращает меш с заданной скоростью.</summary>
+    ///<param name = 'angle'>Скорость поворота в градусах.</param>
+    ///<param name = 'axis'>Ось вращения.</param>
+    void rotateMesh(const double angle, const glm::vec3 axis);
+
+    ///<summary>Изменяет размер меша с заданной скоростью.</summary>
+    ///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
+    void scaleMesh(const float scaleXYZ);
+
+    ///<summary>Изменяет размер меша с заданной скоростью.</summary>
+    ///<param name = 'scaleX'>Скорость изменения размера по X.</param>
+    ///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
+    ///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
+    void scaleMesh(const float scaleX, const float scaleY, const float scaleZ);
+
     ///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
-    ///<para name = 'red'>Красная компонента цвета.</para>
-    ///<para name = 'green'>Зелёная компонента цвета.</para>
-    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    ///<param name = 'red'>Красная компонента цвета.</param>
+    ///<param name = 'green'>Зелёная компонента цвета.</param>
+    ///<param name = 'blue'>Синяя компонента цвета.</param>
     void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
     ///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
-    ///<para name = 'red'>Красная компонента цвета.</para>
-    ///<para name = 'green'>Зелёная компонента цвета.</para>
-    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    ///<param name = 'red'>Красная компонента цвета.</param>
+    ///<param name = 'green'>Зелёная компонента цвета.</param>
+    ///<param name = 'blue'>Синяя компонента цвета.</param>
     void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
     ///<summary>Задаёт specular цвет меша в RGB формате.</summary>
-    ///<para name = 'red'>Красная компонента цвета.</para>
-    ///<para name = 'green'>Зелёная компонента цвета.</para>
-    ///<para name = 'blue'>Синяя компонента цвета.</para>
+    ///<param name = 'red'>Красная компонента цвета.</param>
+    ///<param name = 'green'>Зелёная компонента цвета.</param>
+    ///<param name = 'blue'>Синяя компонента цвета.</param>
     void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
     ///<summary>Задаёт силу (яркость) блика.</summary>
-    ///<para name = 'value'>Значение.</para>
+    ///<param name = 'value'>Значение.</param>
     void setShinePower(const float value);
 
     ///<summary>Задаёт флаг использования текстуры меша.</summary>
-    ///<para name = 'type'>Тип текстуры.</para>
-    ///<para name = 'use'>Использовать текстуру или нет.</para>
-    void Mesh::setTextureFlag(const QTextureType type, const bool use);
+    ///<param name = 'type'>Тип текстуры.</param>
+    ///<param name = 'use'>Использовать текстуру или нет.</param>
+    void setTextureFlag(const QTextureType type, const bool use);
 
     ///<summary>Задаёт мешу тестовую текстуру.</summary>
-    ///<para name = 'texture'>Текстура.</para>
+    ///<param name = 'texture'>Текстура.</param>
     void setTestTexture(QTexture texture);
+
+    ///<summary>Задаёт позицию меша.</summary>
+    ///<param name = 'position'>Позиция.</param>
+    void setPosition(glm::vec3 position);
+
+    ///<summary>Задаёт поворот меша.</summary>
+    ///<param name = 'angle'>Угол поворота в градусах.</param>
+    ///<param name = 'axis'>Ось поворота.</param>
+    void setRotation(const double angle, const glm::vec3 axis);
+
+    ///<summary>Задаёт размер меша от исходного.</summary>
+    ///<param name = 'scale'>Коэффициент размера.</param>
+    void setScale(const glm::vec3 scale);
 
     ///<summary>Возвращает имя меша.</summary>
     std::string getName() const;
+
+    ///<summary>Возвращает матрицу модели.</summary>
+    glm::mat4 getModelMatrix();
+
+    ///<summary>Возвращает позицию меша.</summary>
+    glm::vec3 getPosition() const;
 };

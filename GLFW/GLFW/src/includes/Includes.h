@@ -31,6 +31,12 @@
 
 #include "..\shader\Shader.h"
 
+// Тип ошибки для Logger
+enum QErrorType { info, warning, error };
+
+// Тип текстуры
+enum QTextureType { diffuse, specular, normal };
+
 // Структура хранящая параметры вершин
 struct QVertexData
 {
@@ -50,12 +56,6 @@ struct QVertexData
     glm::vec3 bitangent;
 };
 
-// Тип текстуры
-enum QTextureType { diffuse, specular, normal };
-
-// Задаёт соответствие QTextureType и string
-extern const std::map<QTextureType, std::string> mapTextureType;
-
 // Структура, хранящая информацию о текстуре
 struct QTexture
 {
@@ -69,39 +69,93 @@ struct QTexture
     std::string path;
 };
 
-// Структура, которая хранит информацию об окне
-struct QWindowInfo
+// Класс, которая хранит информацию об окне
+class QWindowInfo
 {
+private:
     // Указатель на окно
-	GLFWwindow* Window;
+    GLFWwindow* window = nullptr;
 
     // Ширина окна
-    int Width;
+    int width = 800;
 
     // Высота окна
-    int Height;
-
-    // Полуширина окна
-    float HalfWidth;
-
-    // Полувысота окна
-    float HalfHeight;
+    int height = 600;
 
     // Полный экран
-    bool FullScreen;
-    
+    bool fullScreen = false;
+
     // Dертикальная синхронизация 
-    bool Vsync;
+    bool vsync = false;
 
     // Отображение курсора
-    bool ShowCursor;
+    bool showCursor = true;
+
+    // FPS
+    int fps = 0;
+
+public:
+    ///<summary>Задаёт указатель на окно.<summary>
+    ///<param name = 'window'>Указатель.</param>
+    void setWindowPointer(GLFWwindow* window);
+
+    ///<summary>Задаёт ширину окна.<summary>
+    ///<param name = 'width'>Ширина.</param>
+    void setWidth(const int width);
+
+    ///<summary>Задаёт высоту окна.<summary>
+    ///<param name = 'height'>Высота.</param>
+    void setHeight(const int height);
+
+    ///<summary>Задаёт полноэкранный режим.<summary>
+    ///<param name = 'fullScreen'>Полноэкранный режим.</param>
+    void setFullScreen(const bool fullScreen);
+
+    ///<summary>Включает/отключает вертикальную синхронизацию.<summary>
+    ///<param name = 'vsync'>Вертикальная инхронизация.</param>
+    void setVsync(const bool vsync);
+
+    ///<summary>Задаёт отображение курсора.<summary>
+    ///<param name = 'showCursor'>Отображать курсор.</param>
+    void setShowCursor(const bool showCursor);
+
+    ///<summary>Задаёт текущее число кадров в секунду.<summary>
+    ///<param name = 'fps'>FPS.</param>
+    void setFPS(const int fps);
+
+    ///<summary>Возвращает указатель на окно.<summary>
+    GLFWwindow* getWindowPointer() const;
+
+    ///<summary>Возвращает ширину окна.<summary>
+    int getWidth() const;
+
+    ///<summary>Возвращает высоту окна.<summary>
+    int getHeight() const;
+
+    ///<summary>Возвращает полуширину окна.<summary>
+    float getHalfWidth() const;
+
+    ///<summary>Возвращает полувысоту окна.<summary>
+    float getHalfHeight() const;
+
+    ///<summary>Возвращает признак полноэкранности.<summary>
+    bool getFullScreen() const;
+
+    ///<summary>Возвращает включена вертикальная синхронизация или нет.<summary>
+    bool getVsync() const;
+
+    ///<summary>Возвращает признак отображаемости курсора.<summary>
+    bool getShowCursor() const;
+
+    ///<summary>Возвращает текущее число кадров в секунду.<summary>
+    int getFPS() const;
 };
 
 // Структура, которая хранит информацию об окне
 extern QWindowInfo windowInfo;
 
-// Тип ошибки для Logger
-enum QErrorType { info, warning, error };
+// Задаёт соответствие QTextureType и string
+extern const std::map<QTextureType, std::string> mapTextureType;
 
 // Выбранная камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированная
 extern int CameraMode;

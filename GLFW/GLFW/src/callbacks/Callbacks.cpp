@@ -39,16 +39,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     // Отображение курсора при удерживании CTRL
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
     {
-        windowInfo.ShowCursor = true;
+        windowInfo.setShowCursor(true);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
     // Скрытие курсора при отпускании CTRL
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
     {
-        windowInfo.ShowCursor = false;
+        windowInfo.setShowCursor(false);
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPos(window, windowInfo.Width / 2, windowInfo.Height / 2);
+        glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
     }
 
     // Отображение справки при удерживании F1
@@ -89,6 +89,8 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+    windowInfo.setWidth(width);
+    windowInfo.setHeight(height);
 }
 
 ///<summary>Вывод ошибок в консоль.</summary>

@@ -20,10 +20,6 @@ public:
     ///<param name = 'message'>Сообщение.</param>
     void log(std::string source, enum QErrorType error_type, std::string message);
 
-    ///<summary>Логирует ошибку из stringstream.</summary>
-    ///<param name = 'ss'>Поток.</param>
-    void log(std::stringstream ss);
-
     ///<summary>Логирует запуск программы.</summary>
     ///<param name = 'source'>Источник.</param>
     void start(std::string source);

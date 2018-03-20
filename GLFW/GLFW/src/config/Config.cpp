@@ -3,9 +3,9 @@
 ///<summary>Считывание настроек из файла конфигурации. 
 ///<para>Задаёт дефолтные настройки, если файл конфигурации не найден.</para>
 ///</summary>
-///<param name = 'Winfo'>Считанные даные об окне.</param>
-///<param name = 'Reflection_res'>Размер карты отражений.</param>
-void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
+///<param name = 'windowInfo'>Считанные даные об окне.</param>
+///<param name = 'reflectionRes'>Размер карты отражений.</param>
+void QConfig::ReadConfig(QWindowInfo &windowInfo, int &reflectionRes)
 {
     std::ifstream fin;
     fin.open("config\\config.ini");
@@ -14,9 +14,6 @@ void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
     if (!fin)
     {
         logger.log("ReadConfig", QErrorType::warning, "Config file not found.");
-        Winfo.FullScreen = false; Winfo.Vsync = true; Winfo.ShowCursor = false;
-        Winfo.Width = 800; Winfo.Height = 600;
-        Winfo.HalfWidth = Winfo.Width / 2.0f; Winfo.HalfHeight = Winfo.Height / 2.0f;
     }
     else
     {
@@ -32,8 +29,8 @@ void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
                 if (s == "=")
                 {
                     fin >> s;
-                    if (s == "true") Winfo.FullScreen = true;
-                    else Winfo.FullScreen = false;
+                    if (s == "true") windowInfo.setFullScreen(true);
+                    else windowInfo.setFullScreen(false);
 
                     continue;
                 }
@@ -45,8 +42,8 @@ void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
                 if (s == "=")
                 {
                     fin >> s;
-                    if (s == "true") Winfo.Vsync = true;
-                    else Winfo.Vsync = false;
+                    if (s == "true") windowInfo.setVsync(true);
+                    else windowInfo.setVsync(false);
 
                     continue;
                 }
@@ -57,8 +54,9 @@ void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
                 fin >> s;
                 if (s == "=")
                 {
-                    fin >> Winfo.Width;
-                    Winfo.HalfWidth = Winfo.Width / 2.0f;
+                    int width;
+                    fin >> width;
+                    windowInfo.setWidth(width);
 
                     continue;
                 }
@@ -69,8 +67,9 @@ void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
                 fin >> s;
                 if (s == "=")
                 {
-                    fin >> Winfo.Height;
-                    Winfo.HalfHeight = Winfo.Height / 2.0f;
+                    int height;
+                    fin >> height;
+                    windowInfo.setHeight(height);
 
                     continue;
                 }
@@ -81,7 +80,7 @@ void QConfig::ReadConfig(QWindowInfo &Winfo, int &Reflection_res)
                 fin >> s;
                 if (s == "=")
                 {
-                    fin >> Reflection_res;
+                    fin >> reflectionRes;
 
                     continue;
                 }

@@ -52,20 +52,20 @@ public:
     void setMat4(const std::string &name, const glm::mat4 &mat) const;
 
     ///<summary>Задаёт (передаёт) матрицу проекции.</summary>
-    ///<para name = 'projectionMatrix'>Матрица проекции.</para>
+    ///<param name = 'projectionMatrix'>Матрица проекции.</param>
     void setProjectionMatrix(const glm::mat4 projectionMatrix) const;
 
     ///<summary>Задаёт (передаёт) матрицу вида.</summary>
-    ///<para name = 'viewMatrix'>Матрица вида.</para>
+    ///<param name = 'viewMatrix'>Матрица вида.</param>
     void setViewMatrix(const glm::mat4 viewMatrix) const;
 
     ///<summary>Задаёт (передаёт) матрицу модели.</summary>
-    ///<para name = 'modelMatrix'>Матрица модели.</para>
+    ///<param name = 'modelMatrix'>Матрица модели.</param>
     void setModelMatrix(const glm::mat4 modelMatrix) const;
 
     ///<summary>Задаёт (передаёт) матрицы проекции, вида и модели.</summary>
-    ///<para name = 'projectionMatrix'>Матрица проекции.</para>
-    ///<para name = 'viewMatrix'>Матрица вида.</para>
-    ///<para name = 'modelMatrix'>Матрица модели.</para>
+    ///<param name = 'projectionMatrix'>Матрица проекции.</param>
+    ///<param name = 'viewMatrix'>Матрица вида.</param>
+    ///<param name = 'modelMatrix'>Матрица модели.</param>
     void setProjectionViewModelMatrices(const glm::mat4 projectionMatrix, const glm::mat4 viewMatrix, const glm::mat4 modelMatrix) const;
 };

@@ -145,30 +145,30 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 }
 
 ///<summary>Задаёт (передаёт) матрицу проекции.</summary>
-///<para name = 'projectionMatrix'>Матрица проекции.</para>
+///<param name = 'projectionMatrix'>Матрица проекции.</param>
 void Shader::setProjectionMatrix(const glm::mat4 projectionMatrix) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицу вида.</summary>
-///<para name = 'viewMatrix'>Матрица вида.</para>
+///<param name = 'viewMatrix'>Матрица вида.</param>
 void Shader::setViewMatrix(const glm::mat4 viewMatrix) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицу модели.</summary>
-///<para name = 'modelMatrix'>Матрица модели.</para>
+///<param name = 'modelMatrix'>Матрица модели.</param>
 void Shader::setModelMatrix(const glm::mat4 modelMatrix) const
 {
     glUniformMatrix4fv(glGetUniformLocation(ID, "modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицы проекции, вида и модели.</summary>
-///<para name = 'projectionMatrix'>Матрица проекции.</para>
-///<para name = 'viewMatrix'>Матрица вида.</para>
-///<para name = 'modelMatrix'>Матрица модели.</para>
+///<param name = 'projectionMatrix'>Матрица проекции.</param>
+///<param name = 'viewMatrix'>Матрица вида.</param>
+///<param name = 'modelMatrix'>Матрица модели.</param>
 void Shader::setProjectionViewModelMatrices(const glm::mat4 projectionMatrix, const glm::mat4 viewMatrix, const glm::mat4 modelMatrix) const
 {
     this->setProjectionMatrix(projectionMatrix);

@@ -1,7 +1,7 @@
 #include "TextureLoader.h"
 
 ///<summary>Загрузка текстуры из файла.</summary>
-///<para name ='path'>Путь к текстуре.</para>
+///<param name ='path'>Путь к текстуре.</param>
 unsigned int QTextureLoader::loadTexture(std::string path)
 {
     unsigned int ID;

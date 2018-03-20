@@ -36,24 +36,23 @@ int main()
     // ѕараметры монитора
     const GLFWvidmode *vidMode = glfwGetVideoMode(screen);
 
-    if (windowInfo.FullScreen)
+    if (windowInfo.getFullScreen())
     {        
-        windowInfo.Width = vidMode->width; windowInfo.HalfWidth = windowInfo.Width / 2.0f;
-        windowInfo.Height = vidMode->height; windowInfo.HalfHeight = windowInfo.Height / 2.0f;
+        windowInfo.setWidth(vidMode->width);
+        windowInfo.setHeight(vidMode->height);
         
         // Ўирина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
-        windowInfo.Window = glfwCreateWindow(windowInfo.Width, windowInfo.Height, "Diploma", screen, NULL);
+        GLFWwindow* wnd = glfwCreateWindow(windowInfo.getWidth(), windowInfo.getHeight(), "Diploma", screen, NULL);
+        windowInfo.setWindowPointer(wnd);
     }
     else
     {
         // Ўирина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
-        windowInfo.Window = glfwCreateWindow(windowInfo.Width, windowInfo.Height, "Diploma", NULL, NULL);             
+        GLFWwindow* wnd = glfwCreateWindow(windowInfo.getWidth(), windowInfo.getHeight(), "Diploma", NULL, NULL);
+        windowInfo.setWindowPointer(wnd);
     }
 
-    // Vsync
-    if (windowInfo.Vsync) glfwSwapInterval(1);
-
-    if (!windowInfo.Window)
+    if (!windowInfo.getWindowPointer())
     {
         logger.log("MAIN", QErrorType::error, "Failed to initialize WINDOW.");
         logger.stop("MAIN");
@@ -62,9 +61,12 @@ int main()
     }   
 
     // ќкно в центр экрана
-    glfwSetWindowPos(windowInfo.Window, vidMode->width / 2 - windowInfo.Width / 2, vidMode->height / 2 - windowInfo.Height / 2);
+    glfwSetWindowPos(windowInfo.getWindowPointer(), vidMode->width / 2 - (int)windowInfo.getHalfWidth(), vidMode->height / 2 - (int)windowInfo.getHalfHeight());
 
-    glfwMakeContextCurrent(windowInfo.Window); 
+    glfwMakeContextCurrent(windowInfo.getWindowPointer()); 
+
+    // Vsync
+    if (windowInfo.getVsync()) glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -100,16 +102,16 @@ int main()
 
     // Callbacks
     glfwSetErrorCallback(GLFWErrorCallback);
-    glfwSetFramebufferSizeCallback(windowInfo.Window, FramebufferSizeCallback);
-    glfwSetKeyCallback(windowInfo.Window, KeyCallback);
-    glfwSetScrollCallback(windowInfo.Window, ScrollCallback);
+    glfwSetFramebufferSizeCallback(windowInfo.getWindowPointer(), FramebufferSizeCallback);
+    glfwSetKeyCallback(windowInfo.getWindowPointer(), KeyCallback);
+    glfwSetScrollCallback(windowInfo.getWindowPointer(), ScrollCallback);
 
     // —крыть курсор, поместить в центр экрана
-    //windowInfo.ShowCursor = false;
-    //glfwSetInputMode(WindowInfo.Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    //glfwSetCursorPos(WindowInfo.Window, WindowInfo.Width / 2, WindowInfo.Height / 2);
+    //windowInfo.setShowCursor(false);
+    //glfwSetInputMode(windowInfo.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
 
-    glViewport(0, 0, windowInfo.Width, windowInfo.Height);
+    glViewport(0, 0, windowInfo.getWidth(), windowInfo.getHeight());
 
     // ÷вет фона, RGBA
     glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
@@ -132,13 +134,13 @@ int main()
     std::vector<QTexture> textures;
 
     QVertexData v;
-    v.position = glm::vec3(-0.5f, -0.5f, 0.0f);
+    v.position = glm::vec3(-1.0f, -1.0f, 0.0f);
     vertices.push_back(v);
-    v.position = glm::vec3(0.5f, -0.5f, 0.0f);
+    v.position = glm::vec3(1.0f, -1.0f, 0.0f);
     vertices.push_back(v);
-    v.position = glm::vec3(0.5f, 0.5f, 0.0f);
+    v.position = glm::vec3(1.0f, 1.0f, 0.0f);
     vertices.push_back(v);
-    v.position = glm::vec3(-0.5f, 0.5f, 0.0f);
+    v.position = glm::vec3(-1.0f, 1.0f, 0.0f);
     vertices.push_back(v);
 
     unsigned int ind;
@@ -188,26 +190,58 @@ int main()
     double currentFrameTime = 0.0;
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
-   
-    glm::mat4 M, M1;
-    M1 = glm::translate(M, glm::vec3(0.0f, 6.0f, 0.0f));
-    glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.Width / (float)windowInfo.Height, 0.05f, 500.0f);
-    glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    while (!glfwWindowShouldClose(windowInfo.Window))
+       
+    double fpsInitTime = glfwGetTime();
+
+    glm::vec3 pos = glm::vec3(0.0f, -8.0f, 0.0f);
+    rectangle.setPosition(pos);
+
+    glm::vec3 axis = glm::vec3(0.0f, 0.0f, 1.0f);
+    rectangle.setRotation(45.0, axis);
+
+    rectangle.setScale(glm::vec3(0.5f));
+
+    glfwSwapInterval(0);
+
+    while (!glfwWindowShouldClose(windowInfo.getWindowPointer()))
     {
         currentFrameTime = glfwGetTime();
         deltaTime = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
 
+        windowInfo.setFPS(windowInfo.getFPS() + 1);
+        	
+        if (currentFrameTime - fpsInitTime >= 0.01f)
+        {
+        	//sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
+        	//sprintf(text2, "Diploma at %d FPS", nbFrames);
+            std::stringstream title;
+            title << "Diploma at " << windowInfo.getFPS() << " FPS. Frame time: " << 1000.0 / (double)windowInfo.getFPS() << "ms";
+
+        	glfwSetWindowTitle(windowInfo.getWindowPointer(), title.str().c_str());
+            windowInfo.setFPS(0);
+            fpsInitTime += 1.0;
+        }
+
         // ќчистить экран
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.getWidth() / (float)windowInfo.getHeight(), 0.05f, 500.0f);
+        glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         
+        shader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
+        rectangle.drawMesh(shader);
+        rectangle.moveMesh(0.0f, 1.0f, 0.0f);
+        rectangle.rotateMesh(45.0, axis);
+        rectangle.scaleMesh(0.1f);
+
         //  убы
-        M = glm::mat4(1.0f);
+        /*M = glm::mat4(1.0f);
         M = glm::translate(M, glm::vec3(-3.0f, 6.0f, 0.0f));
         shader.setProjectionViewModelMatrices(P, V, M);
         cube.drawModel(shader);
 
+        
         M = glm::mat4(1.0f);
         M = glm::translate(M, glm::vec3(-3.0f, 3.0f, 0.0f));
         shader.setProjectionViewModelMatrices(P, V, M);
@@ -279,14 +313,10 @@ int main()
         M = glm::mat4(1.0f);
         M = glm::translate(M, glm::vec3(3.0f, -6.0f, 0.0f));
         shader.setProjectionViewModelMatrices(P, V, M);
-        cylinder.drawModel(shader);
+        cylinder.drawModel(shader);*/
 
-        /*shader.setMat4("M", M);
-        shader.setBool("textureFlag", false);
-        rectangle.drawMesh(shader);*/
-        
         // ћен€ем кадр
-        glfwSwapBuffers(windowInfo.Window);
+        glfwSwapBuffers(windowInfo.getWindowPointer());
         glfwPollEvents();
     }    
 

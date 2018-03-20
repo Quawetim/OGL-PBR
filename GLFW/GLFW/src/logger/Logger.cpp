@@ -75,18 +75,9 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
         w_src = std::wstring(src.begin(), src.end());
 
         MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
+
+        logger.stop("log", true, "Error occured.");
     }
-#endif
-}
-
-///<summary>Логирует ошибку из stringstream.</summary>
-///<param name = 'ss'>Поток.</param>
-void Logger::log(std::stringstream ss)
-{
-    this->logfile << ss.str();
-
-#ifdef _DEBUG
-    std::cout << ss.str();
 #endif
 }
 

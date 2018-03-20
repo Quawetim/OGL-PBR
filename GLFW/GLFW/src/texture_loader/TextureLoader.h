@@ -5,6 +5,6 @@
 namespace QTextureLoader
 {
     ///<summary>Загрузка текстуры из файла.</summary>
-    ///<para name ='path'>Путь к текстуре.</para>
+    ///<param name ='path'>Путь к текстуре.</param>
     unsigned int loadTexture(std::string path);
 };
