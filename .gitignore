@@ -212,4 +212,11 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 # Res
-!/GLFW/GLFW/resources/
+!GLFW/config
+!GLFW/dll
+!GLFW/dll/x64
+!GLFW/include
+!GLFW/lib
+!GLFW/lib/x64
+!GLFW/resources/
+

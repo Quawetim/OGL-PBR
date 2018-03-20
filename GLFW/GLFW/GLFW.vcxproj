@@ -91,9 +91,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExecutablePath>$(SolutionDir)/GLFW/dll/x64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(SolutionDir)/GLFW/dll/64;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)/GLFW/lib/x64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)/GLFW/lib/64;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
