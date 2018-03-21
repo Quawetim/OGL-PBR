@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -22,32 +22,32 @@
     <ProjectGuid>{290F5A0E-6040-4F98-80E7-BF009092E984}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>GLFW</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -71,9 +71,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <ExecutablePath>$(SolutionDir)/GLFW/dll;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(SolutionDir)/GLFW/dll/x86;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)/GLFW/lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)/GLFW/lib/x86;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -84,16 +84,16 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <ExecutablePath>$(SolutionDir)/GLFW/dll;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(SolutionDir)/GLFW/dll/x86;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)/GLFW/lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)/GLFW/lib/x86;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <ExecutablePath>$(SolutionDir)/GLFW/dll/64;$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath>$(SolutionDir)/GLFW/dll/x64;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)/GLFW/lib/64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)/GLFW/lib/x64;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma64</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -112,7 +112,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
-xcopy /s /y "$(ProjectDir)dll\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
 xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -155,7 +155,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
-xcopy /s /y "$(ProjectDir)dll\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
 xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -212,6 +212,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\texture_loader\TextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\callbacks\Callbacks.h" />
     <ClInclude Include="src\camera\Camera.h" />
     <ClInclude Include="src\config\Config.h" />
@@ -220,7 +221,6 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\logger\Logger.h" />
     <ClInclude Include="src\model\Mesh.h" />
     <ClInclude Include="src\model\Model.h" />
-    <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\texture_loader\TextureLoader.h" />
   </ItemGroup>

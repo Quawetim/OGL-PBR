@@ -37,19 +37,19 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
     // Отображение курсора при удерживании CTRL
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-    {
-        windowInfo.setShowCursor(true);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+    //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    //{
+    //    windowInfo.setShowCursor(true);
+    //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    //}
 
-    // Скрытие курсора при отпускании CTRL
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
-    {
-        windowInfo.setShowCursor(false);
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
-    }
+    //// Скрытие курсора при отпускании CTRL
+    //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
+    //{
+    //    windowInfo.setShowCursor(false);
+    //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //    glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
+    //}
 
     // Отображение справки при удерживании F1
     if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)

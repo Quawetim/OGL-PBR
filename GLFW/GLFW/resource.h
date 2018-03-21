@@ -1,8 +1,9 @@
-//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by GLFW.rc
+п»ї//{{NO_DEPENDENCIES}}
+// Р’РєР»СЋС‡Р°РµРјС‹Р№ С„Р°Р№Р», СЃРѕР·РґР°РЅРЅС‹Р№ РІ Microsoft Visual C++.
+// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ GLFW.rc
+//
 
-// Следующие стандартные значения для новых объектов
+// Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS

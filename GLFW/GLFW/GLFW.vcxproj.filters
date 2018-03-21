@@ -136,7 +136,7 @@
     <ClInclude Include="src\texture_loader\TextureLoader.h">
       <Filter>Файлы исходного кода\texture loader</Filter>
     </ClInclude>
-    <ClInclude Include="src\resource.h">
+    <ClInclude Include="resource.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>
