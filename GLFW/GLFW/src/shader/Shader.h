@@ -1,30 +1,30 @@
 #pragma once
 
 #include "..\includes\Includes.h"
-
-// Класс шейдер
+ 
+///<summary>Класс шейдер.</summary>
 class Shader
 {
-private:
-    // Идентификатор шейдера
+private: 
+	///<summary>Идентификатор шейдера.</summary>
     unsigned int ID;
 
     ///<summary>Проверка на ошибки компиляции шейдера.</summary>
     ///<param name = 'id'>Идентификатор шейдера.</param>
     ///<param name = 'type'>Тип шейдера.</param>
-    void checkCompilationErrors(unsigned int id, std::string type);
+    void checkCompilationErrors(const unsigned int id, const std::string type) const;
 
 public:
     ///<summary>Конструктор.</summary>
     ///<param name = 'vs_path'>Путь к вершинному шейдеру.</param>
     ///<param name = 'fs_path'>Путь к фрагментному шейдеру.</param>
-    Shader(const std::string vs_path, const std::string fs_path);
+    Shader(std::string vs_path, std::string fs_path);
 
     ///<summary>Возвращает идентификатор шейдера.</summary>
-    unsigned int getID();
+    unsigned int getID() const;
 
     ///<summary>Активация шейдера.</summary>
-    void activate();
+    void activate() const;
 
     ///<summary>Задаёт (передаёт) значение переменной типа bool в шейдере по имени.</summary>
     ///<param name = 'name'>Имя переменной в шейдере.</param>

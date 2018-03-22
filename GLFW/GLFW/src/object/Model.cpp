@@ -5,7 +5,6 @@
 ///<param name ='path'>Путь к модели.</param>
 Model::Model(std::string path)
 {
-    this->modelMatrix = glm::mat4(1.0f);
     this->translationMatrix = glm::mat4(1.0f);
     this->rotationMatrix = glm::mat4(1.0f);
     this->scaleMatrix = glm::mat4(1.0f);
@@ -19,14 +18,15 @@ Model::Model(std::string path)
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        logger.log("Model::Model", QErrorType::error, std::string("Can't load model. " + std::string(importer.GetErrorString())));
+		std::string msg = "Can't load model. " + std::string(importer.GetErrorString());
+        logger.log("Model::Model", QErrorType::error, msg);
         return;
     }
 
     int dot_pos = path.find_last_of('.');
     int last_slash_pos = path.find_last_of('/');
 
-    this->name = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    this->modelName = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
     this->dir = path.substr(0, last_slash_pos);
 
     handleNode(scene->mRootNode, scene);
@@ -35,7 +35,7 @@ Model::Model(std::string path)
 ///<summary>Обработка узла модели.</summary>
 ///<param name ='node'>Узел assimp.</param>
 ///<param name ='scene'>Сцена assimp.</param>
-void Model::handleNode(aiNode *node, const aiScene *scene)
+void Model::handleNode(const aiNode *node, const aiScene *scene)
 {
     for (size_t i = 0; i < node->mNumMeshes; i++)
     {
@@ -52,7 +52,7 @@ void Model::handleNode(aiNode *node, const aiScene *scene)
 ///<summary>Обработка меша модели.</summary>
 ///<param name ='mesh'>Меш assimp.</param>
 ///<param name ='scene'>Сцена assimp.</param>
-Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
+Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 {
     std::string name;
     std::vector<QVertexData> vertices;
@@ -136,7 +136,7 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
 
 ///<summary>Отрисовка модели.</summary>
 ///<param name ='shader'>Шейдер.</param>
-void Model::drawModel(Shader shader)
+void Model::drawModel(const Shader shader)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
@@ -207,7 +207,7 @@ void Model::scaleModel(const float scaleX, const float scaleY, const float scale
 ///<param name ='material'>Материал assimp.</param>
 ///<param name ='type'>Тип текстуры assimp.</param>
 ///<param name ='textureType'>Тип текстуры в шейдере.</param>
-std::vector<QTexture> Model::loadMaterialTextures(aiMaterial *material, aiTextureType type, QTextureType textureType)
+std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType textureType)
 {
     std::vector<QTexture> textures;
 
@@ -305,7 +305,7 @@ void Model::setTextureFlag(const std::string mesh_name, const QTextureType textu
         }
     }
 
-    std::string msg = "Mesh " + mesh_name + " not found.";
+    std::string msg = "Mesh \"" + mesh_name + "\" not found.";
     logger.log("Model::setTextureFlag", QErrorType::warning, msg);
 }
 
@@ -322,7 +322,7 @@ void Model::setTextureFlag(const QTextureType type, const bool use)
 
 ///<summary>Задаёт всем мешам тестовую текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
-void Model::setTestTexture(QTexture texture)
+void Model::setTestTexture(const QTexture texture)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
@@ -332,7 +332,7 @@ void Model::setTestTexture(QTexture texture)
 
 ///<summary>Задаёт позицию модели.</summary>
 ///<param name = 'position'>Позиция.</param>
-void Model::setPosition(glm::vec3 position)
+void Model::setPosition(const glm::vec3 position)
 {
     this->position = position;
     this->translationMatrix = glm::translate(this->position);
@@ -373,15 +373,13 @@ void Model::setScale(const glm::vec3 scale)
 ///<summary>Возвращает имя модели.</summary>
 std::string Model::getName() const
 {
-    return this->name;
+    return this->modelName;
 }
 
 ///<summary>Возвращает матрицу модели.</summary>
-glm::mat4 Model::getModelMatrix()
+glm::mat4 Model::getModelMatrix() const
 {
-    this->modelMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-
-    return this->modelMatrix;
+    return this->translationMatrix * this->rotationMatrix * this->scaleMatrix;
 }
 
 ///<summary>Возвращает позицию модели.</summary>

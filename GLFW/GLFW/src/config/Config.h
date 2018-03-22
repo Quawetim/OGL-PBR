@@ -1,6 +1,7 @@
 #pragma once
 #include "..\includes\Includes.h"
 
+///<summary>—читывание настроек из файла конфигурации.</summary>
 namespace Config
 {
     ///<summary>—читывание настроек из файла конфигурации. 

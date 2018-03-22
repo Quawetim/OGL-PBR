@@ -5,12 +5,11 @@
 ///</summary>
 ///<param name = 'windowInfo'>Считанные даные об окне.</param>
 ///<param name = 'reflectionRes'>Размер карты отражений.</param>
-void Config::readConfig(QWindowInfo &windowInfo, int &reflectionRes)
+void Config::readConfig(QWindowInfo &windowInfo, int &reflectionMapResolution)
 {
     std::ifstream fin;
     fin.open("config\\config.ini");
 
-    // Настройки по-умолчанию
     if (!fin)
     {
         logger.log("QConfig::readConfig", QErrorType::warning, "Config file not found.");
@@ -80,7 +79,7 @@ void Config::readConfig(QWindowInfo &windowInfo, int &reflectionRes)
                 fin >> s;
                 if (s == "=")
                 {
-                    fin >> reflectionRes;
+                    fin >> reflectionMapResolution;
 
                     continue;
                 }

@@ -35,3 +35,8 @@ class TPC : Camera
 {
 
 };
+
+class Static : Camera
+{
+
+};

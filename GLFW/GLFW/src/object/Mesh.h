@@ -1,74 +1,98 @@
 #pragma once
 #include "..\includes\Includes.h"
 
+///<summary>Простейший 3D-объект не содержит в себе никаких подобъектов.</summary>
 class Mesh
 {
-private:
-    // Vertex array object
+	friend class Model;
+private: 
+	///<summary>Vertex array object.</summary>
     unsigned int VAO;
-
-    // Vertex buffer object
+ 
+	///<summary>Vertex buffer object.</summary>
     unsigned int VBO;
 
-    // Element buffer object
+	///<summary>Element buffer object.</summary>
     unsigned int EBO;
+ 
+	///<summary>Имя меша.</summary>
+    std::string meshName;
 
-    // Имя меша
-    std::string name;
-
-    // Вершины меша
+	///<summary>Вершины меша.</summary>
     std::vector<QVertexData> vertices;
-
-    // Индексы вершин
+ 
+	///<summary>Индексы вершин.</summary>
     std::vector<unsigned int> indices;
-
-    // Текстуры
+ 
+	///<summary>Текстуры.</summary>
     std::vector<QTexture> textures;
-
-    // Матрица модели
-    glm::mat4 modelMatrix;
-    
-    // Матрица перемещенния
+     
+	///<summary>Матрица перемещенния.</summary>
     glm::mat4 translationMatrix;
-
-    // Матрица вращения
+ 
+	///<summary>Матрица вращения.</summary>
     glm::mat4 rotationMatrix;
-
-    // Матрица размера
+ 
+	///<summary>Матрица размера.</summary>
     glm::mat4 scaleMatrix;
-
-    // Текущая позиция меша
+ 
+	///<summary>Позиция меша.</summary>
     glm::vec3 position;
 
-    // Угол поворота
+	///<summary>Угол поворота.</summary>
     double rotationAngle;
-
-    // Ось поворота
+ 
+	///<summary>Ось поворота.</summary>
     glm::vec3 rotationAxis;
-
-    // Коэффициент размера по каждой из осей
+ 
+	///<summary>Коэффициент размера по каждой из осей.</summary>
     glm::vec3 scale;
-
-    // Флаг отрисовки diffuseMap
+ 
+	///<summary>Флаг отрисовки diffuseMap.</summary>
     bool diffuseMap_flag = true;
 
-    // Флаг отрисовки specularMap
+	///<summary>Флаг отрисовки specularMap.</summary>
     bool specularMap_flag = true;
-
-    // Флаг отрисовки normalMap
+ 
+	///<summary>Флаг отрисовки normalMap.</summary>
     bool normalMap_flag = true;
-
-    // Ambient цвет
+ 
+	///<summary>Ambient цвет.</summary>
     glm::vec3 ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
-
-    // Diffuse цвет
+ 
+	///<summary>Diffuse цвет.</summary>
     glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
-
-    // Specular цвет
+ 
+	///<summary>Specular цвет.</summary>
     glm::vec3 specularColor = glm::vec3(0.9f, 0.9f, 0.9f);
-
-    // Сила (яркость) блика
+ 
+	///<summary>Сила (яркость) блика.</summary>
     float shinePower = 8.0f;
+
+	///<summary>Отрисовка меша.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	void drawMesh(const Shader shader);
+
+	///<summary>Двигает меш в направлении оси с заданной скоростью.</summary>
+	///<param name = 'velocityX'>Скорость по оси x.</param>
+	///<param name = 'velocityY'>Скорость по оси y.</param>
+	///<param name = 'velocityZ'>Скорость по оси z.</param>
+	void moveMesh(const float velocityX, const float velocityY, const float velocityZ);
+
+	///<summary>Вращает меш с заданной скоростью.</summary>
+	///<param name = 'angle'>Скорость поворота в градусах.</param>
+	///<param name = 'axis'>Ось вращения.</param>
+	void rotateMesh(const double angle, const glm::vec3 axis);
+
+	///<summary>Изменяет размер меша с заданной скоростью.</summary>
+	///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
+	void scaleMesh(const float scaleXYZ);
+
+	///<summary>Изменяет размер меша с заданной скоростью.</summary>
+	///<param name = 'scaleX'>Скорость изменения размера по X.</param>
+	///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
+	///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
+	void scaleMesh(const float scaleX, const float scaleY, const float scaleZ);
 
 public:
     ///<summary>Конструктор.</summary>
@@ -77,31 +101,6 @@ public:
     ///<param name = 'indices'>Индексы вершин.</param>
     ///<param name = 'textures'>Текстуры.</param>
     Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
-
-    ///<summary>Отрисовка меша.</summary>
-    ///<param name = 'shader'>Шейдер.</param>
-    void drawMesh(Shader shader);
-
-    ///<summary>Двигает меш в направлении оси с заданной скоростью.</summary>
-    ///<param name = 'velocityX'>Скорость по оси x.</param>
-    ///<param name = 'velocityY'>Скорость по оси y.</param>
-    ///<param name = 'velocityZ'>Скорость по оси z.</param>
-    void moveMesh(const float velocityX, const float velocityY, const float velocityZ);
-
-    ///<summary>Вращает меш с заданной скоростью.</summary>
-    ///<param name = 'angle'>Скорость поворота в градусах.</param>
-    ///<param name = 'axis'>Ось вращения.</param>
-    void rotateMesh(const double angle, const glm::vec3 axis);
-
-    ///<summary>Изменяет размер меша с заданной скоростью.</summary>
-    ///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
-    void scaleMesh(const float scaleXYZ);
-
-    ///<summary>Изменяет размер меша с заданной скоростью.</summary>
-    ///<param name = 'scaleX'>Скорость изменения размера по X.</param>
-    ///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
-    ///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
-    void scaleMesh(const float scaleX, const float scaleY, const float scaleZ);
 
     ///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
     ///<param name = 'red'>Красная компонента цвета.</param>
@@ -132,11 +131,11 @@ public:
 
     ///<summary>Задаёт мешу тестовую текстуру.</summary>
     ///<param name = 'texture'>Текстура.</param>
-    void setTestTexture(QTexture texture);
+    void setTestTexture(const QTexture texture);
 
     ///<summary>Задаёт позицию меша.</summary>
     ///<param name = 'position'>Позиция.</param>
-    void setPosition(glm::vec3 position);
+    void setPosition(const glm::vec3 position);
 
     ///<summary>Задаёт поворот меша.</summary>
     ///<param name = 'angle'>Угол поворота в градусах.</param>
@@ -151,7 +150,7 @@ public:
     std::string getName() const;
 
     ///<summary>Возвращает матрицу модели.</summary>
-    glm::mat4 getModelMatrix();
+    glm::mat4 getModelMatrix() const;
 
     ///<summary>Возвращает позицию меша.</summary>
     glm::vec3 getPosition() const;

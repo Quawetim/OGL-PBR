@@ -31,161 +31,140 @@
 
 #include "..\shader\Shader.h"
 
-// Тип ошибки для Logger
+///<summary>Тип ошибки для Logger.</summary>
 enum QErrorType { info, warning, error };
 
-// Тип текстуры
+///<summary>Тип текстуры.</summary>
 enum QTextureType { diffuse, specular, normal };
 
-// Структура хранящая параметры вершин
+///<summary>Структура хранящая параметры вершин.</summary>
 struct QVertexData
 {
-    // Позиция вершины
+	///<summary>Позиция вершины.</summary>
     glm::vec3 position;
 
-    // Вектор нормали
+	///<summary>Вектор нормали.</summary>
     glm::vec3 normal;
 
-    // Текстурные координаты
+	///<summary>Текстурные координаты.</summary>
     glm::vec2 textureCoords;
 
-    // Касательная
+	///<summary>Касательная.</summary>
     glm::vec3 tangent;
 
-    // Бикасательная
+	///<summary>Бикасательная.</summary>
     glm::vec3 bitangent;
 };
 
-// Структура, хранящая информацию о текстуре
+///<summary>Структура, хранящая информацию о текстуре.</summary>
 struct QTexture
 {
-    // Идентификатор
+	///<summary>Идентификатор.</summary>
     unsigned int id;
 
-    // Тип: diffuse, specular, normal etc.
+	///<summary>Тип: diffuse, specular, normal etc.</summary>
     QTextureType type;
 
-    // Путь к текстуре
+    ///<summary>Путь к текстуре.</summary>
     std::string path;
 };
 
-// Класс, которая хранит информацию об окне
+///<summary>Класс, который хранит информацию об окне.</summary>
 class QWindowInfo
 {
-private:
-    // Указатель на окно
+private: 
+	///<summary>Указатель на окно.</summary>
     GLFWwindow* window = nullptr;
-
-    // Ширина окна
+ 
+	///<summary>Ширина окна.</summary>
     int width = 800;
-
-    // Высота окна
+ 
+	///<summary>Высота окна.</summary>
     int height = 600;
 
-    // Полный экран
+	///<summary>Полный экран.</summary>
     bool fullScreen = false;
-
-    // Dертикальная синхронизация 
+  
+	///<summary>Вертикальная синхронизация.</summary>
     bool vsync = false;
-
-    // Отображение курсора
+ 
+	///<summary>Отображение курсора.</summary>
     bool showCursor = true;
 
-    // FPS
+	///<summary>FPS.</summary>
     int fps = 0;
 
 public:
-    ///<summary>Задаёт указатель на окно.<summary>
+    ///<summary>Задаёт указатель на окно.</summary>
     ///<param name = 'window'>Указатель.</param>
     void setWindowPointer(GLFWwindow* window);
 
-    ///<summary>Задаёт ширину окна.<summary>
+    ///<summary>Задаёт ширину окна.</summary>
     ///<param name = 'width'>Ширина.</param>
     void setWidth(const int width);
 
-    ///<summary>Задаёт высоту окна.<summary>
+    ///<summary>Задаёт высоту окна.</summary>
     ///<param name = 'height'>Высота.</param>
     void setHeight(const int height);
 
-    ///<summary>Задаёт полноэкранный режим.<summary>
+    ///<summary>Задаёт полноэкранный режим.</summary>
     ///<param name = 'fullScreen'>Полноэкранный режим.</param>
     void setFullScreen(const bool fullScreen);
 
-    ///<summary>Включает/отключает вертикальную синхронизацию.<summary>
+    ///<summary>Включает/отключает вертикальную синхронизацию.</summary>
     ///<param name = 'vsync'>Вертикальная инхронизация.</param>
     void setVsync(const bool vsync);
 
-    ///<summary>Задаёт отображение курсора.<summary>
+    ///<summary>Задаёт отображение курсора.</summary>
     ///<param name = 'showCursor'>Отображать курсор.</param>
     void setShowCursor(const bool showCursor);
 
-    ///<summary>Задаёт текущее число кадров в секунду.<summary>
+    ///<summary>Задаёт текущее число кадров в секунду.</summary>
     ///<param name = 'fps'>FPS.</param>
     void setFPS(const int fps);
 
-    ///<summary>Возвращает указатель на окно.<summary>
+    ///<summary>Возвращает указатель на окно.</summary>
     GLFWwindow* getWindowPointer() const;
 
-    ///<summary>Возвращает ширину окна.<summary>
+    ///<summary>Возвращает ширину окна.</summary>
     int getWidth() const;
 
-    ///<summary>Возвращает высоту окна.<summary>
+    ///<summary>Возвращает высоту окна.</summary>
     int getHeight() const;
 
-    ///<summary>Возвращает полуширину окна.<summary>
+    ///<summary>Возвращает полуширину окна.</summary>
     float getHalfWidth() const;
 
-    ///<summary>Возвращает полувысоту окна.<summary>
+    ///<summary>Возвращает полувысоту окна.</summary>
     float getHalfHeight() const;
 
-    ///<summary>Возвращает признак полноэкранности.<summary>
+    ///<summary>Возвращает признак полноэкранности.</summary>
     bool getFullScreen() const;
 
-    ///<summary>Возвращает включена вертикальная синхронизация или нет.<summary>
+    ///<summary>Возвращает включена вертикальная синхронизация или нет.</summary>
     bool getVsync() const;
 
-    ///<summary>Возвращает признак отображаемости курсора.<summary>
+    ///<summary>Возвращает признак отображаемости курсора.</summary>
     bool getShowCursor() const;
 
-    ///<summary>Возвращает текущее число кадров в секунду.<summary>
+    ///<summary>Возвращает текущее число кадров в секунду.</summary>
     int getFPS() const;
 };
 
-// Структура, которая хранит информацию об окне
+///<summary>Структура, которая хранит информацию об окне.</summary>
 extern QWindowInfo windowInfo;
 
-// Задаёт соответствие QTextureType и string
+///<summary>Задаёт соответствие QTextureType и string.</summary>
 extern const std::map<QTextureType, std::string> mapTextureType;
-
-// Выбранная камера: 1 - от первого лица, 2 - от третьего лица, 3 - фиксированная
-extern int CameraMode;
-
-// Размер генерируемой текстуры
-extern int GenTextureSize;
-
-// Field of view
+ 
+///<summary>Field of view.</summary>
 extern float FOV;
 
-// Размер скайбокса
-extern float SkyBoxSize;
-
-// Переключение вращений
-extern bool Rotations;
-
-// Переключение отображения источников света
-extern bool ShowLights;
-
-// Переключение модели освещения
-extern bool Blinn;
-
-// Mtrue = пример зеркального шарика с Reflection Map, false = все объекты без Reflection Map
-extern bool MirrorExample;
-
-// Переключение отображения справки
-extern bool ShowHelp;
-
-// Время, прошедшее между текущим кадром и предыдущим
+///<summary>Размер генерируемой карты отражений.</summary>
+extern int reflectionMapResolution;
+ 
+///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
 extern double deltaTime;
-
-// Время, затраченное на отрисовку предыдущего кадра
+ 
+///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
 extern double lastFrameTime;

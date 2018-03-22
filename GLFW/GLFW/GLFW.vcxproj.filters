@@ -104,6 +104,9 @@
     <ClCompile Include="src\object\Model.cpp">
       <Filter>Файлы исходного кода\object</Filter>
     </ClCompile>
+    <ClCompile Include="src\object\Object.cpp">
+      <Filter>Файлы исходного кода\object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -137,6 +140,9 @@
       <Filter>Файлы исходного кода\object</Filter>
     </ClInclude>
     <ClInclude Include="src\object\Model.h">
+      <Filter>Файлы исходного кода\object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object\Object.h">
       <Filter>Файлы исходного кода\object</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 
 #include "..\includes\Includes.h"
 
+///<summary>Логгер. Логирует ошибки на экран и в файл "log.txt".</summary>
 class Logger
 {
 private:
@@ -31,4 +32,5 @@ public:
     void stop(std::string source, bool error = true, std::string message = "These are not the droids you are looking for.");
 };
 
+///<summary>Логгер. Логирует ошибки на экран и в файл "log.txt".</summary>
 extern Logger logger;

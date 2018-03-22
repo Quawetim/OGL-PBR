@@ -13,7 +13,8 @@ unsigned int TextureLoader::loadTexture(std::string path)
 
     if (data)
     {
-        logger.log("TextureLoader::loadTexture", QErrorType::info, std::string("Texture found. PATH: " + path));
+		std::string msg = "Texture found. PATH: " + path;
+        logger.log("TextureLoader::loadTexture", QErrorType::info, msg);
 
         GLenum format;
 
@@ -35,11 +36,11 @@ unsigned int TextureLoader::loadTexture(std::string path)
     }
     else
     {
-        logger.log("TextureLoader::loadTexture", QErrorType::error, std::string("Texture not found. PATH: " + path));
+		std::string msg = "Texture not found. PATH: " + path;
+        logger.log("TextureLoader::loadTexture", QErrorType::error, msg);
     }
 
     stbi_image_free(data);
 
     return ID;
 }
-

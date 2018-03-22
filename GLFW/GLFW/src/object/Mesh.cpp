@@ -7,12 +7,11 @@
 ///<param name = 'textures'>Текстуры.</param>
 Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures)
 {
-    this->name = name;
+    this->meshName = name;
     this->vertices = vertices;
     this->indices = indices;
     this->textures = textures;
 
-    this->modelMatrix = glm::mat4(1.0f);
     this->translationMatrix = glm::mat4(1.0f);
     this->rotationMatrix = glm::mat4(1.0f);
     this->scaleMatrix = glm::mat4(1.0f);
@@ -60,7 +59,7 @@ Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsi
 
 ///<summary>Отрисовка меша.</summary>
 ///<param name = 'shader'>Шейдер.</param>
-void Mesh::drawMesh(Shader shader)
+void Mesh::drawMesh(const Shader shader)
 {
     unsigned int diffuseNumber = 1;
     unsigned int specularNumber = 1;
@@ -226,14 +225,14 @@ void Mesh::setTextureFlag(const QTextureType type, const bool use)
 
 ///<summary>Задаёт мешу тестовую текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
-void Mesh::setTestTexture(QTexture texture)
+void Mesh::setTestTexture(const QTexture texture)
 {
     this->textures.push_back(texture);
 }
 
 ///<summary>Задаёт позицию меша.</summary>
 ///<param name = 'position'>Позиция.</param>
-void Mesh::setPosition(glm::vec3 position)
+void Mesh::setPosition(const glm::vec3 position)
 {
     this->position = position;
     this->translationMatrix = glm::translate(this->position);
@@ -274,15 +273,13 @@ void Mesh::setScale(const glm::vec3 scale)
 ///<summary>Возвращает имя меша.</summary>
 std::string Mesh::getName() const
 {
-    return this->name;
+    return this->meshName;
 }
 
 ///<summary>Возвращает матрицу модели.</summary>
-glm::mat4 Mesh::getModelMatrix()
+glm::mat4 Mesh::getModelMatrix()const
 {
-    this->modelMatrix = translationMatrix * rotationMatrix * scaleMatrix;
-
-    return this->modelMatrix;
+    return this->translationMatrix * this->rotationMatrix * this->scaleMatrix;
 }
 
 ///<summary>Возвращает позицию меша.</summary>

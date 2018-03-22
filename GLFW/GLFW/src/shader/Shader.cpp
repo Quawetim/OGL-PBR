@@ -3,7 +3,7 @@
 ///<summary>Проверка на ошибки компиляции шейдера.</summary>
 ///<param name = 'id'>Идентификатор шейдера.</param>
 ///<param name = 'type'>Тип шейдера.</param>
-void Shader::checkCompilationErrors(unsigned int id, std::string type)
+void Shader::checkCompilationErrors(const unsigned int id, const std::string type) const
 {
     int success;
     char log[1024];
@@ -14,7 +14,8 @@ void Shader::checkCompilationErrors(unsigned int id, std::string type)
         if (!success)
         {
             glGetShaderInfoLog(id, 1024, NULL, log);
-            logger.log("Shader::checkCompileErrors", QErrorType::error, std::string("Shader compilation error. Type: " + type + "\n" + log));
+			std::string msg = "Shader compilation error. Type: " + type + "\n" + log;
+            logger.log("Shader::checkCompileErrors", QErrorType::error, msg);
         }
     }
     else
@@ -23,7 +24,8 @@ void Shader::checkCompilationErrors(unsigned int id, std::string type)
         if (!success)
         {
             glGetProgramInfoLog(id, 1024, NULL, log);
-            logger.log("Shader::checkCompileErrors", QErrorType::error, std::string("Program linking error. Type: " + type + "\n" + log));
+			std::string msg = "Program linking error. Type: " + type + "\n" + log;
+            logger.log("Shader::checkCompileErrors", QErrorType::error, msg);
         }
     }
 }
@@ -31,7 +33,7 @@ void Shader::checkCompilationErrors(unsigned int id, std::string type)
 ///<summary>Конструктор.</summary>
 ///<param name = 'vs_path'>Путь к вершинному шейдеру.</param>
 ///<param name = 'fs_path'>Путь к фрагментному шейдеру.</param>
-Shader::Shader(const std::string vs_path, const std::string fs_path)
+Shader::Shader(std::string vs_path, std::string fs_path)
 {
     // Reading
     std::string vs_code, fs_code;
@@ -58,9 +60,14 @@ Shader::Shader(const std::string vs_path, const std::string fs_path)
     }
     catch (std::ifstream::failure e)
     {
+		std::string msg;
         logger.log("Shader::Shader", QErrorType::error, "Shader file not found.");
-        logger.log("Shader::Shader", QErrorType::info, std::string("VS_PATH: " + vs_path));
-        logger.log("Shader::Shader", QErrorType::info, std::string("FS_PATH: " + fs_path));
+
+		msg = "VS_PATH: " + vs_path;
+        logger.log("Shader::Shader", QErrorType::info, msg);
+
+		msg = "FS_PATH: " + fs_path;
+        logger.log("Shader::Shader", QErrorType::info, msg);
     }
 
     const char* vShaderCode = vs_code.c_str();
@@ -93,13 +100,13 @@ Shader::Shader(const std::string vs_path, const std::string fs_path)
 }
 
 ///<summary>Возвращает идентификатор шейдера.</summary>
-unsigned int Shader::getID()
+unsigned int Shader::getID() const
 {
     return this->ID;
 }
 
 ///<summary>Активация шейдера.</summary>
-void Shader::activate()
+void Shader::activate() const
 {
     glUseProgram(this->ID);
 }

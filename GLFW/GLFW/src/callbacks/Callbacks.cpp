@@ -6,7 +6,7 @@
 ///<param name = 'scancode'>Scancode.</param>
 ///<param name = 'action'>Действие.</param>
 ///<param name = 'mods'>Модификаторы.</param>
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void Callbacks::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static int PrevCamera;
     
@@ -17,24 +17,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
     // FOV по-умолчанию
     if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { FOV = 90.0f; }
-
-    // Переключение камер №1 и №2
-    if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
-    {
-        CameraMode++;
-        if (CameraMode > 2) CameraMode = 1;
-    }
-
-    // Включение камеры №3
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS)
-    {
-        if (CameraMode != 3)
-        {
-            PrevCamera = CameraMode;
-            CameraMode = 3;
-        }
-        else CameraMode = PrevCamera;
-    }
 
     // Отображение курсора при удерживании CTRL
     //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
@@ -50,25 +32,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //    glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
     //}
-
-    // Отображение справки при удерживании F1
-    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS)
-    {
-        ShowHelp = true;
-    }
-
-    // Скрытие справки при отпускании F1
-    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_RELEASE)
-    {
-        ShowHelp = false;
-    }
 }
 
 ///<summary>Обработка колёсика мышки.</summary>
 ///<param name = 'window'>Указатель на окно.</param>
 ///<param name = 'xoffset'>Смещение по оси X.</param>
 ///<param name = 'yoffset'>Смещение по оси Y.</param>
-void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+void Callbacks::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
     if (yoffset > 0)
     {
@@ -86,7 +56,7 @@ void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 ///<param name = 'window'>Указатель на окно.</param>
 ///<param name = 'width'>Новая ширина.</param>
 ///<param name = 'height'>Новая высота.</param>
-void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
+void Callbacks::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
     windowInfo.setWidth(width);
@@ -101,7 +71,7 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 ///<param name = 'length'>Длина сообщения.</param>
 ///<param name = 'message'>Сообщение.</param>
 ///<param name = 'userParam'>Параметры.</param>
-void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+void APIENTRY Callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     std::stringstream ss;
 
@@ -164,7 +134,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
 ///<summary>Обработка ошибок GLFW.</summary>
 ///<param name = 'errorCode'>Код ошибки.</param>
 ///<param name = 'message'>Сообщение.</param>
-void GLFWErrorCallback(int errorCode, const char* message)
+void Callbacks::GLFWErrorCallback(int errorCode, const char* message)
 {
     std::cout << "GLFW Error: " << std::endl;
     std::cout << "Message: " << message << std::endl;
@@ -173,7 +143,7 @@ void GLFWErrorCallback(int errorCode, const char* message)
 ///<summary>Возвращает ошибку glGetError().</summary>
 ///<param name = 'file'>Имя файла с ошибкой.</param>
 ///<param name = 'line'>Номер строки с ошибкой.</param>
-GLenum glCheckError(const char *file, int line)
+GLenum Callbacks::glCheckError(const char *file, int line)
 {
     GLenum errorCode;
 
