@@ -2,7 +2,7 @@
 #include "..\texture_loader\TextureLoader.h"
 
 ///<summary>Конструктор.</summary>
-///<param name ='path'>Путь к модели.</param>
+///<param name = 'path'>Путь к модели.</param>
 Model::Model(std::string path)
 {
     this->translationMatrix = glm::mat4(1.0f);
@@ -11,7 +11,7 @@ Model::Model(std::string path)
     this->position = glm::vec3(0.0f);
     this->rotationAngle = 0.0f;
     this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->scale = glm::vec3(1.0f);
+    this->scaleCoefficients = glm::vec3(1.0f);
 
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -26,15 +26,15 @@ Model::Model(std::string path)
     int dot_pos = path.find_last_of('.');
     int last_slash_pos = path.find_last_of('/');
 
-    this->modelName = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    this->name = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
     this->dir = path.substr(0, last_slash_pos);
 
     handleNode(scene->mRootNode, scene);
 }
 
 ///<summary>Обработка узла модели.</summary>
-///<param name ='node'>Узел assimp.</param>
-///<param name ='scene'>Сцена assimp.</param>
+///<param name = 'node'>Узел assimp.</param>
+///<param name = 'scene'>Сцена assimp.</param>
 void Model::handleNode(const aiNode *node, const aiScene *scene)
 {
     for (size_t i = 0; i < node->mNumMeshes; i++)
@@ -50,8 +50,8 @@ void Model::handleNode(const aiNode *node, const aiScene *scene)
 }
 
 ///<summary>Обработка меша модели.</summary>
-///<param name ='mesh'>Меш assimp.</param>
-///<param name ='scene'>Сцена assimp.</param>
+///<param name = 'mesh'>Меш assimp.</param>
+///<param name = 'scene'>Сцена assimp.</param>
 Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 {
     std::string name;
@@ -134,114 +134,83 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
     return Mesh(name, vertices, indices, textures);
 }
 
-///<summary>Отрисовка модели.</summary>
-///<param name ='shader'>Шейдер.</param>
-void Model::drawModel(const Shader shader)
+///<summary>Загрузка текстур модели.</summary>
+///<param name = 'material'>Материал assimp.</param>
+///<param name = 'type'>Тип текстуры assimp.</param>
+///<param name = 'textureType'>Тип текстуры в шейдере.</param>
+std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType textureType)
+{
+	std::vector<QTexture> textures;
+
+	for (size_t i = 0; i < material->GetTextureCount(type); i++)
+	{
+		aiString s;
+		bool skip_loading = false;
+
+		material->GetTexture(type, i, &s);
+
+		for (unsigned int j = 0; j < loaded_textures.size(); j++)
+		{
+			if (std::strcmp(loaded_textures[j].path.data(), s.C_Str()) == 0)
+			{
+				textures.push_back(loaded_textures[j]);
+				skip_loading = true;
+				break;
+			}
+		}
+
+		if (!skip_loading)
+		{
+			QTexture texture;
+
+			texture.id = TextureLoader::loadTexture(std::string(dir + "/" + s.C_Str()));
+			texture.type = textureType;
+			texture.path = s.C_Str();
+
+			textures.push_back(texture);
+			loaded_textures.push_back(texture);
+		}
+	}
+
+	return textures;
+}
+
+///<summary>Отрисовка объекта.
+///<para>Если задан флаг "model_colors_flag", то все меши рисуются с цветом модели, </para>
+///<para>иначе - с заданным цветом меша.</para>
+///</summary>
+///<param name = 'shader'>Шейдер.</param>
+void Model::draw(const Shader shader)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
-        this->meshes[i].drawMesh(shader);
+		if (model_colors_flag) this->meshes[i].draw(shader, this->ambientColor, this->diffuseColor, this->specularColor, this->shinePower);
+        else this->meshes[i].draw(shader);
     }
 }
 
-///<summary>Двигает модель в направлении оси с заданной скоростью.</summary>
-///<param name = 'velocityX'>Скорость по оси x.</param>
-///<param name = 'velocityY'>Скорость по оси y.</param>
-///<param name = 'velocityZ'>Скорость по оси z.</param>
-void Model::moveModel(const float velocityX, const float velocityY, const float velocityZ)
+///<summary>Отрисовка модели с заданными цветами.</summary>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'ambientColor'>Ambient цвет.</param>
+///<param name = 'diffuseColor'>Diffuse цвет.</param>
+///<param name = 'specularColor'>Specular цвет.</param>
+///<param name = 'shinePower'>Сила (яркость) блика.</param>
+void Model::draw(const Shader shader, const glm::vec3 ambientColor, const glm::vec3 diffuseColor, const glm::vec3 specularColor, const float shinePower)
 {
-    this->position += glm::vec3(velocityX * deltaTime, velocityY * deltaTime, velocityZ * deltaTime);
-    this->translationMatrix = glm::translate(this->position);
+	for (size_t i = 0; i < this->meshes.size(); i++)
+	{
+		this->meshes[i].draw(shader, ambientColor, diffuseColor, specularColor, shinePower);
+	}
 }
 
-///<summary>Вращает модель с заданной скоростью.</summary>
-///<param name = 'angle'>Скорость поворота в градусах.</param>
-///<param name = 'axis'>Ось вращения.</param>
-void Model::rotateModel(const double angle, const glm::vec3 axis)
+///<summary>Задаёт флаг использования цвета этой модели для всех мешей, 
+///<para>принадлежащих модели.</para>
+///<para>Приоритет ниже флага текстур и ниже флага объекта.</para>
+///</summary>
+///<param name = 'use'>Использовать цвет объекта или нет.</param>
+void Model::useModelColors(const bool use)
 {
-    this->rotationAngle += angle * deltaTime;
-    this->rotationAxis = axis;
-
-    if (this->rotationAngle == 360) this->rotationAngle = 0;
-    else
-    {
-        if (this->rotationAngle > 360) this->rotationAngle -= 360;
-    }
-
-    this->rotationMatrix = glm::rotate((float)glm::radians(this->rotationAngle), this->rotationAxis);
-}
-
-///<summary>Изменяет размер модели с заданной скоростью.</summary>
-///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
-void Model::scaleModel(const float scaleXYZ)
-{
-    this->scale += glm::vec3(scaleXYZ * (float)deltaTime);
-
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Model::scaleModel", QErrorType::error, "Scale = 0");
-    else
-    {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Model::scaleModel", QErrorType::warning, "Scale < 0");
-    }
-
-    this->scaleMatrix = glm::scale(this->scale);
-}
-
-///<summary>Изменяет размер модели с заданной скоростью.</summary>
-///<param name = 'scaleX'>Скорость изменения размера по X.</param>
-///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
-///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
-void Model::scaleModel(const float scaleX, const float scaleY, const float scaleZ)
-{
-    this->scale += glm::vec3(scaleX * deltaTime, scaleY * deltaTime, scaleZ * deltaTime);
-
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Model::scaleModel", QErrorType::error, "Scale = 0");
-    else
-    {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Model::scaleModel", QErrorType::warning, "Scale < 0");
-    }
-
-    this->scaleMatrix = glm::scale(this->scale);
-}
-
-///<summary>Загрузка текстур модели.</summary>
-///<param name ='material'>Материал assimp.</param>
-///<param name ='type'>Тип текстуры assimp.</param>
-///<param name ='textureType'>Тип текстуры в шейдере.</param>
-std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType textureType)
-{
-    std::vector<QTexture> textures;
-
-    for (size_t i = 0; i < material->GetTextureCount(type); i++)
-    {
-        aiString s;
-        bool skip_loading = false;
-
-        material->GetTexture(type, i, &s);
-
-        for (unsigned int j = 0; j < loaded_textures.size(); j++)
-        {
-            if (std::strcmp(loaded_textures[j].path.data(), s.C_Str()) == 0)
-            {
-                textures.push_back(loaded_textures[j]);
-                skip_loading = true;
-                break;
-            }
-        }
-
-        if (!skip_loading)
-        {
-            QTexture texture;
-  
-            texture.id = TextureLoader::loadTexture(std::string(dir + "/" + s.C_Str()));
-            texture.type = textureType;
-            texture.path = s.C_Str();
-
-            textures.push_back(texture);
-            loaded_textures.push_back(texture);
-        }
-    }
-
-    return textures;
+	this->model_colors_flag = use;
 }
 
 ///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
@@ -250,10 +219,7 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void Model::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
-    {
-        this->meshes[i].setAmbientColor(red, green, blue);
-    }
+	this->ambientColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт diffuse цвет всем мешам модели в RGB формате.</summary>
@@ -262,10 +228,7 @@ void Model::setAmbientColor(const unsigned char red, const unsigned char green, 
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void Model::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
-    {
-        this->meshes[i].setDiffuseColor(red, green, blue);
-    }
+	this->diffuseColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт specular цвет всем мешам модели в RGB формате.</summary>
@@ -274,20 +237,14 @@ void Model::setDiffuseColor(const unsigned char red, const unsigned char green, 
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void Model::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
-    {
-        this->meshes[i].setSpecularColor(red, green, blue);
-    }
+	this->specularColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт силу (яркость) блика всем мешам модели.</summary>
 ///<param name = 'value'>Значение.</param>
 void Model::setShinePower(const float value)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
-    {
-        this->meshes[i].setShinePower(value);
-    }
+	this->shinePower = value;
 }
 
 ///<summary>Задаёт флаг использования текстуры меша name.</summary>
@@ -330,60 +287,10 @@ void Model::setTestTexture(const QTexture texture)
     }
 }
 
-///<summary>Задаёт позицию модели.</summary>
-///<param name = 'position'>Позиция.</param>
-void Model::setPosition(const glm::vec3 position)
+///<summary>Возвращает флаг использования цвета этой модели для всех мешей, 
+///<para>принадлежащих модели.</para>
+///</summary>
+bool Model::getModelColorsFlag() const
 {
-    this->position = position;
-    this->translationMatrix = glm::translate(this->position);
-}
-
-///<summary>Задаёт поворот модели.</summary>
-///<param name = 'angle'>Угол поворота в градусах.</param>
-///<param name = 'axis'>Ось поворота.</param>
-void Model::setRotation(const double angle, const glm::vec3 axis)
-{
-    this->rotationAngle = angle;
-    this->rotationAxis = axis;
-
-    if (this->rotationAngle == 360) this->rotationAngle = 0;
-    else
-    {
-        if (this->rotationAngle > 360) this->rotationAngle -= 360;
-    }
-
-    this->rotationMatrix = glm::rotate((float)glm::radians(this->rotationAngle), this->rotationAxis);
-}
-
-///<summary>Задаёт размер модели от исходного.</summary>
-///<param name = 'scale'>Коэффициент размера.</param>
-void Model::setScale(const glm::vec3 scale)
-{
-    this->scale = scale;
-
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Model::setScale", QErrorType::error, "Scale = 0");
-    else
-    {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Model::setScale", QErrorType::warning, "Scale < 0");
-    }
-
-    this->scaleMatrix = glm::scale(this->scale);
-}
-
-///<summary>Возвращает имя модели.</summary>
-std::string Model::getName() const
-{
-    return this->modelName;
-}
-
-///<summary>Возвращает матрицу модели.</summary>
-glm::mat4 Model::getModelMatrix() const
-{
-    return this->translationMatrix * this->rotationMatrix * this->scaleMatrix;
-}
-
-///<summary>Возвращает позицию модели.</summary>
-glm::vec3 Model::getPosition() const
-{
-    return this->position;
+	return this->model_colors_flag;
 }

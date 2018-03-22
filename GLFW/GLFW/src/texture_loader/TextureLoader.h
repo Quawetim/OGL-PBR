@@ -6,6 +6,6 @@
 namespace TextureLoader
 {
     ///<summary>Загрузка текстуры из файла.</summary>
-    ///<param name ='path'>Путь к текстуре.</param>
+    ///<param name = 'path'>Путь к текстуре.</param>
     unsigned int loadTexture(std::string path);
 };

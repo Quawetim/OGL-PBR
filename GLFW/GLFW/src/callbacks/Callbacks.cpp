@@ -16,7 +16,7 @@ void Callbacks::KeyCallback(GLFWwindow* window, int key, int scancode, int actio
     //if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 
     // FOV по-умолчанию
-    if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { FOV = 90.0f; }
+    if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { FOV = 60.0f; }
 
     // Отображение курсора при удерживании CTRL
     //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)

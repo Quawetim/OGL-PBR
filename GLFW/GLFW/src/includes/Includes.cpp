@@ -15,7 +15,7 @@ const std::map<QTextureType, std::string> mapTextureType =
 };
 
 ///<summary>Field of view.</summary>
-float FOV = 90.0f;
+float FOV = 60.0f;
 
 ///<summary>–азмер генерируемой карты отражений.</summary>
 int reflectionMapResolution = 128;

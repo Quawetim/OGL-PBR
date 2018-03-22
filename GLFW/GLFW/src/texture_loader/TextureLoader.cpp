@@ -1,7 +1,7 @@
 #include "TextureLoader.h"
 
 ///<summary>Загрузка текстуры из файла.</summary>
-///<param name ='path'>Путь к текстуре.</param>
+///<param name = 'path'>Путь к текстуре.</param>
 unsigned int TextureLoader::loadTexture(std::string path)
 {
     unsigned int ID;

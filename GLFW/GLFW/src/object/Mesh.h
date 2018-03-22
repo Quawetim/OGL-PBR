@@ -1,8 +1,9 @@
 #pragma once
 #include "..\includes\Includes.h"
+#include "IEntity.h"
 
 ///<summary>Простейший 3D-объект не содержит в себе никаких подобъектов.</summary>
-class Mesh
+class Mesh : public IEntity
 {
 	friend class Model;
 private: 
@@ -14,9 +15,6 @@ private:
 
 	///<summary>Element buffer object.</summary>
     unsigned int EBO;
- 
-	///<summary>Имя меша.</summary>
-    std::string meshName;
 
 	///<summary>Вершины меша.</summary>
     std::vector<QVertexData> vertices;
@@ -26,73 +24,15 @@ private:
  
 	///<summary>Текстуры.</summary>
     std::vector<QTexture> textures;
-     
-	///<summary>Матрица перемещенния.</summary>
-    glm::mat4 translationMatrix;
  
-	///<summary>Матрица вращения.</summary>
-    glm::mat4 rotationMatrix;
- 
-	///<summary>Матрица размера.</summary>
-    glm::mat4 scaleMatrix;
- 
-	///<summary>Позиция меша.</summary>
-    glm::vec3 position;
+	///<summary>Флаг использования diffuseMap.</summary>
+    bool use_diffuse_map_flag = true;
 
-	///<summary>Угол поворота.</summary>
-    double rotationAngle;
+	///<summary>Флаг использования specularMap.</summary>
+    bool use_specular_map_flag = true;
  
-	///<summary>Ось поворота.</summary>
-    glm::vec3 rotationAxis;
- 
-	///<summary>Коэффициент размера по каждой из осей.</summary>
-    glm::vec3 scale;
- 
-	///<summary>Флаг отрисовки diffuseMap.</summary>
-    bool diffuseMap_flag = true;
-
-	///<summary>Флаг отрисовки specularMap.</summary>
-    bool specularMap_flag = true;
- 
-	///<summary>Флаг отрисовки normalMap.</summary>
-    bool normalMap_flag = true;
- 
-	///<summary>Ambient цвет.</summary>
-    glm::vec3 ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
- 
-	///<summary>Diffuse цвет.</summary>
-    glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
- 
-	///<summary>Specular цвет.</summary>
-    glm::vec3 specularColor = glm::vec3(0.9f, 0.9f, 0.9f);
- 
-	///<summary>Сила (яркость) блика.</summary>
-    float shinePower = 8.0f;
-
-	///<summary>Отрисовка меша.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	void drawMesh(const Shader shader);
-
-	///<summary>Двигает меш в направлении оси с заданной скоростью.</summary>
-	///<param name = 'velocityX'>Скорость по оси x.</param>
-	///<param name = 'velocityY'>Скорость по оси y.</param>
-	///<param name = 'velocityZ'>Скорость по оси z.</param>
-	void moveMesh(const float velocityX, const float velocityY, const float velocityZ);
-
-	///<summary>Вращает меш с заданной скоростью.</summary>
-	///<param name = 'angle'>Скорость поворота в градусах.</param>
-	///<param name = 'axis'>Ось вращения.</param>
-	void rotateMesh(const double angle, const glm::vec3 axis);
-
-	///<summary>Изменяет размер меша с заданной скоростью.</summary>
-	///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
-	void scaleMesh(const float scaleXYZ);
-
-	///<summary>Изменяет размер меша с заданной скоростью.</summary>
-	///<param name = 'scaleX'>Скорость изменения размера по X.</param>
-	///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
-	///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
-	void scaleMesh(const float scaleX, const float scaleY, const float scaleZ);
+	///<summary>Флаг использования normalMap.</summary>
+    bool use_normal_map_flag = true;
 
 public:
     ///<summary>Конструктор.</summary>
@@ -101,6 +41,18 @@ public:
     ///<param name = 'indices'>Индексы вершин.</param>
     ///<param name = 'textures'>Текстуры.</param>
     Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
+
+	///<summary>Отрисовка меша.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	void draw(const Shader shader);
+
+	///<summary>Отрисовка меша с заданными цветами.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'ambientColor'>Ambient цвет.</param>
+	///<param name = 'diffuseColor'>Diffuse цвет.</param>
+	///<param name = 'specularColor'>Specular цвет.</param>
+	///<param name = 'shinePower'>Сила (яркость) блика.</param>
+	void draw(const Shader shader, const glm::vec3 ambientColor, const glm::vec3 diffuseColor, const glm::vec3 specularColor, const float shinePower);
 
     ///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
     ///<param name = 'red'>Красная компонента цвета.</param>
@@ -132,26 +84,4 @@ public:
     ///<summary>Задаёт мешу тестовую текстуру.</summary>
     ///<param name = 'texture'>Текстура.</param>
     void setTestTexture(const QTexture texture);
-
-    ///<summary>Задаёт позицию меша.</summary>
-    ///<param name = 'position'>Позиция.</param>
-    void setPosition(const glm::vec3 position);
-
-    ///<summary>Задаёт поворот меша.</summary>
-    ///<param name = 'angle'>Угол поворота в градусах.</param>
-    ///<param name = 'axis'>Ось поворота.</param>
-    void setRotation(const double angle, const glm::vec3 axis);
-
-    ///<summary>Задаёт размер меша от исходного.</summary>
-    ///<param name = 'scale'>Коэффициент размера.</param>
-    void setScale(const glm::vec3 scale);
-
-    ///<summary>Возвращает имя меша.</summary>
-    std::string getName() const;
-
-    ///<summary>Возвращает матрицу модели.</summary>
-    glm::mat4 getModelMatrix() const;
-
-    ///<summary>Возвращает позицию меша.</summary>
-    glm::vec3 getPosition() const;
 };

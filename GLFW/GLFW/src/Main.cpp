@@ -124,11 +124,11 @@ int main()
     // Включаем буфер глубины
     glEnable(GL_DEPTH_TEST);
 
-    //	Отсечение невидимых граней
-    //glEnable(GL_CULL_FACE);
+	// Выбираем фрагмент, ближайший к камере
+	glDepthFunc(GL_LESS);
 
-    //	Выбираем фрагмент, ближайший к камере
-    glDepthFunc(GL_LESS);    
+    // Отсечение граней, у которых не видно лицевую сторону
+    glEnable(GL_CULL_FACE);        
 
 	Shader materialShader("resources/shaders/material.vs", "resources/shaders/material.fs");
 
@@ -148,6 +148,7 @@ int main()
 		Object obj;
 		std::string name;
 		
+		obj.setPosition(glm::vec3(1.0f));
 		name = "cube" + std::to_string(i + 1);
 		obj = Object(name, cube);
 		obj.setPosition(glm::vec3(-3.0f, 6.0f - 3 * i, 0.0f));
@@ -203,24 +204,29 @@ int main()
 
     QTexture testTexture;
     testTexture.type = QTextureType::diffuse;
-    testTexture.path = "resources/textures/test.bmp";
+	testTexture.path = "resources/textures/test.png";
     testTexture.id = TextureLoader::loadTexture(testTexture.path);
     
     cube->setTestTexture(testTexture);
     sphere->setTestTexture(testTexture);
     cylinder->setTestTexture(testTexture);
 
-	Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
+	/*Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
 	Object Nanosuit("nanosuit", nanosuit);
 	Nanosuit.addModel(cube);
 	Nanosuit.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
 	Nanosuit.setRotation(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	Nanosuit.setScale(glm::vec3(0.5f));
+	Nanosuit.setScale(glm::vec3(0.5f));*/
 
 	glfwSwapInterval(0);
 
 	glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.getWidth() / (float)windowInfo.getHeight(), 0.05f, 500.0f);
-	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	/*cube->setDiffuseColor(255, 0, 0);
+	cube->useModelColors(true);
+	cubes[0].setDiffuseColor(0, 255, 0);
+	cubes[0].setObjectColorsFlag(true);*/
 
     //***********************************************//
 
@@ -257,16 +263,16 @@ int main()
 		//*************DEBUG*****************************//
             
         /*materialShader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
-        rectangle.drawMesh(materialShader);
-        rectangle.moveMesh(0.0f, 1.0f, 0.0f);
-        rectangle.rotateMesh(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
-        rectangle.scaleMesh(0.1f);*/
+        rectangle.draw(materialShader);
+        rectangle.move(0.0f, 1.0f, 0.0f);
+        rectangle.rotate(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
+        rectangle.scale(0.1f);*/
 
 		/*materialShader.setProjectionViewModelMatrices(P, V, Nanosuit.getModelMatrix());
 		Nanosuit.draw(materialShader);
-		Nanosuit.moveObject(0.0f, 0.2f, 0.0f);
-		Nanosuit.rotateObject(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-		Nanosuit.scaleObject(0.01f);*/
+		Nanosuit.move(0.0f, 0.2f, 0.0f);
+		Nanosuit.rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		Nanosuit.scale(0.01f);*/
 
 		//***********************************************//
 
@@ -275,15 +281,15 @@ int main()
 		{
 			materialShader.setProjectionViewModelMatrices(P, V, cubes[i].getModelMatrix());
 			cubes[i].draw(materialShader);
-		}
-
-		cubes[0].rotateObject(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
+			cubes[i].rotate(180.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		}		
 
         // Сферы
 		for (size_t i = 0; i < cubes.size(); i++)
 		{
 			materialShader.setProjectionViewModelMatrices(P, V, spheres[i].getModelMatrix());
 			spheres[i].draw(materialShader);
+			spheres[i].rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 
         // Цилиндры
@@ -291,6 +297,7 @@ int main()
 		{
 			materialShader.setProjectionViewModelMatrices(P, V, cylinders[i].getModelMatrix());
 			cylinders[i].draw(materialShader);
+			cylinders[i].rotate(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 
         // Меняем кадр
