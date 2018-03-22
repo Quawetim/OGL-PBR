@@ -97,8 +97,8 @@ void Mesh::drawMesh(Shader shader)
             case QTextureType::normal:      number = std::to_string(normalNumber++); break;
             default:
                 {
-                    logger.log("drawMesh", QErrorType::error, "Unexpected texture type");
-                    logger.stop("drawMesh", true, "Unexpected texture type");
+                    logger.log("Mesh::drawMesh", QErrorType::error, "Unexpected texture type");
+                    logger.stop("Mesh::drawMesh", true, "Unexpected texture type");
                     exit(Q_ERROR_UNEXPECTED_TEXTURE_TYPE);
                 }
         }
@@ -151,10 +151,10 @@ void Mesh::scaleMesh(const float scaleXYZ)
 {
     this->scale += glm::vec3(scaleXYZ * (float)deltaTime);
 
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("scaleMesh", QErrorType::error, "Scale = 0");
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Mesh::scaleMesh", QErrorType::error, "Scale = 0");
     else
     {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("scaleMesh", QErrorType::warning, "Scale < 0");
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Mesh::scaleMesh", QErrorType::warning, "Scale < 0");
     }
 
     this->scaleMatrix = glm::scale(this->scale);
@@ -168,10 +168,10 @@ void Mesh::scaleMesh(const float scaleX, const float scaleY, const float scaleZ)
 {
     this->scale += glm::vec3(scaleX * deltaTime, scaleY * deltaTime, scaleZ * deltaTime);
 
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("scaleMesh", QErrorType::error, "Scale = 0");
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Mesh::scaleMesh", QErrorType::error, "Scale = 0");
     else
     {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("scaleMesh", QErrorType::warning, "Scale < 0");
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Mesh::scaleMesh", QErrorType::warning, "Scale < 0");
     }
 
     this->scaleMatrix = glm::scale(this->scale);
@@ -262,10 +262,10 @@ void Mesh::setScale(const glm::vec3 scale)
 {
     this->scale = scale;
 
-    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("setScale", QErrorType::error, "Scale = 0");
+    if (this->scale.x == 0 || this->scale.y == 0 || this->scale.z == 0) logger.log("Mesh::setScale", QErrorType::error, "Scale = 0");
     else
     {
-        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("setScale", QErrorType::warning, "Scale < 0");
+        if (this->scale.x < 0 || this->scale.y < 0 || this->scale.z < 0) logger.log("Mesh::setScale", QErrorType::warning, "Scale < 0");
     }
 
     this->scaleMatrix = glm::scale(this->scale);

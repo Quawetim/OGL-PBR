@@ -2,7 +2,7 @@
 
 ///<summary>Загрузка текстуры из файла.</summary>
 ///<param name ='path'>Путь к текстуре.</param>
-unsigned int QTextureLoader::loadTexture(std::string path)
+unsigned int TextureLoader::loadTexture(std::string path)
 {
     unsigned int ID;
 
@@ -13,7 +13,7 @@ unsigned int QTextureLoader::loadTexture(std::string path)
 
     if (data)
     {
-        logger.log("loadTexture", QErrorType::info, std::string("Texture found. PATH: " + path));
+        logger.log("TextureLoader::loadTexture", QErrorType::info, std::string("Texture found. PATH: " + path));
 
         GLenum format;
 
@@ -35,7 +35,7 @@ unsigned int QTextureLoader::loadTexture(std::string path)
     }
     else
     {
-        logger.log("loadTexture", QErrorType::error, std::string("Texture not found. PATH: " + path));
+        logger.log("TextureLoader::loadTexture", QErrorType::error, std::string("Texture not found. PATH: " + path));
     }
 
     stbi_image_free(data);

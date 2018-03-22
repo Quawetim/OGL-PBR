@@ -1,8 +1,8 @@
 #include "includes\Includes.h"
 #include "callbacks\Callbacks.h"
 #include "config\Config.h"
-#include "model\Mesh.h"
-#include "model\Model.h"
+#include "object\Mesh.h"
+#include "object\Model.h"
 #include "texture_loader\TextureLoader.h"
 
 #if defined(_WIN64) && defined(NDEBUG)
@@ -34,7 +34,7 @@ int main()
 #endif
 
     // Create window section
-    QConfig::ReadConfig(windowInfo, GenTextureSize);
+    Config::readConfig(windowInfo, GenTextureSize);
     GLFWmonitor *screen = glfwGetPrimaryMonitor();
 
     // Параметры монитора
@@ -129,9 +129,9 @@ int main()
     //	Выбираем фрагмент, ближайший к камере
     glDepthFunc(GL_LESS);    
 
-    //***********************************************//
+	Shader materialShader("resources/shaders/material.vs", "resources/shaders/material.fs");
 
-    Shader shader("resources/shaders/material.vs", "resources/shaders/material.fs");
+    //*************DEBUG*****************************//
     
     std::vector<QVertexData> vertices;
     std::vector<unsigned int> indices;
@@ -163,12 +163,13 @@ int main()
 
     Mesh rectangle("rectangle", vertices, indices, textures); 
 
-    //Model nanosuit("resources/nanosuit/nanosuit.obj");
+    Model nanosuit("_old/resources/3dmodels/nanosuit/nanosuit.obj");
+	nanosuit.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
 
     QTexture testTexture;
     testTexture.type = QTextureType::diffuse;
     testTexture.path = "resources/textures/test.bmp";
-    testTexture.id = QTextureLoader::loadTexture(testTexture.path);
+    testTexture.id = TextureLoader::loadTexture(testTexture.path);
     
     Model cube("resources/3dmodels/cube.obj");
     cube.setTestTexture(testTexture);
@@ -182,11 +183,18 @@ int main()
     Model cylinder("resources/3dmodels/cylinder.obj");
     cylinder.setTestTexture(testTexture);
     
-    //  @TODO:
-    //  setPosition, setScale, setRotation для Model
-    //  Модуль камеры    
-    //  Material shader
-    //  Оси
+	glm::vec3 pos = glm::vec3(0.0f, -8.0f, 0.0f);
+	rectangle.setPosition(pos);
+
+	glm::vec3 axis = glm::vec3(0.0f, 0.0f, 1.0f);
+	rectangle.setRotation(45.0, axis);
+
+	rectangle.setScale(glm::vec3(0.5f));
+
+	glfwSwapInterval(0);
+
+	glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.getWidth() / (float)windowInfo.getHeight(), 0.05f, 500.0f);
+	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
     //***********************************************//
 
@@ -195,17 +203,7 @@ int main()
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
        
-    double fpsInitTime = glfwGetTime();
-
-    glm::vec3 pos = glm::vec3(0.0f, -8.0f, 0.0f);
-    rectangle.setPosition(pos);
-
-    glm::vec3 axis = glm::vec3(0.0f, 0.0f, 1.0f);
-    rectangle.setRotation(45.0, axis);
-
-    rectangle.setScale(glm::vec3(0.5f));
-
-    glfwSwapInterval(0);
+    double fpsInitTime = glfwGetTime();   
 
     while (!glfwWindowShouldClose(windowInfo.getWindowPointer()))
     {
@@ -229,86 +227,87 @@ int main()
 
         // Очистить экран
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.getWidth() / (float)windowInfo.getHeight(), 0.05f, 500.0f);
-        glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 10.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        
-        /*shader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
-        rectangle.drawMesh(shader);
+            
+        /*materialShader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
+        rectangle.drawMesh(materialShader);
         rectangle.moveMesh(0.0f, 1.0f, 0.0f);
         rectangle.rotateMesh(45.0, axis);
         rectangle.scaleMesh(0.1f);*/
 
-        /*shader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
-        cube.drawModel(shader);
+        /*materialShader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
+        cube.drawModel(materialShader);
         cube.moveModel(0.0f, 1.0f, 0.0f);
         cube.rotateModel(45.0, glm::vec3(0.0f, 1.0f, 0.0f));
         cube.scaleModel(0.1f);*/
 
+		materialShader.setProjectionViewModelMatrices(P, V, nanosuit.getModelMatrix());
+		nanosuit.drawModel(materialShader);
+		nanosuit.rotateModel(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
+
         // Кубы
-        cube1.setPosition(glm::vec3(-3.0f, 6.0f, 0.0f));
+        /*cube1.setPosition(glm::vec3(-3.0f, 6.0f, 0.0f));
         cube1.setScale(glm::vec3(0.5f));     
-        shader.setProjectionViewModelMatrices(P, V, cube1.getModelMatrix());
-        cube1.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cube1.getModelMatrix());
+        cube1.drawModel(materialShader);
         cube1.rotateModel(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
         
         cube.setPosition(glm::vec3(-3.0f, 3.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
-        cube.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
+        cube.drawModel(materialShader);
 
         cube.setPosition(glm::vec3(-3.0f, 0.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
-        cube.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
+        cube.drawModel(materialShader);
 
         cube.setPosition(glm::vec3(-3.0f, -3.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
-        cube.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
+        cube.drawModel(materialShader);
 
         cube.setPosition(glm::vec3(-3.0f, -6.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
-        cube.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cube.getModelMatrix());
+        cube.drawModel(materialShader);
 
         // Сферы
         sphere.setPosition(glm::vec3(0.0f, 6.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
-        sphere.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
+        sphere.drawModel(materialShader);
 
         sphere.setPosition(glm::vec3(0.0f, 3.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
-        sphere.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
+        sphere.drawModel(materialShader);
 
         sphere.setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
-        sphere.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
+        sphere.drawModel(materialShader);
 
         sphere.setPosition(glm::vec3(0.0f, -3.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
-        sphere.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
+        sphere.drawModel(materialShader);
 
         sphere.setPosition(glm::vec3(0.0f, -6.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
-        sphere.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, sphere.getModelMatrix());
+        sphere.drawModel(materialShader);
 
         // Цилиндры
         cylinder.setPosition(glm::vec3(3.0f, 6.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
-        cylinder.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
+        cylinder.drawModel(materialShader);
 
         cylinder.setPosition(glm::vec3(3.0f, 3.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
-        cylinder.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
+        cylinder.drawModel(materialShader);
 
         cylinder.setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
-        cylinder.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
+        cylinder.drawModel(materialShader);
 
         cylinder.setPosition(glm::vec3(3.0f, -3.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
-        cylinder.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
+        cylinder.drawModel(materialShader);
 
         cylinder.setPosition(glm::vec3(3.0f, -6.0f, 0.0f));
-        shader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
-        cylinder.drawModel(shader);
+        materialShader.setProjectionViewModelMatrices(P, V, cylinder.getModelMatrix());
+        cylinder.drawModel(materialShader);*/
 
         // Меняем кадр
         glfwSwapBuffers(windowInfo.getWindowPointer());
@@ -320,10 +319,7 @@ int main()
     logger.stop("MAIN", false);
     return Q_GOOD_EXIT;
 
-	//int nbFrames = 0;
-	//double currentTime, lastTime, MouseX, MouseY;
-	//char text[100], text2[30];
-
+	//double MouseX, MouseY;
 
 	//	SCENE Scene = SCENE(WindowInfo, SkyBoxSize, Blinn);
 
@@ -360,24 +356,6 @@ int main()
 	//				Buttons[i].flag = true;
 	//			}
 	//		}
-
-	//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	//		/* Подсчёт кадров в секунду и времени на отрисовку 1 кадра */
-	//		currentTime = glfwGetTime();
-	//		nbFrames++;
-	//	
-	//		if (currentTime - lastTime >= 0.01f)
-	//		{
-	//			sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
-	//			sprintf(text2, "Diploma at %d FPS", nbFrames);
-	//			glfwSetWindowTitle(WindowInfo.Window, text2);
-	//			nbFrames = 0;
-	//			lastTime += 1.0;
-	//		}
-
-	//		/* Проверка на нажатие кнопок */
-	//		glfwPollEvents();
 
 	//		/* Отрисовка сцены */
 	//		Scene.Render(WindowInfo, CameraMode, GenTextureSize, FOV, MirrorExample, Rotations, ShowLights, Blinn);

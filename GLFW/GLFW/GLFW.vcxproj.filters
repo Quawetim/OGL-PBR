@@ -43,11 +43,11 @@
     <Filter Include="Файлы исходного кода\camera">
       <UniqueIdentifier>{99cabd88-3310-40ae-a596-c45a24c2f9a5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Файлы исходного кода\model">
-      <UniqueIdentifier>{a7f337d4-8b1c-4821-af95-c7427bd9c152}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Файлы исходного кода\texture loader">
       <UniqueIdentifier>{9136bf69-4f16-428f-bc3b-1455eefd267a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\object">
+      <UniqueIdentifier>{a7f337d4-8b1c-4821-af95-c7427bd9c152}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -95,14 +95,14 @@
     <ClCompile Include="src\stb_image\stb_image.cpp">
       <Filter>Файлы исходного кода\std_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\model\Mesh.cpp">
-      <Filter>Файлы исходного кода\model</Filter>
-    </ClCompile>
-    <ClCompile Include="src\model\Model.cpp">
-      <Filter>Файлы исходного кода\model</Filter>
-    </ClCompile>
     <ClCompile Include="src\texture_loader\TextureLoader.cpp">
       <Filter>Файлы исходного кода\texture loader</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object\Mesh.cpp">
+      <Filter>Файлы исходного кода\object</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object\Model.cpp">
+      <Filter>Файлы исходного кода\object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,17 +127,17 @@
     <ClInclude Include="src\camera\Camera.h">
       <Filter>Файлы исходного кода\camera</Filter>
     </ClInclude>
-    <ClInclude Include="src\model\Mesh.h">
-      <Filter>Файлы исходного кода\model</Filter>
-    </ClInclude>
-    <ClInclude Include="src\model\Model.h">
-      <Filter>Файлы исходного кода\model</Filter>
-    </ClInclude>
     <ClInclude Include="src\texture_loader\TextureLoader.h">
       <Filter>Файлы исходного кода\texture loader</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object\Mesh.h">
+      <Filter>Файлы исходного кода\object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object\Model.h">
+      <Filter>Файлы исходного кода\object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

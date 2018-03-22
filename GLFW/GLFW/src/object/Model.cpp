@@ -19,7 +19,7 @@ Model::Model(std::string path)
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
-        logger.log("Model", QErrorType::error, std::string("Can't load model. " + std::string(importer.GetErrorString())));
+        logger.log("Model::Model", QErrorType::error, std::string("Can't load model. " + std::string(importer.GetErrorString())));
         return;
     }
 
@@ -113,7 +113,7 @@ Mesh Model::handleMesh(aiMesh *mesh, const aiScene *scene)
         {
             std::string mesh_name = mesh->mName.C_Str();
             std::string msg = "Indices of not found. MESH:" + mesh_name;
-            logger.log("handleMesh", QErrorType::error, msg);
+            logger.log("Model::handleMesh", QErrorType::error, msg);
         }
     }
 
@@ -232,7 +232,7 @@ std::vector<QTexture> Model::loadMaterialTextures(aiMaterial *material, aiTextur
         {
             QTexture texture;
   
-            texture.id = QTextureLoader::loadTexture(std::string(dir + "/" + s.C_Str()));
+            texture.id = TextureLoader::loadTexture(std::string(dir + "/" + s.C_Str()));
             texture.type = textureType;
             texture.path = s.C_Str();
 
@@ -306,7 +306,7 @@ void Model::setTextureFlag(const std::string mesh_name, const QTextureType textu
     }
 
     std::string msg = "Mesh " + mesh_name + " not found.";
-    logger.log("setTextureFlag", QErrorType::warning, msg);
+    logger.log("Model::setTextureFlag", QErrorType::warning, msg);
 }
 
 ///<summary>Задаёт флаг использования текстуры всех мешей модели.</summary>

@@ -59,7 +59,7 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 
     if (error_type == QErrorType::error)
     {
-        logger.stop("log", true, "Error occurred.");
+        logger.stop("Logger::log", true, "Error occurred.");
     }
 #else
     if (error_type == QErrorType::error)
@@ -76,7 +76,7 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 
         MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
 
-        logger.stop("log", true, "Error occured.");
+        logger.stop("Logger::log", true, "Error occured.");
     }
 #endif
 }
