@@ -60,7 +60,7 @@ struct QVertexData
 struct QTexture
 {
 	///<summary>Идентификатор.</summary>
-    unsigned int id;
+    unsigned int id = 0;
 
 	///<summary>Тип: diffuse, specular, normal etc.</summary>
     QTextureType type;

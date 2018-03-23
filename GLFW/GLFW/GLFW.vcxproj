@@ -209,6 +209,8 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\object\Mesh.cpp" />
     <ClCompile Include="src\object\Model.cpp" />
     <ClCompile Include="src\object\Object.cpp" />
+    <ClCompile Include="src\scene\Scene1.cpp" />
+    <ClCompile Include="src\scene\TestScene.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\stb_image\stb_image.cpp" />
     <ClCompile Include="src\texture_loader\TextureLoader.cpp" />
@@ -225,6 +227,9 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\object\Object.h" />
     <ClInclude Include="src\object\Mesh.h" />
     <ClInclude Include="src\object\Model.h" />
+    <ClInclude Include="src\scene\IScene.h" />
+    <ClInclude Include="src\scene\Scene1.h" />
+    <ClInclude Include="src\scene\TestScene.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\texture_loader\TextureLoader.h" />
   </ItemGroup>

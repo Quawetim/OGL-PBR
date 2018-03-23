@@ -3,8 +3,9 @@
 #include "config\Config.h"
 #include "object\Mesh.h"
 #include "object\Model.h"
-#include "texture_loader\TextureLoader.h"
 #include "object\Object.h"
+#include "scene\TestScene.h"
+#include "scene\Scene1.h"
 
 #if defined(_WIN64) && defined(NDEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -132,101 +133,36 @@ int main()
 
 	Shader materialShader("resources/shaders/material.vs", "resources/shaders/material.fs");
 
+	std::vector<Model*> models;
+
 	Model *cube = new Model("resources/3dmodels/cube.obj");
+	models.push_back(cube);
+
 	Model *sphere = new Model("resources/3dmodels/sphere_lowpoly.obj");
+	models.push_back(sphere);
+
 	Model *cylinder = new Model("resources/3dmodels/cylinder.obj");
+	models.push_back(cylinder);
 
-	std::vector<Object> cubes;
-	std::vector<Object> spheres;
-	std::vector<Object> cylinders;
-
-	glm::vec3 initialSpheresPos = glm::vec3(0.0f, 6.0f, 0.0f);
-	glm::vec3 initialCylindersPos = glm::vec3(3.0f, 6.0f, 0.0f);
-
-	for (size_t i = 0; i < 5; i++)
-	{
-		Object obj;
-		std::string name;
-		
-		obj.setPosition(glm::vec3(1.0f));
-		name = "cube" + std::to_string(i + 1);
-		obj = Object(name, cube);
-		obj.setPosition(glm::vec3(-3.0f, 6.0f - 3 * i, 0.0f));
-		cubes.push_back(obj);
-
-		name = "sphere" + std::to_string(i + 1);
-		obj = Object(name, sphere);
-		obj.setPosition(glm::vec3(0.0f, 6.0f - 3 * i, 0.0f));
-		spheres.push_back(obj);
-
-		name = "cylinder" + std::to_string(i + 1);
-		obj = Object(name, cylinder);
-		obj.setPosition(glm::vec3(3.0f, 6.0f - 3 * i, 0.0f));
-		cylinders.push_back(obj);
-	}
-
-	cubes[0].setScale(glm::vec3(0.5f));
+	Scene1 scene1;
+	scene1.init(models);
 
     //*************DEBUG*****************************//
-    
-    std::vector<QVertexData> vertices;
-    std::vector<unsigned int> indices;
-    std::vector<QTexture> textures;
 
-    QVertexData v;
-    v.position = glm::vec3(-1.0f, -1.0f, 0.0f);
-    vertices.push_back(v);
-    v.position = glm::vec3(1.0f, -1.0f, 0.0f);
-    vertices.push_back(v);
-    v.position = glm::vec3(1.0f, 1.0f, 0.0f);
-    vertices.push_back(v);
-    v.position = glm::vec3(-1.0f, 1.0f, 0.0f);
-    vertices.push_back(v);
+	/*std::vector<Model*> testModels;
+	
+	testModels.push_back(cube);
 
-    unsigned int ind;
-    ind = 0;
-    indices.push_back(ind);
-    ind = 1;
-    indices.push_back(ind);
-    ind = 2;
-    indices.push_back(ind);
-    ind = 0;
-    indices.push_back(ind);
-    ind = 2;
-    indices.push_back(ind);
-    ind = 3;
-    indices.push_back(ind);
+	Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
+	testModels.push_back(nanosuit);
 
-    Mesh rectangle("rectangle", vertices, indices, textures); 
-	rectangle.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
-	rectangle.setRotation(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	rectangle.setScale(glm::vec3(0.5f));
-
-    QTexture testTexture;
-    testTexture.type = QTextureType::diffuse;
-	testTexture.path = "resources/textures/test.png";
-    testTexture.id = TextureLoader::loadTexture(testTexture.path);
-    
-    cube->setTestTexture(testTexture);
-    sphere->setTestTexture(testTexture);
-    cylinder->setTestTexture(testTexture);
-
-	/*Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
-	Object Nanosuit("nanosuit", nanosuit);
-	Nanosuit.addModel(cube);
-	Nanosuit.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
-	Nanosuit.setRotation(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	Nanosuit.setScale(glm::vec3(0.5f));*/
+	TestScene testScene;
+	testScene.init(testModels);*/
 
 	glfwSwapInterval(0);
 
 	glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.getWidth() / (float)windowInfo.getHeight(), 0.05f, 500.0f);
 	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-	/*cube->setDiffuseColor(255, 0, 0);
-	cube->useModelColors(true);
-	cubes[0].setDiffuseColor(0, 255, 0);
-	cubes[0].setObjectColorsFlag(true);*/
 
     //***********************************************//
 
@@ -262,52 +198,16 @@ int main()
 
 		//*************DEBUG*****************************//
             
-        /*materialShader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
-        rectangle.draw(materialShader);
-        rectangle.move(0.0f, 1.0f, 0.0f);
-        rectangle.rotate(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
-        rectangle.scale(0.1f);*/
-
-		/*materialShader.setProjectionViewModelMatrices(P, V, Nanosuit.getModelMatrix());
-		Nanosuit.draw(materialShader);
-		Nanosuit.move(0.0f, 0.2f, 0.0f);
-		Nanosuit.rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-		Nanosuit.scale(0.01f);*/
+		//testScene.render(materialShader, P, V);
 
 		//***********************************************//
 
-        // Кубы
-		for (size_t i = 0; i < cubes.size(); i++)
-		{
-			materialShader.setProjectionViewModelMatrices(P, V, cubes[i].getModelMatrix());
-			cubes[i].draw(materialShader);
-			cubes[i].rotate(180.0, glm::vec3(0.0f, 1.0f, 0.0f));
-		}		
-
-        // Сферы
-		for (size_t i = 0; i < cubes.size(); i++)
-		{
-			materialShader.setProjectionViewModelMatrices(P, V, spheres[i].getModelMatrix());
-			spheres[i].draw(materialShader);
-			spheres[i].rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-		}
-
-        // Цилиндры
-		for (size_t i = 0; i < cubes.size(); i++)
-		{
-			materialShader.setProjectionViewModelMatrices(P, V, cylinders[i].getModelMatrix());
-			cylinders[i].draw(materialShader);
-			cylinders[i].rotate(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
-		}
+		scene1.render(materialShader, P, V);
 
         // Меняем кадр
         glfwSwapBuffers(windowInfo.getWindowPointer());
         glfwPollEvents();
-    }    
-
-	cubes.clear();
-	spheres.clear();
-	cylinders.clear();
+    }
 
 	delete cube;
 	delete sphere;

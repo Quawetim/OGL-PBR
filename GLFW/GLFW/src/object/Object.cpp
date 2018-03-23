@@ -60,44 +60,9 @@ void Object::draw(Shader shader)
 ///<para>принадлежащих объекту.</para>
 ///<para>Приоритет выше флага модели, но ниже флага текстур.</para>
 ///</summary>
-///<param name = 'use'>Использовать цвет объекта или нет.</param>
-void Object::setObjectColorsFlag(const bool use)
+void Object::useObjectColors()
 {
-	this->object_colors_flag = use;
-}
-
-///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Object::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-	this->ambientColor = glm::vec3(red / 255.0f, green / 255.f, blue / 255.0f);
-}
-
-///<summary>Задаёт diffuse цвет всем мешам модели в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Object::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-	this->diffuseColor = glm::vec3(red / 255.0f, green / 255.f, blue / 255.0f);
-}
-
-///<summary>Задаёт specular цвет всем мешам модели в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Object::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-	this->specularColor = glm::vec3(red / 255.0f, green / 255.f, blue / 255.0f);
-}
-
-///<summary>Задаёт силу (яркость) блика всем мешам модели.</summary>
-///<param name = 'value'>Значение.</param>
-void Object::setShinePower(const float value)
-{
-	this->shinePower = value;
+	this->object_colors_flag = true;
 }
 
 ///<summary>Добавляет модель к объекту.</summary>

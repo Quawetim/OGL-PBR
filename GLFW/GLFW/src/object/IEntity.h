@@ -29,13 +29,13 @@ protected:
 	glm::vec3 scaleCoefficients;
 
 	///<summary>Ambient цвет.</summary>
-	glm::vec3 ambientColor = glm::vec3(0.1f, 0.1f, 0.1f);
+	glm::vec3 ambientColor = glm::vec3(0.05f, 0.05f, 0.05f);
 
 	///<summary>Diffuse цвет.</summary>
 	glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
 
 	///<summary>Specular цвет.</summary>
-	glm::vec3 specularColor = glm::vec3(0.9f, 0.9f, 0.9f);
+	glm::vec3 specularColor = glm::vec3(0.7f, 0.7f, 0.7f);
 
 	///<summary>Сила (яркость) блика.</summary>
 	float shinePower = 8.0f;
@@ -70,23 +70,23 @@ public:
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
-	virtual void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue) = 0;
+	virtual void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
 	///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
-	virtual void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue) = 0;
+	virtual void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
 	///<summary>Задаёт specular цвет меша в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
-	virtual void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue) = 0;
+	virtual void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
 	///<summary>Задаёт силу (яркость) блика.</summary>
 	///<param name = 'value'>Значение.</param>
-	virtual void setShinePower(const float value) = 0;
+	virtual void setShinePower(const float value);
 
 	///<summary>Задаёт позицию сущности.</summary>
 	///<param name = 'position'>Позиция.</param>

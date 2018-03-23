@@ -181,40 +181,6 @@ void Mesh::draw(const Shader shader, const glm::vec3 ambientColor, const glm::ve
 	glBindVertexArray(0);
 }
 
-///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Mesh::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-    this->ambientColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Mesh::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-    this->diffuseColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт specular цвет меша в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Mesh::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-    this->specularColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт силу (яркость) блика.</summary>
-///<param name = 'value'>Значение.</param>
-void Mesh::setShinePower(const float value)
-{
-    this->shinePower = value;
-}
-
 ///<summary>Задаёт флаг использования текстуры меша.</summary>
 ///<param name = 'type'>Тип текстуры.</param>
 ///<param name = 'use'>Использовать текстуру или нет.</param>
@@ -232,5 +198,8 @@ void Mesh::setTextureFlag(const QTextureType type, const bool use)
 ///<param name = 'texture'>Текстура.</param>
 void Mesh::setTestTexture(const QTexture texture)
 {
-    this->textures.push_back(texture);
+    //this->textures.push_back(texture);
+	this->textures.clear();
+	std::vector<QTexture>(this->textures).swap(this->textures);
+	this->textures.push_back(texture);
 }

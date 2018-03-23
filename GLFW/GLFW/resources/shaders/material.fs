@@ -2,7 +2,7 @@
 
 in vec2 textureCoords;
 
-out vec4 color;
+out vec3 fragmentColor;
 
 struct QMaterial
 {
@@ -24,12 +24,6 @@ uniform sampler2D normalMap1;
 
 void main()
 {
-    if (diffuseMap1_flag)
-    {
-        color = texture(diffuseMap1, textureCoords);
-    }
-    else
-    {
-        color = vec4(material.diffuseColor, 1.0f);
-    } 
+    if (diffuseMap1_flag) fragmentColor = texture(diffuseMap1, textureCoords).rgb;
+    else fragmentColor = material.diffuseColor; 
 }

@@ -59,6 +59,40 @@ void IEntity::scale(const float scaleX, const float scaleY, const float scaleZ)
 	this->scaleMatrix = glm::scale(this->scaleCoefficients);
 }
 
+///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
+///<param name = 'red'>Красная компонента цвета.</param>
+///<param name = 'green'>Зелёная компонента цвета.</param>
+///<param name = 'blue'>Синяя компонента цвета.</param>
+void IEntity::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+	this->ambientColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+}
+
+///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
+///<param name = 'red'>Красная компонента цвета.</param>
+///<param name = 'green'>Зелёная компонента цвета.</param>
+///<param name = 'blue'>Синяя компонента цвета.</param>
+void IEntity::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+	this->diffuseColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+}
+
+///<summary>Задаёт specular цвет меша в RGB формате.</summary>
+///<param name = 'red'>Красная компонента цвета.</param>
+///<param name = 'green'>Зелёная компонента цвета.</param>
+///<param name = 'blue'>Синяя компонента цвета.</param>
+void IEntity::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+{
+	this->specularColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+}
+
+///<summary>Задаёт силу (яркость) блика.</summary>
+///<param name = 'value'>Значение.</param>
+void IEntity::setShinePower(const float value)
+{
+	this->shinePower = value;
+}
+
 ///<summary>Задаёт позицию сущности.</summary>
 ///<param name = 'position'>Позиция.</param>
 void IEntity::setPosition(const glm::vec3 position)

@@ -40,30 +40,7 @@ public:
 	///<para>принадлежащих объекту.</para>
 	///<para>Приоритет выше флага модели, но ниже флага текстур.</para>
 	///</summary>
-	///<param name = 'use'>Использовать цвет объекта или нет.</param>
-	void setObjectColorsFlag(const bool use);
-
-	///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
-	///<param name = 'red'>Красная компонента цвета.</param>
-	///<param name = 'green'>Зелёная компонента цвета.</param>
-	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
-
-	///<summary>Задаёт diffuse цвет всем мешам модели в RGB формате.</summary>
-	///<param name = 'red'>Красная компонента цвета.</param>
-	///<param name = 'green'>Зелёная компонента цвета.</param>
-	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
-
-	///<summary>Задаёт specular цвет всем мешам модели в RGB формате.</summary>
-	///<param name = 'red'>Красная компонента цвета.</param>
-	///<param name = 'green'>Зелёная компонента цвета.</param>
-	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
-
-	///<summary>Задаёт силу (яркость) блика всем мешам модели.</summary>
-	///<param name = 'value'>Значение.</param>
-	void setShinePower(const float value);
+	void useObjectColors();
 
 	///<summary>Добавляет модель к объекту.</summary>
 	///<param name = 'model'>Модель.</param>

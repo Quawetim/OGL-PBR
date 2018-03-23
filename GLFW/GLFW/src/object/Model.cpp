@@ -207,44 +207,9 @@ void Model::draw(const Shader shader, const glm::vec3 ambientColor, const glm::v
 ///<para>принадлежащих модели.</para>
 ///<para>Приоритет ниже флага текстур и ниже флага объекта.</para>
 ///</summary>
-///<param name = 'use'>Использовать цвет объекта или нет.</param>
-void Model::useModelColors(const bool use)
+void Model::useModelColors()
 {
-	this->model_colors_flag = use;
-}
-
-///<summary>Задаёт ambient цвет всем мешам модели в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Model::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-	this->ambientColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт diffuse цвет всем мешам модели в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Model::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-	this->diffuseColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт specular цвет всем мешам модели в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Model::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
-{
-	this->specularColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт силу (яркость) блика всем мешам модели.</summary>
-///<param name = 'value'>Значение.</param>
-void Model::setShinePower(const float value)
-{
-	this->shinePower = value;
+	this->model_colors_flag = true;
 }
 
 ///<summary>Задаёт флаг использования текстуры меша name.</summary>

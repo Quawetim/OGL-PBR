@@ -35,6 +35,9 @@ private:
     bool use_normal_map_flag = true;
 
 public:
+	///<summary>Конструктор.</summary>
+	Mesh() {};
+
     ///<summary>Конструктор.</summary>
     ///<param name = 'name'>Имя меша.</param>
     ///<param name = 'vertices'>Вершины меша.</param>
@@ -53,28 +56,6 @@ public:
 	///<param name = 'specularColor'>Specular цвет.</param>
 	///<param name = 'shinePower'>Сила (яркость) блика.</param>
 	void draw(const Shader shader, const glm::vec3 ambientColor, const glm::vec3 diffuseColor, const glm::vec3 specularColor, const float shinePower);
-
-    ///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
-    ///<param name = 'red'>Красная компонента цвета.</param>
-    ///<param name = 'green'>Зелёная компонента цвета.</param>
-    ///<param name = 'blue'>Синяя компонента цвета.</param>
-    void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
-
-    ///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
-    ///<param name = 'red'>Красная компонента цвета.</param>
-    ///<param name = 'green'>Зелёная компонента цвета.</param>
-    ///<param name = 'blue'>Синяя компонента цвета.</param>
-    void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
-
-    ///<summary>Задаёт specular цвет меша в RGB формате.</summary>
-    ///<param name = 'red'>Красная компонента цвета.</param>
-    ///<param name = 'green'>Зелёная компонента цвета.</param>
-    ///<param name = 'blue'>Синяя компонента цвета.</param>
-    void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
-
-    ///<summary>Задаёт силу (яркость) блика.</summary>
-    ///<param name = 'value'>Значение.</param>
-    void setShinePower(const float value);
 
     ///<summary>Задаёт флаг использования текстуры меша.</summary>
     ///<param name = 'type'>Тип текстуры.</param>
