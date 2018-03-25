@@ -2,6 +2,7 @@
 #include "../includes/Includes.h"
 #include "IScene.h"
 #include "../object/Object.h"
+#include "../texture_loader/TextureLoader.h"
 
 ///<summary>Сцена 1.</summary>
 class Scene1 : public IScene
@@ -10,6 +11,7 @@ private:
 	std::vector<Object> cubes;
 	std::vector<Object> spheres;
 	std::vector<Object> cylinders;
+	bool decrease = true;
 
 public:
 	///<summary>Деструктор.</summary>

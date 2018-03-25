@@ -6,6 +6,7 @@
 #include "object\Object.h"
 #include "scene\TestScene.h"
 #include "scene\Scene1.h"
+#include "object\CoordinateAxes.h"
 
 #if defined(_WIN64) && defined(NDEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -131,7 +132,8 @@ int main()
     // Отсечение граней, у которых не видно лицевую сторону
     glEnable(GL_CULL_FACE);        
 
-	Shader materialShader("resources/shaders/material.vs", "resources/shaders/material.fs");
+	Shader materialShader("resources/shaders/materialShader.vs", "resources/shaders/materialShader.fs");
+	Shader simpleShader("resources/shaders/simpleShader.vs", "resources/shaders/simpleShader.fs");
 
 	std::vector<Model*> models;
 
@@ -143,6 +145,8 @@ int main()
 
 	Model *cylinder = new Model("resources/3dmodels/cylinder.obj");
 	models.push_back(cylinder);
+
+	CoordinateAxes coordinateAxes;
 
 	Scene1 scene1;
 	scene1.init(models);
@@ -201,8 +205,10 @@ int main()
 		//testScene.render(materialShader, P, V);
 
 		//***********************************************//
-
+				
 		scene1.render(materialShader, P, V);
+
+		coordinateAxes.draw(simpleShader, V);
 
         // Меняем кадр
         glfwSwapBuffers(windowInfo.getWindowPointer());

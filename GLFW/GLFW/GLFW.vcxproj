@@ -193,8 +193,10 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <FileType>Document</FileType>
       <DeploymentContent>false</DeploymentContent>
     </None>
-    <None Include="resources\shaders\material.fs" />
-    <None Include="resources\shaders\material.vs" />
+    <None Include="resources\shaders\materialShader.fs" />
+    <None Include="resources\shaders\materialShader.vs" />
+    <None Include="resources\shaders\simpleShader.fs" />
+    <None Include="resources\shaders\simpleShader.vs" />
     <None Include="resources\shaders\test.fs" />
     <None Include="resources\shaders\test.vs" />
   </ItemGroup>
@@ -205,6 +207,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\includes\Includes.cpp" />
     <ClCompile Include="src\logger\Logger.cpp" />
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\object\CoordinateAxes.cpp" />
     <ClCompile Include="src\object\IEntity.cpp" />
     <ClCompile Include="src\object\Mesh.cpp" />
     <ClCompile Include="src\object\Model.cpp" />
@@ -223,6 +226,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\errorcodes\ErrorCodes.h" />
     <ClInclude Include="src\includes\Includes.h" />
     <ClInclude Include="src\logger\Logger.h" />
+    <ClInclude Include="src\object\CoordinateAxes.h" />
     <ClInclude Include="src\object\IEntity.h" />
     <ClInclude Include="src\object\Object.h" />
     <ClInclude Include="src\object\Mesh.h" />

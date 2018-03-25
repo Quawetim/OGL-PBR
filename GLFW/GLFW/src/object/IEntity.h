@@ -28,23 +28,12 @@ protected:
 	///<summary>Коэффициент размера по каждой из осей.</summary>
 	glm::vec3 scaleCoefficients;
 
-	///<summary>Ambient цвет.</summary>
-	glm::vec3 ambientColor = glm::vec3(0.05f, 0.05f, 0.05f);
+	///<summary>Материал.</summary>
+	QMaterial material;
 
-	///<summary>Diffuse цвет.</summary>
-	glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
-
-	///<summary>Specular цвет.</summary>
-	glm::vec3 specularColor = glm::vec3(0.7f, 0.7f, 0.7f);
-
-	///<summary>Сила (яркость) блика.</summary>
-	float shinePower = 8.0f;
+	IEntity() {};
 
 public:
-	///<summary>Отрисовка сущности.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	virtual void draw(const Shader shader) = 0;
-
 	///<summary>Двигает объект в направлении оси с заданной скоростью.</summary>
 	///<param name = 'velocityX'>Скорость по оси x.</param>
 	///<param name = 'velocityY'>Скорость по оси y.</param>
@@ -66,19 +55,19 @@ public:
 	///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
 	void scale(const float scaleX, const float scaleY, const float scaleZ);
 
-	///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
+	///<summary>Задаёт ambient цвет в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
 	virtual void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
-	///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
+	///<summary>Задаёт diffuse цвет в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
 	virtual void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
-	///<summary>Задаёт specular цвет меша в RGB формате.</summary>
+	///<summary>Задаёт specular цвет в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
@@ -88,25 +77,28 @@ public:
 	///<param name = 'value'>Значение.</param>
 	virtual void setShinePower(const float value);
 
-	///<summary>Задаёт позицию сущности.</summary>
+	///<summary>Задаёт позицию.</summary>
 	///<param name = 'position'>Позиция.</param>
 	virtual void setPosition(const glm::vec3 position);
 
-	///<summary>Задаёт поворот сущности.</summary>
+	///<summary>Задаёт поворот.</summary>
 	///<param name = 'angle'>Угол поворота в градусах.</param>
 	///<param name = 'axis'>Ось поворота.</param>
 	virtual void setRotation(const double angle, const glm::vec3 axis);
 
-	///<summary>Задаёт размер сущности от исходного.</summary>
+	///<summary>Задаёт размер от исходного.</summary>
 	///<param name = 'scale'>Коэффициент размера.</param>
 	virtual void setScale(const glm::vec3 scale);
 
-	///<summary>Возвращает имя модели.</summary>
+	///<summary>Возвращает имя.</summary>
 	std::string getName() const;
 
 	///<summary>Возвращает матрицу модели.</summary>
 	glm::mat4 getModelMatrix() const;
 
-	///<summary>Возвращает позицию модели.</summary>
+	///<summary>Возвращает позицию.</summary>
 	glm::vec3 getPosition() const;
+
+	///<summary>Возвращает размер.</summary>
+	glm::vec3 getScale() const;
 };

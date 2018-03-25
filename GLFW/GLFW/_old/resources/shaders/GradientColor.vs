@@ -19,4 +19,3 @@ void main()
 	FragmentNormal = mat3(transpose(inverse(M))) * VertexNormal;
 	FragmentColor = VertexColor;
 }
-

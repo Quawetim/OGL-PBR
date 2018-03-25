@@ -37,123 +37,70 @@ Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsi
     // Push positions to layout 0
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)0);
+	glEnableVertexAttribArray(0);
 
     // Push normals to layout 1
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, normal));
+	glEnableVertexAttribArray(1);
 
     // Push texture coordinates to layout 2
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, textureCoords));
+	glEnableVertexAttribArray(2);
     
     // Push tangent to layout 3
     glEnableVertexAttribArray(3);
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, tangent));
+	glEnableVertexAttribArray(3);
 
     // Push bitangent to layout 4
     glEnableVertexAttribArray(4);
     glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, bitangent));
+	glEnableVertexAttribArray(4);
 
     glBindVertexArray(0);
 }
 
 ///<summary>Отрисовка меша.</summary>
 ///<param name = 'shader'>Шейдер.</param>
-void Mesh::draw(const Shader shader)
-{
-    unsigned int diffuseNumber = 1;
-    unsigned int specularNumber = 1;
-    unsigned int normalNumber = 1;
-
-    std::string number, name;
-
-    // Push material params
-    shader.setVec3("material.ambientColor", this->ambientColor);
-    shader.setVec3("material.diffuseColor", this->diffuseColor);
-    shader.setVec3("material.specularColor", this->specularColor);
-    shader.setFloat("material.shinePower", this->shinePower);
-
-    // Push texture flags
-    shader.setBool("diffuseMap1_flag", false);
-    shader.setBool("specularMap1_flag", false);
-    shader.setBool("normalMap1_flag", false);
-
-    // Push textures, i = texture unit
-    for (size_t i = 0; i < textures.size(); i++)
-    {
-        if (textures[i].type == QTextureType::diffuse && !this->use_diffuse_map_flag) continue;
-        if (textures[i].type == QTextureType::specular && !this->use_specular_map_flag) continue;
-        if (textures[i].type == QTextureType::normal && !this->use_normal_map_flag) continue;
-
-        glActiveTexture(GL_TEXTURE0 + i);
-
-        name = mapTextureType.find(textures[i].type)->second;
-
-        switch (textures[i].type)
-        {           
-            case QTextureType::diffuse:     number = std::to_string(diffuseNumber++); break;
-            case QTextureType::specular:    number = std::to_string(specularNumber++); break;
-            case QTextureType::normal:      number = std::to_string(normalNumber++); break;
-            default:
-                {
-                    logger.log("Mesh::drawMesh", QErrorType::error, "Unexpected texture type");
-                    logger.stop("Mesh::drawMesh", true, "Unexpected texture type");
-                    exit(Q_ERROR_UNEXPECTED_TEXTURE_TYPE);
-                }
-        }
-
-        shader.setBool(std::string(name + number + "_flag"), true);
-        shader.setInt(std::string(name + number), i);
-        glBindTexture(GL_TEXTURE_2D, textures[i].id);
-    }
-
-    glActiveTexture(GL_TEXTURE0);
-
-    // Draw mesh
-    shader.activate();
-
-    glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-}
-
-///<summary>Отрисовка меша с заданными цветами.</summary>
-///<param name = 'shader'>Шейдер.</param>
-///<param name = 'ambientColor'>Ambient цвет.</param>
-///<param name = 'diffuseColor'>Diffuse цвет.</param>
-///<param name = 'specularColor'>Specular цвет.</param>
-///<param name = 'shinePower'>Сила (яркость) блика.</param>
-void Mesh::draw(const Shader shader, const glm::vec3 ambientColor, const glm::vec3 diffuseColor, const glm::vec3 specularColor, const float shinePower)
+///<param name = 'material'>Материал.</param>
+void Mesh::draw(const Shader shader, const QMaterial material)
 {
 	unsigned int diffuseNumber = 1;
 	unsigned int specularNumber = 1;
 	unsigned int normalNumber = 1;
 
-	std::string number, name;
-
+	std::string number, name;	
+	
 	// Push material params
-	shader.setVec3("material.ambientColor", ambientColor);
-	shader.setVec3("material.diffuseColor", diffuseColor);
-	shader.setVec3("material.specularColor", specularColor);
-	shader.setFloat("material.shinePower", shinePower);
+	shader.setVec3("material.ambientColor", material.getAmbientColor());
+	shader.setVec3("material.diffuseColor", material.getDiffuseColor());
+	shader.setVec3("material.specularColor", material.getSpecularColor());
+	shader.setFloat("material.shinePower", material.getShinePower());
 
 	// Push texture flags
 	shader.setBool("diffuseMap1_flag", false);
 	shader.setBool("specularMap1_flag", false);
 	shader.setBool("normalMap1_flag", false);
 
+	std::vector<QTexture> pointer;
+
+	if (material.noTextures()) pointer = textures;
+	else pointer = material.getTextures();
+
 	// Push textures, i = texture unit
-	for (size_t i = 0; i < textures.size(); i++)
+	for (size_t i = 0; i < pointer.size(); i++)
 	{
-		if (textures[i].type == QTextureType::diffuse && !this->use_diffuse_map_flag) continue;
-		if (textures[i].type == QTextureType::specular && !this->use_specular_map_flag) continue;
-		if (textures[i].type == QTextureType::normal && !this->use_normal_map_flag) continue;
+		if (pointer[i].getType() == QTextureType::diffuse && !this->use_diffuse_map) continue;
+		if (pointer[i].getType() == QTextureType::specular && !this->use_specular_map) continue;
+		if (pointer[i].getType() == QTextureType::normal && !this->use_normal_map) continue;
 
 		glActiveTexture(GL_TEXTURE0 + i);
 
-		name = mapTextureType.find(textures[i].type)->second;
+		name = mapTextureType.find(pointer[i].getType())->second;
 
-		switch (textures[i].type)
+		switch (pointer[i].getType())
 		{
 			case QTextureType::diffuse:     number = std::to_string(diffuseNumber++); break;
 			case QTextureType::specular:    number = std::to_string(specularNumber++); break;
@@ -168,37 +115,37 @@ void Mesh::draw(const Shader shader, const glm::vec3 ambientColor, const glm::ve
 
 		shader.setBool(std::string(name + number + "_flag"), true);
 		shader.setInt(std::string(name + number), i);
-		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
 	}
 
 	glActiveTexture(GL_TEXTURE0);
 
-	// Draw mesh
 	shader.activate();
 
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 ///<summary>Задаёт флаг использования текстуры меша.</summary>
 ///<param name = 'type'>Тип текстуры.</param>
 ///<param name = 'use'>Использовать текстуру или нет.</param>
-void Mesh::setTextureFlag(const QTextureType type, const bool use)
+void Mesh::useTexture(const QTextureType type, const bool use)
 {
     switch (type)
     {
-        case QTextureType::diffuse:     this->use_diffuse_map_flag = use; break;
-        case QTextureType::specular:    this->use_specular_map_flag = use; break;
-        case QTextureType::normal:      this->use_normal_map_flag = use; break;
+        case QTextureType::diffuse:     this->use_diffuse_map = use; break;
+        case QTextureType::specular:    this->use_specular_map = use; break;
+        case QTextureType::normal:      this->use_normal_map = use; break;
     }
 }
 
 ///<summary>Задаёт мешу тестовую текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
-void Mesh::setTestTexture(const QTexture texture)
+void Mesh::useTestTexture(const QTexture texture)
 {
-    //this->textures.push_back(texture);
 	this->textures.clear();
 	std::vector<QTexture>(this->textures).swap(this->textures);
 	this->textures.push_back(texture);

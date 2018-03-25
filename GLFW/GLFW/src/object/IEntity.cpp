@@ -59,38 +59,38 @@ void IEntity::scale(const float scaleX, const float scaleY, const float scaleZ)
 	this->scaleMatrix = glm::scale(this->scaleCoefficients);
 }
 
-///<summary>Задаёт ambient цвет меша в RGB формате.</summary>
+///<summary>Задаёт ambient цвет в RGB формате.</summary>
 ///<param name = 'red'>Красная компонента цвета.</param>
 ///<param name = 'green'>Зелёная компонента цвета.</param>
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void IEntity::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->ambientColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->material.setAmbientColor(red, green, blue);
 }
 
-///<summary>Задаёт diffuse цвет меша в RGB формате.</summary>
+///<summary>Задаёт diffuse цвет в RGB формате.</summary>
 ///<param name = 'red'>Красная компонента цвета.</param>
 ///<param name = 'green'>Зелёная компонента цвета.</param>
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void IEntity::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->diffuseColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->material.setDiffuseColor(red, green, blue);
 }
 
-///<summary>Задаёт specular цвет меша в RGB формате.</summary>
+///<summary>Задаёт specular цвет в RGB формате.</summary>
 ///<param name = 'red'>Красная компонента цвета.</param>
 ///<param name = 'green'>Зелёная компонента цвета.</param>
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void IEntity::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->specularColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->material.setSpecularColor(red, green, blue);
 }
 
 ///<summary>Задаёт силу (яркость) блика.</summary>
 ///<param name = 'value'>Значение.</param>
 void IEntity::setShinePower(const float value)
 {
-	this->shinePower = value;
+	this->material.setShinePower(value);
 }
 
 ///<summary>Задаёт позицию сущности.</summary>
@@ -149,4 +149,10 @@ glm::mat4 IEntity::getModelMatrix() const
 glm::vec3 IEntity::getPosition() const
 {
 	return this->position;
+}
+
+///<summary>Возвращает размер.</summary>
+glm::vec3 IEntity::getScale() const
+{
+	return this->scaleCoefficients;
 }

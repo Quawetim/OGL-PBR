@@ -26,10 +26,10 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "..\errorcodes\ErrorCodes.h"
-#include "..\logger\Logger.h"
-
-#include "..\shader\Shader.h"
+#include "../errorcodes/ErrorCodes.h"
+#include "../logger/Logger.h"
+#include "../shader/Shader.h"
+#include "../texture_loader/TextureLoader.h"
 
 ///<summary>Тип ошибки для Logger.</summary>
 enum QErrorType { info, warning, error };
@@ -54,19 +54,6 @@ struct QVertexData
 
 	///<summary>Бикасательная.</summary>
     glm::vec3 bitangent;
-};
-
-///<summary>Структура, хранящая информацию о текстуре.</summary>
-struct QTexture
-{
-	///<summary>Идентификатор.</summary>
-    unsigned int id = 0;
-
-	///<summary>Тип: diffuse, specular, normal etc.</summary>
-    QTextureType type;
-
-    ///<summary>Путь к текстуре.</summary>
-    std::string path;
 };
 
 ///<summary>Класс, который хранит информацию об окне.</summary>
@@ -149,6 +136,117 @@ public:
 
     ///<summary>Возвращает текущее число кадров в секунду.</summary>
     int getFPS() const;
+};
+
+///<summary>Класс, хранящий информацию о текстуре.</summary>
+class QTexture
+{
+private:
+	///<summary>Идентификатор.</summary>
+	unsigned int id = 0;
+
+	///<summary>Тип: diffuse, specular, normal etc.</summary>
+	QTextureType type;
+
+	///<summary>Путь к текстуре.</summary>
+	std::string path;
+
+	///<summary>Имя текстуры.</summary>
+	std::string name;
+
+public:
+	///<summary>Конструктор.</summary>
+	QTexture() {};
+
+	///<summary>Конструктор.</summary>
+	///<param name = 'path'>Путь к текстуре.</param>
+	///<param name = 'type'>Тип текстуры.</param>
+	QTexture(std::string path, QTextureType type);
+
+	///<summary>Задаёт тип текстуры..</summary>
+	///<param name = 'type'>Тип текстуры.</param>
+	void setType(const QTextureType type);
+
+	///<summary>Задаёт имя текстуры.</summary>
+	///<param name = 'name'>Имя текстуры.</param>
+	void setName(const std::string name);
+
+	///<summary>Возвращает идентификатор текстуры.</summary>
+	unsigned int getID() const;
+
+	///<summary>Возвращает тип текстуры.</summary>
+	QTextureType getType() const;
+
+	///<summary>Возвращает имя текстуры.</summary>
+	std::string getName() const;
+};
+
+///<summary>Класс, хранящий свойства материала.</summary>
+class QMaterial
+{
+private:
+	///<summary>Ambient цвет.</summary>
+	glm::vec3 ambientColor = glm::vec3(0.05f, 0.05f, 0.05f);
+
+	///<summary>Diffuse цвет.</summary>
+	glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
+
+	///<summary>Specular цвет.</summary>
+	glm::vec3 specularColor = glm::vec3(0.7f, 0.7f, 0.7f);
+
+	///<summary>Текстуры.</summary>
+	std::vector<QTexture> textures;
+
+	///<summary>Сила (яркость) блика.</summary>
+	float shinePower = 8.0f;
+
+public:
+	///<summary>Сброс к дефолным значениям.</summary>
+	void reset();
+
+	///<summary>Задаёт ambient цвет в RGB формате.</summary>
+	///<param name = 'red'>Красная компонента цвета.</param>
+	///<param name = 'green'>Зелёная компонента цвета.</param>
+	///<param name = 'blue'>Синяя компонента цвета.</param>
+	void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+	///<summary>Задаёт diffuse цвет в RGB формате.</summary>
+	///<param name = 'red'>Красная компонента цвета.</param>
+	///<param name = 'green'>Зелёная компонента цвета.</param>
+	///<param name = 'blue'>Синяя компонента цвета.</param>
+	void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+	///<summary>Задаёт specular цвет в RGB формате.</summary>
+	///<param name = 'red'>Красная компонента цвета.</param>
+	///<param name = 'green'>Зелёная компонента цвета.</param>
+	///<param name = 'blue'>Синяя компонента цвета.</param>
+	void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+
+	///<summary>Задаёт силу (яркость) блика.</summary>
+	///<param name = 'value'>Значение.</param>
+	void setShinePower(const float value);
+
+	///<summary>Задаёт текстуру.</summary>
+	///<param name = 'texture'>Текстура.</param>
+	void addTexture(QTexture texture);
+
+	///<summary>Возвращает ambient цвет в RGB формате.</summary>
+	glm::vec3 getAmbientColor() const;
+
+	///<summary>Возвращает diffuse цвет в RGB формате.</summary>
+	glm::vec3 getDiffuseColor() const;
+
+	///<summary>Возвращает specular цвет в RGB формате.</summary>
+	glm::vec3 getSpecularColor() const;
+
+	///<summary>Возвращает силу (яркость) блика.</summary>
+	float getShinePower() const;
+
+	///<summary>Возвращает список текстур.</summary>
+	std::vector<QTexture> getTextures() const;
+
+	///<summary>Проверяет список текстур на пустоту.</summary>
+	bool noTextures() const;
 };
 
 ///<summary>Структура, которая хранит информацию об окне.</summary>

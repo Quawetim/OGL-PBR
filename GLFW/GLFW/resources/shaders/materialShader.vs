@@ -6,8 +6,6 @@ layout (location = 2) in vec2 vTextureCoords;
 layout (location = 3) in vec3 vTangent;
 layout (location = 4) in vec3 vBitangent;
 
-out vec2 textureCoords;
-
 struct QMaterial
 {
     vec3 ambientColor;
@@ -16,12 +14,17 @@ struct QMaterial
     float shinePower;
 };
 
-uniform QMaterial material;
+out vec3 fragmentNormal;
+out vec3 fragmentPosition;
+out vec2 textureCoords;
 
+uniform QMaterial material;
 uniform mat4 projectionMatrix, viewMatrix, modelMatrix;
 
 void main()
 {
-    textureCoords = vTextureCoords;
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0f);
+    fragmentNormal = mat3(transpose(inverse(modelMatrix))) * vNormal;
+    fragmentPosition = vec3(modelMatrix * vec4(vPosition, 1.0f));
+    textureCoords = vTextureCoords;
 }

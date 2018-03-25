@@ -37,9 +37,53 @@ void Scene1::init(std::vector<Model*> models)
 		this->cylinders.push_back(obj);
 	}
 
-	cubes[0].setScale(glm::vec3(0.5f));
-	cubes[0].setDiffuseColor(230, 0, 128);
-	cubes[0].useObjectColors();
+	QTexture texture;
+	QMaterial material;
+
+	// Кубы
+	texture = QTexture("resources/textures/batman_specular.bmp", QTextureType::specular);
+	material.addTexture(texture);
+	material.setDiffuseColor(230, 0, 128);
+	cubes[0].setScale(glm::vec3(0.5f));		
+	cubes[0].setMaterial(material);
+	cubes[0].useObjectMaterial();
+	material.reset();
+
+	texture = QTexture("resources/textures/brick_diffuse.bmp", QTextureType::diffuse);
+	material.addTexture(texture);
+	texture = QTexture("resources/textures/brick_specular.bmp", QTextureType::specular);
+	material.addTexture(texture);
+	cubes[4].setMaterial(material);
+	cubes[4].useObjectMaterial();
+	material.reset();
+
+	// Сферы
+	material.setDiffuseColor(153, 77, 230);
+	spheres[0].setMaterial(material);
+	spheres[0].useObjectMaterial();
+	material.reset();
+
+	texture = QTexture("resources/textures/brick2_diffuse.bmp", QTextureType::diffuse);
+	material.addTexture(texture);
+	texture = QTexture("resources/textures/brick2_specular.bmp", QTextureType::specular);
+	material.addTexture(texture);
+	spheres[4].setMaterial(material);
+	spheres[4].useObjectMaterial();
+	material.reset();
+
+	// Цилиндры
+	material.setDiffuseColor(26, 230, 204);
+	cylinders[0].setMaterial(material);
+	cylinders[0].useObjectMaterial();
+	material.reset();
+
+	texture = QTexture("resources/textures/brick3_diffuse.bmp", QTextureType::diffuse);
+	material.addTexture(texture);
+	texture = QTexture("resources/textures/brick3_specular.bmp", QTextureType::specular);
+	material.addTexture(texture);
+	cylinders[4].setMaterial(material);
+	cylinders[4].useObjectMaterial();
+	material.reset();
 }
 
 ///<summary>Отрисовка сцены.</summary>
@@ -50,23 +94,40 @@ void Scene1::render(const Shader shader, const glm::mat4 P, const glm::mat4 V)
 	for (size_t i = 0; i < cubes.size(); i++)
 	{
 		shader.setProjectionViewModelMatrices(P, V, cubes[i].getModelMatrix());
-		cubes[i].draw(shader);
-		cubes[i].rotate(180.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		cubes[i].draw(shader);		
 	}
+
+	cubes[0].rotate(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	cubes[1].rotate(90.0, glm::vec3(0.0f, 1.0f, 1.0f));
+	cubes[2].rotate(-90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	cubes[3].rotate(90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	cubes[4].rotate(-30.0, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	// Сферы
 	for (size_t i = 0; i < cubes.size(); i++)
 	{
 		shader.setProjectionViewModelMatrices(P, V, spheres[i].getModelMatrix());
 		spheres[i].draw(shader);
-		spheres[i].rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		if (decrease)
+		{
+			if (spheres[i].getScale().x > 0.8f) spheres[i].scale(-0.2f);
+			else decrease = false;
+		}
+		else
+		{
+			if (spheres[i].getScale().x < 1.0f) spheres[i].scale(0.2f);
+			else decrease = true;
+		}
 	}
+
+	spheres[4].rotate(-40.0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// Цилиндры
 	for (size_t i = 0; i < cubes.size(); i++)
 	{
 		shader.setProjectionViewModelMatrices(P, V, cylinders[i].getModelMatrix());
 		cylinders[i].draw(shader);
-		cylinders[i].rotate(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		cylinders[i].rotate(10.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 }

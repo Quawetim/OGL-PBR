@@ -116,6 +116,7 @@ void Shader::activate() const
 ///<param name = 'value'>Задаваемое значение.</param>
 void Shader::setBool(const std::string &name, const bool value) const
 {
+	this->activate();
     glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
 
@@ -124,6 +125,7 @@ void Shader::setBool(const std::string &name, const bool value) const
 ///<param name = 'value'>Задаваемое значение.</param>
 void Shader::setInt(const std::string &name, const int value) const
 {
+	this->activate();
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
 
@@ -132,6 +134,7 @@ void Shader::setInt(const std::string &name, const int value) const
 ///<param name = 'value'>Задаваемое значение.</param>
 void Shader::setFloat(const std::string &name, const float value) const
 {
+	this->activate();
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
 
@@ -140,6 +143,7 @@ void Shader::setFloat(const std::string &name, const float value) const
 ///<param name = 'value'>Задаваемое значение.</param>
 void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
 {
+	this->activate();
     glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 }
 
@@ -148,6 +152,7 @@ void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
 ///<param name = 'mat'>Задаваемое значение.</param>
 void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 {
+	this->activate();
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
@@ -155,6 +160,7 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 ///<param name = 'projectionMatrix'>Матрица проекции.</param>
 void Shader::setProjectionMatrix(const glm::mat4 projectionMatrix) const
 {
+	this->activate();
     glUniformMatrix4fv(glGetUniformLocation(ID, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
@@ -162,6 +168,7 @@ void Shader::setProjectionMatrix(const glm::mat4 projectionMatrix) const
 ///<param name = 'viewMatrix'>Матрица вида.</param>
 void Shader::setViewMatrix(const glm::mat4 viewMatrix) const
 {
+	this->activate();
     glUniformMatrix4fv(glGetUniformLocation(ID, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
@@ -169,6 +176,7 @@ void Shader::setViewMatrix(const glm::mat4 viewMatrix) const
 ///<param name = 'modelMatrix'>Матрица модели.</param>
 void Shader::setModelMatrix(const glm::mat4 modelMatrix) const
 {
+	this->activate();
     glUniformMatrix4fv(glGetUniformLocation(ID, "modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
 }
 
@@ -178,6 +186,7 @@ void Shader::setModelMatrix(const glm::mat4 modelMatrix) const
 ///<param name = 'modelMatrix'>Матрица модели.</param>
 void Shader::setProjectionViewModelMatrices(const glm::mat4 projectionMatrix, const glm::mat4 viewMatrix, const glm::mat4 modelMatrix) const
 {
+	this->activate();
     this->setProjectionMatrix(projectionMatrix);
     this->setViewMatrix(viewMatrix);
     this->setModelMatrix(modelMatrix);

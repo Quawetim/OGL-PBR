@@ -50,19 +50,26 @@ void Object::draw(Shader shader)
 	{
 		for (size_t i = 0; i < this->models.size(); i++)
 		{
-			if (object_colors_flag) this->models[i]->draw(shader, this->ambientColor, this->diffuseColor, this->specularColor, this->shinePower);
+			if (object_material) this->models[i]->draw(shader, this->material);
 			else this->models[i]->draw(shader);
 		}
 	}
 }
 
-///<summary>Задаёт флаг использования цвета этого объекта для всех моделей, 
+///<summary>Задаёт материал объекта.</summary>
+///<param name = 'material'>Материал.</param>
+void Object::setMaterial(QMaterial material)
+{
+	this->material = material;
+}
+
+///<summary>Задаёт флаг использования материала этого объекта для всех моделей, 
 ///<para>принадлежащих объекту.</para>
 ///<para>Приоритет выше флага модели, но ниже флага текстур.</para>
 ///</summary>
-void Object::useObjectColors()
+void Object::useObjectMaterial()
 {
-	this->object_colors_flag = true;
+	this->object_material = true;
 }
 
 ///<summary>Добавляет модель к объекту.</summary>
@@ -94,12 +101,4 @@ Model* Object::deleteModel(const std::string name)
 	logger.log("Object::popModel", QErrorType::error, msg);
 
 	return model;
-}
-
-///<summary>Возвращает флаг использования цвета этого объекта для всех моделей, 
-///<para>принадлежащих объекту.</para>
-///</summary>
-bool Object::getObjectColorsFlag() const
-{
-	return this->object_colors_flag;
 }

@@ -49,23 +49,20 @@ void TestScene::init(std::vector<Model*> models)
 	Nanosuit.setRotation(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	Nanosuit.setScale(glm::vec3(0.5f));
 
-	QTexture testTexture;
-	testTexture.type = QTextureType::diffuse;
-	testTexture.path = "resources/textures/test.png";
-	testTexture.id = TextureLoader::loadTexture(testTexture.path);
+	QTexture testTexture("resources/textures/test.png", QTextureType::diffuse);
 
-	//models[0]->setTestTexture(testTexture);
-	//models[0]->setTextureFlag(QTextureType::diffuse, true);
-
-	//models[1]->setTestTexture(testTexture);
+	models[0]->useTestTexture(testTexture);
+	//models[1]->useTestTexture(testTexture);
 }
 
 ///<summary>Отрисовка сцены.</summary>
 ///<param name = 'shader'></param>
 void TestScene::render(const Shader shader, const glm::mat4 P, const glm::mat4 V)
 {
+	QMaterial material;
+
 	shader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
-	rectangle.draw(shader);
+	rectangle.draw(shader, material);
 	rectangle.move(0.0f, 1.0f, 0.0f);
 	rectangle.rotate(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
 	rectangle.scale(0.1f);

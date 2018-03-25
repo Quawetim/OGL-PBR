@@ -26,13 +26,13 @@ private:
     std::vector<QTexture> textures;
  
 	///<summary>Флаг использования diffuseMap.</summary>
-    bool use_diffuse_map_flag = true;
+    bool use_diffuse_map = true;
 
 	///<summary>Флаг использования specularMap.</summary>
-    bool use_specular_map_flag = true;
+    bool use_specular_map = true;
  
 	///<summary>Флаг использования normalMap.</summary>
-    bool use_normal_map_flag = true;
+    bool use_normal_map = true;
 
 public:
 	///<summary>Конструктор.</summary>
@@ -47,22 +47,15 @@ public:
 
 	///<summary>Отрисовка меша.</summary>
 	///<param name = 'shader'>Шейдер.</param>
-	void draw(const Shader shader);
-
-	///<summary>Отрисовка меша с заданными цветами.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'ambientColor'>Ambient цвет.</param>
-	///<param name = 'diffuseColor'>Diffuse цвет.</param>
-	///<param name = 'specularColor'>Specular цвет.</param>
-	///<param name = 'shinePower'>Сила (яркость) блика.</param>
-	void draw(const Shader shader, const glm::vec3 ambientColor, const glm::vec3 diffuseColor, const glm::vec3 specularColor, const float shinePower);
+	///<param name = 'material'>Материал.</param>
+	void draw(const Shader shader, const QMaterial material);
 
     ///<summary>Задаёт флаг использования текстуры меша.</summary>
     ///<param name = 'type'>Тип текстуры.</param>
     ///<param name = 'use'>Использовать текстуру или нет.</param>
-    void setTextureFlag(const QTextureType type, const bool use);
+    void useTexture(const QTextureType type, const bool use);
 
     ///<summary>Задаёт мешу тестовую текстуру.</summary>
     ///<param name = 'texture'>Текстура.</param>
-    void setTestTexture(const QTexture texture);
+    void useTestTexture(const QTexture texture);
 };

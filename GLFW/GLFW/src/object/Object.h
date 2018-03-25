@@ -9,8 +9,8 @@ class Object : public IEntity
 	///<summary>Модели, из которых состоит объект.</summary>
 	std::vector<Model*> models;									// Мб лучше список? Который можно отсортировать по приоритету отрисовки...
 
-	///<summary>Использовать цвет этого объекта.<./summary>
-	bool object_colors_flag = false;
+	///<summary>Использовать материал этого объекта.<./summary>
+	bool object_material = false;
 
 public:
 	///<summary>Конструктор.</summary>
@@ -36,11 +36,15 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	void draw(Shader shader);
 
-	///<summary>Задаёт флаг использования цвета этого объекта для всех моделей, 
+	///<summary>Задаёт материал объекта.</summary>
+	///<param name = 'material'>Материал.</param>
+	void setMaterial(QMaterial material);
+
+	///<summary>Задаёт флаг использования материала этого объекта для всех моделей, 
 	///<para>принадлежащих объекту.</para>
 	///<para>Приоритет выше флага модели, но ниже флага текстур.</para>
 	///</summary>
-	void useObjectColors();
+	void useObjectMaterial();
 
 	///<summary>Добавляет модель к объекту.</summary>
 	///<param name = 'model'>Модель.</param>
@@ -49,11 +53,6 @@ public:
 	///<summary>Извлекает модель из объекта пл имени.</summary>
 	///<param name = 'name'>Имя извлекаемой модели.</param>
 	Model* deleteModel(const std::string name);
-
-	///<summary>Возвращает флаг использования цвета этого объекта для всех моделей, 
-	///<para>принадлежащих объекту.</para>
-	///</summary>
-	bool getObjectColorsFlag() const;
 };
 
 class StarDestroyer : public Object

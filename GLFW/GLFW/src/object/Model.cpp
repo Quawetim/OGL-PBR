@@ -151,7 +151,7 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 
 		for (unsigned int j = 0; j < loaded_textures.size(); j++)
 		{
-			if (std::strcmp(loaded_textures[j].path.data(), s.C_Str()) == 0)
+			if (std::strcmp(loaded_textures[j].getName().data(), s.C_Str()) == 0)
 			{
 				textures.push_back(loaded_textures[j]);
 				skip_loading = true;
@@ -161,11 +161,8 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 
 		if (!skip_loading)
 		{
-			QTexture texture;
-
-			texture.id = TextureLoader::loadTexture(std::string(dir + "/" + s.C_Str()));
-			texture.type = textureType;
-			texture.path = s.C_Str();
+			QTexture texture(std::string(dir + "/" + s.C_Str()), textureType);
+			texture.setName(s.C_Str());
 
 			textures.push_back(texture);
 			loaded_textures.push_back(texture);
@@ -175,54 +172,38 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 	return textures;
 }
 
-///<summary>Отрисовка объекта.
-///<para>Если задан флаг "model_colors_flag", то все меши рисуются с цветом модели, </para>
-///<para>иначе - с заданным цветом меша.</para>
-///</summary>
+///<summary>Отрисовка модели.</summary>
 ///<param name = 'shader'>Шейдер.</param>
 void Model::draw(const Shader shader)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
-		if (model_colors_flag) this->meshes[i].draw(shader, this->ambientColor, this->diffuseColor, this->specularColor, this->shinePower);
-        else this->meshes[i].draw(shader);
+		this->meshes[i].draw(shader, this->material);
     }
 }
 
-///<summary>Отрисовка модели с заданными цветами.</summary>
+///<summary>Отрисовка модели с заданным материалом.</summary>
 ///<param name = 'shader'>Шейдер.</param>
-///<param name = 'ambientColor'>Ambient цвет.</param>
-///<param name = 'diffuseColor'>Diffuse цвет.</param>
-///<param name = 'specularColor'>Specular цвет.</param>
-///<param name = 'shinePower'>Сила (яркость) блика.</param>
-void Model::draw(const Shader shader, const glm::vec3 ambientColor, const glm::vec3 diffuseColor, const glm::vec3 specularColor, const float shinePower)
+///<param name = 'material'>Материал.</param>
+void Model::draw(const Shader shader, const QMaterial material)
 {
 	for (size_t i = 0; i < this->meshes.size(); i++)
 	{
-		this->meshes[i].draw(shader, ambientColor, diffuseColor, specularColor, shinePower);
+		this->meshes[i].draw(shader, material);
 	}
-}
-
-///<summary>Задаёт флаг использования цвета этой модели для всех мешей, 
-///<para>принадлежащих модели.</para>
-///<para>Приоритет ниже флага текстур и ниже флага объекта.</para>
-///</summary>
-void Model::useModelColors()
-{
-	this->model_colors_flag = true;
 }
 
 ///<summary>Задаёт флаг использования текстуры меша name.</summary>
 ///<param name = 'mesh_name'>Имя меша.</param>
 ///<param name = 'texture_type'>Тип текстуры флага.</param>
 ///<param name = 'use'>Использовать текстуру или нет.</param>
-void Model::setTextureFlag(const std::string mesh_name, const QTextureType texture_type, const bool use)
+void Model::useTexture(const std::string mesh_name, const QTextureType texture_type, const bool use)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
         if (this->meshes[i].getName() == mesh_name)
         {
-            this->meshes[i].setTextureFlag(texture_type, use);
+            this->meshes[i].useTexture(texture_type, use);
             return;
         }
     }
@@ -231,31 +212,12 @@ void Model::setTextureFlag(const std::string mesh_name, const QTextureType textu
     logger.log("Model::setTextureFlag", QErrorType::warning, msg);
 }
 
-///<summary>Задаёт флаг использования текстуры всех мешей модели.</summary>
-///<param name = 'type'>Тип текстуры.</param>
-///<param name = 'use'>Использовать текстуру или нет.</param>
-void Model::setTextureFlag(const QTextureType type, const bool use)
-{
-    for (size_t i = 0; i < this->meshes.size(); i++)
-    {
-        this->meshes[i].setTextureFlag(type, use);
-    }
-}
-
 ///<summary>Задаёт всем мешам тестовую текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
-void Model::setTestTexture(const QTexture texture)
+void Model::useTestTexture(const QTexture texture)
 {
     for (size_t i = 0; i < this->meshes.size(); i++)
     {
-        this->meshes[i].setTestTexture(texture);
+        this->meshes[i].useTestTexture(texture);
     }
-}
-
-///<summary>Возвращает флаг использования цвета этой модели для всех мешей, 
-///<para>принадлежащих модели.</para>
-///</summary>
-bool Model::getModelColorsFlag() const
-{
-	return this->model_colors_flag;
 }
