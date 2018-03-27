@@ -2,7 +2,7 @@
 #include "..\includes\Includes.h"
 
 ///<summary>Default callbacks</summary>
-namespace Callbacks
+namespace callbacks
 {
 	///<summary>Обработка клавиатуры.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
@@ -10,19 +10,19 @@ namespace Callbacks
 	///<param name = 'scancode'>Scancode.</param>
 	///<param name = 'action'>Действие.</param>
 	///<param name = 'mods'>Модификаторы.</param>
-	void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 	///<summary>Обработка колёсика мышки.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'xoffset'>Смещение по оси X.</param>
 	///<param name = 'yoffset'>Смещение по оси Y.</param>
-	void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
+	void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 	///<summary>Обработка изменения размера окна.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'width'>Новая ширина.</param>
 	///<param name = 'height'>Новая высота.</param>
-	void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
+	void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
 	///<summary>Вывод ошибок в консоль.</summary>
 	///<param name = 'source'>Источник ошибки.</param>
@@ -37,7 +37,7 @@ namespace Callbacks
 	///<summary>Обработка ошибок GLFW.</summary>
 	///<param name = 'errorCode'>Код ошибки.</param>
 	///<param name = 'message'>Сообщение.</param>
-	void GLFWErrorCallback(int errorCode, const char* message);
+	void glfwErrorCallback(int errorCode, const char* message);
 
 	///<summary>Возвращает ошибку glGetError().</summary>
 	///<param name = 'file'>Имя файла с ошибкой.</param>

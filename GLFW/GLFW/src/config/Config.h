@@ -2,12 +2,10 @@
 #include "..\includes\Includes.h"
 
 ///<summary>Считывание настроек из файла конфигурации.</summary>
-namespace Config
+namespace config
 {
-    ///<summary>Считывание настроек из файла конфигурации. 
-    ///<para>Задаёт дефолтные настройки, если файл конфигурации не найден.</para>
-    ///</summary>
+    ///<summary>Считывание настроек из файла конфигурации.</summary>
     ///<param name = 'windowInfo'>Считанные даные об окне.</param>
-    ///<param name = 'reflectionRes'>Размер карты отражений.</param>
-    void readConfig(QWindowInfo &windowInfo, int &reflectionRes);
+    ///<param name = 'reflectionsResolution'>Размер карты отражений.</param>
+    void readConfig(QWindowInfo &windowInfo, int &reflectionsResolution);
 }

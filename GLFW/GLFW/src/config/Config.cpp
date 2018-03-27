@@ -1,11 +1,9 @@
 #include "Config.h"
 
-///<summary>Считывание настроек из файла конфигурации. 
-///<para>Задаёт дефолтные настройки, если файл конфигурации не найден.</para>
-///</summary>
+///<summary>Считывание настроек из файла конфигурации.</summary>
 ///<param name = 'windowInfo'>Считанные даные об окне.</param>
-///<param name = 'reflectionRes'>Размер карты отражений.</param>
-void Config::readConfig(QWindowInfo &windowInfo, int &reflectionMapResolution)
+///<param name = 'reflectionsResolution'>Размер карты отражений.</param>
+void config::readConfig(QWindowInfo &windowInfo, int &reflectionsResolution)
 {
     std::ifstream fin;
     fin.open("config\\config.ini");
@@ -28,8 +26,10 @@ void Config::readConfig(QWindowInfo &windowInfo, int &reflectionMapResolution)
                 if (s == "=")
                 {
                     fin >> s;
-                    if (s == "true") windowInfo.setFullScreen(true);
-                    else windowInfo.setFullScreen(false);
+                    if (s == "true")
+						windowInfo.setFullScreen(true);
+                    else
+						windowInfo.setFullScreen(false);
 
                     continue;
                 }
@@ -41,8 +41,10 @@ void Config::readConfig(QWindowInfo &windowInfo, int &reflectionMapResolution)
                 if (s == "=")
                 {
                     fin >> s;
-                    if (s == "true") windowInfo.setVsync(true);
-                    else windowInfo.setVsync(false);
+                    if (s == "true")
+						windowInfo.setVsync(true);
+                    else
+						windowInfo.setVsync(false);
 
                     continue;
                 }
@@ -79,7 +81,7 @@ void Config::readConfig(QWindowInfo &windowInfo, int &reflectionMapResolution)
                 fin >> s;
                 if (s == "=")
                 {
-                    fin >> reflectionMapResolution;
+                    fin >> reflectionsResolution;
 
                     continue;
                 }

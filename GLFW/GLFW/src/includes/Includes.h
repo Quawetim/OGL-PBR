@@ -61,27 +61,30 @@ class QWindowInfo
 {
 private: 
 	///<summary>Указатель на окно.</summary>
-    GLFWwindow* window = nullptr;
+    GLFWwindow* window_;
  
 	///<summary>Ширина окна.</summary>
-    int width = 800;
+    int width_;
  
 	///<summary>Высота окна.</summary>
-    int height = 600;
+    int height_;
 
 	///<summary>Полный экран.</summary>
-    bool fullScreen = false;
+    bool fullScreen_;
   
 	///<summary>Вертикальная синхронизация.</summary>
-    bool vsync = false;
+    bool vsync_;
  
 	///<summary>Отображение курсора.</summary>
-    bool showCursor = true;
+    bool showCursor_;
 
 	///<summary>FPS.</summary>
-    int fps = 0;
+    int fps_;
 
 public:
+	///<summary>Конструктор.</summary>
+	QWindowInfo();
+
     ///<summary>Задаёт указатель на окно.</summary>
     ///<param name = 'window'>Указатель.</param>
     void setWindowPointer(GLFWwindow* window);
@@ -126,13 +129,13 @@ public:
     float getHalfHeight() const;
 
     ///<summary>Возвращает признак полноэкранности.</summary>
-    bool getFullScreen() const;
+    bool isFullScreen() const;
 
     ///<summary>Возвращает включена вертикальная синхронизация или нет.</summary>
-    bool getVsync() const;
+    bool isVsyncEnabled() const;
 
     ///<summary>Возвращает признак отображаемости курсора.</summary>
-    bool getShowCursor() const;
+    bool isShowCursor() const;
 
     ///<summary>Возвращает текущее число кадров в секунду.</summary>
     int getFPS() const;
@@ -143,20 +146,20 @@ class QTexture
 {
 private:
 	///<summary>Идентификатор.</summary>
-	unsigned int id = 0;
+	unsigned int id_;
 
 	///<summary>Тип: diffuse, specular, normal etc.</summary>
-	QTextureType type;
+	QTextureType type_;
 
 	///<summary>Путь к текстуре.</summary>
-	std::string path;
+	std::string path_;
 
 	///<summary>Имя текстуры.</summary>
-	std::string name;
+	std::string name_;
 
 public:
 	///<summary>Конструктор.</summary>
-	QTexture() {};
+	QTexture();
 
 	///<summary>Конструктор.</summary>
 	///<param name = 'path'>Путь к текстуре.</param>
@@ -186,21 +189,24 @@ class QMaterial
 {
 private:
 	///<summary>Ambient цвет.</summary>
-	glm::vec3 ambientColor = glm::vec3(0.05f, 0.05f, 0.05f);
+	glm::vec3 ambientColor_;
 
 	///<summary>Diffuse цвет.</summary>
-	glm::vec3 diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::vec3 diffuseColor_;
 
 	///<summary>Specular цвет.</summary>
-	glm::vec3 specularColor = glm::vec3(0.7f, 0.7f, 0.7f);
+	glm::vec3 specularColor_;
 
 	///<summary>Текстуры.</summary>
-	std::vector<QTexture> textures;
+	std::vector<QTexture> textures_;
 
 	///<summary>Сила (яркость) блика.</summary>
-	float shinePower = 8.0f;
+	float shininess_;
 
 public:
+	///<summary>Конструктор.</summary>
+	QMaterial();
+
 	///<summary>Сброс к дефолным значениям.</summary>
 	void reset();
 
@@ -223,8 +229,8 @@ public:
 	void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
 	///<summary>Задаёт силу (яркость) блика.</summary>
-	///<param name = 'value'>Значение.</param>
-	void setShinePower(const float value);
+	///<param name = 'shininess'>Значение.</param>
+	void setShininess(const float shininess);
 
 	///<summary>Задаёт текстуру.</summary>
 	///<param name = 'texture'>Текстура.</param>
@@ -240,13 +246,13 @@ public:
 	glm::vec3 getSpecularColor() const;
 
 	///<summary>Возвращает силу (яркость) блика.</summary>
-	float getShinePower() const;
+	float getShininess() const;
 
 	///<summary>Возвращает список текстур.</summary>
 	std::vector<QTexture> getTextures() const;
 
 	///<summary>Проверяет список текстур на пустоту.</summary>
-	bool noTextures() const;
+	bool isTexturesEmpty() const;
 };
 
 ///<summary>Структура, которая хранит информацию об окне.</summary>
@@ -259,10 +265,10 @@ extern const std::map<QTextureType, std::string> mapTextureType;
 extern float FOV;
 
 ///<summary>Размер генерируемой карты отражений.</summary>
-extern int reflectionMapResolution;
+extern int reflectionsResolution;
  
 ///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
-extern double deltaTime;
+extern float deltaTime;
  
 ///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
-extern double lastFrameTime;
+extern float lastFrameTime;

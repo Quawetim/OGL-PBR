@@ -11,7 +11,7 @@ struct QMaterial
     vec3 ambientColor;
     vec3 diffuseColor;
     vec3 specularColor;
-    float shinePower;
+    float shininess;
 };
 
 out vec3 fragmentNormal;

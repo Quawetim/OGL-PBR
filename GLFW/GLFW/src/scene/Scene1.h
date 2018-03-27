@@ -8,10 +8,10 @@
 class Scene1 : public IScene
 {
 private:
-	std::vector<Object> cubes;
-	std::vector<Object> spheres;
-	std::vector<Object> cylinders;
-	bool decrease = true;
+	std::vector<Object> cubes_;
+	std::vector<Object> spheres_;
+	std::vector<Object> cylinders_;
+	bool decrease_;
 
 public:
 	///<summary>Деструктор.</summary>
@@ -22,6 +22,8 @@ public:
 	void init(std::vector<Model*> models);
 
 	///<summary>Отрисовка сцены.</summary>
-	///<param name = 'shader'></param>
-	void render(const Shader shader, const glm::mat4 P, const glm::mat4 V);
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'projection_matrix'>Матрица проекции.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	void render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix);
 };

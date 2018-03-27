@@ -128,6 +128,9 @@
     <ClCompile Include="src\object\CoordinateAxes.cpp">
       <Filter>Файлы исходного кода\object</Filter>
     </ClCompile>
+    <ClCompile Include="src\camera\ICamera.cpp">
+      <Filter>Файлы исходного кода\camera</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\config\Config.h">
@@ -147,9 +150,6 @@
     </ClInclude>
     <ClInclude Include="src\logger\Logger.h">
       <Filter>Файлы исходного кода\logger</Filter>
-    </ClInclude>
-    <ClInclude Include="src\camera\Camera.h">
-      <Filter>Файлы исходного кода\camera</Filter>
     </ClInclude>
     <ClInclude Include="src\texture_loader\TextureLoader.h">
       <Filter>Файлы исходного кода\texture loader</Filter>
@@ -180,6 +180,9 @@
     </ClInclude>
     <ClInclude Include="src\object\CoordinateAxes.h">
       <Filter>Файлы исходного кода\object</Filter>
+    </ClInclude>
+    <ClInclude Include="src\camera\ICamera.h">
+      <Filter>Файлы исходного кода\camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

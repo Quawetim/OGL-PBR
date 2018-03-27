@@ -7,14 +7,14 @@
 class Object : public IEntity
 {
 	///<summary>Модели, из которых состоит объект.</summary>
-	std::vector<Model*> models;									// Мб лучше список? Который можно отсортировать по приоритету отрисовки...
+	std::vector<Model*> models_;									// Мб лучше список? Который можно отсортировать по приоритету отрисовки...
 
 	///<summary>Использовать материал этого объекта.<./summary>
-	bool object_material = false;
+	bool useObjectMaterial_;
 
 public:
 	///<summary>Конструктор.</summary>
-	Object() {};
+	Object();
 
 	///<summary>Конструктор.</summary>
 	///<param name = 'name'>Имя объекта.</param>
@@ -52,7 +52,7 @@ public:
 
 	///<summary>Извлекает модель из объекта пл имени.</summary>
 	///<param name = 'name'>Имя извлекаемой модели.</param>
-	Model* deleteModel(const std::string name);
+	Model* removeModel(const std::string name);
 };
 
 class StarDestroyer : public Object

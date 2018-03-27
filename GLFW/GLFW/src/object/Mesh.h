@@ -8,36 +8,33 @@ class Mesh : public IEntity
 	friend class Model;
 private: 
 	///<summary>Vertex array object.</summary>
-    unsigned int VAO;
+    unsigned int VAO_;
  
 	///<summary>Vertex buffer object.</summary>
-    unsigned int VBO;
+    unsigned int VBO_;
 
 	///<summary>Element buffer object.</summary>
-    unsigned int EBO;
+    unsigned int EBO_;
 
 	///<summary>Вершины меша.</summary>
-    std::vector<QVertexData> vertices;
+    std::vector<QVertexData> vertices_;
  
 	///<summary>Индексы вершин.</summary>
-    std::vector<unsigned int> indices;
+    std::vector<unsigned int> indices_;
  
 	///<summary>Текстуры.</summary>
-    std::vector<QTexture> textures;
+    std::vector<QTexture> textures_;
  
 	///<summary>Флаг использования diffuseMap.</summary>
-    bool use_diffuse_map = true;
+    bool useDiffuseMaps_;
 
 	///<summary>Флаг использования specularMap.</summary>
-    bool use_specular_map = true;
+    bool useSpecularMaps_;
  
 	///<summary>Флаг использования normalMap.</summary>
-    bool use_normal_map = true;
+    bool useNormalMaps_;
 
 public:
-	///<summary>Конструктор.</summary>
-	Mesh() {};
-
     ///<summary>Конструктор.</summary>
     ///<param name = 'name'>Имя меша.</param>
     ///<param name = 'vertices'>Вершины меша.</param>

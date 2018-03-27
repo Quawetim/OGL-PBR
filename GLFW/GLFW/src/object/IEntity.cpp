@@ -1,13 +1,13 @@
 #include "IEntity.h"
 
 ///<summary>Двигает объект в направлении оси с заданной скоростью.</summary>
-///<param name = 'velocityX'>Скорость по оси x.</param>
-///<param name = 'velocityY'>Скорость по оси y.</param>
-///<param name = 'velocityZ'>Скорость по оси z.</param>
-void IEntity::move(const float velocityX, const float velocityY, const float velocityZ)
+///<param name = 'velocity_x'>Скорость по оси x.</param>
+///<param name = 'velocity_y'>Скорость по оси y.</param>
+///<param name = 'velocity_z'>Скорость по оси z.</param>
+void IEntity::move(const float velocity_x, const float velocity_y, const float velocity_z)
 {
-	this->position += glm::vec3(velocityX * deltaTime, velocityY * deltaTime, velocityZ * deltaTime);
-	this->translationMatrix = glm::translate(this->position);
+	this->position_ += glm::vec3(velocity_x * deltaTime, velocity_y * deltaTime, velocity_z * deltaTime);
+	this->translationMatrix_ = glm::translate(this->position_);
 }
 
 ///<summary>Вращает объект с заданной скоростью.</summary>
@@ -15,48 +15,48 @@ void IEntity::move(const float velocityX, const float velocityY, const float vel
 ///<param name = 'axis'>Ось вращения.</param>
 void IEntity::rotate(const double angle, const glm::vec3 axis)
 {
-	this->rotationAngle += angle * deltaTime;
-	this->rotationAxis = axis;
+	this->rotationAngle_ += angle * deltaTime;
+	this->rotationAxis_ = axis;
 
-	if (this->rotationAngle == 360) this->rotationAngle = 0;
+	if (this->rotationAngle_ == 360) this->rotationAngle_ = 0;
 	else
 	{
-		if (this->rotationAngle > 360) this->rotationAngle -= 360;
+		if (this->rotationAngle_ > 360) this->rotationAngle_ -= 360;
 	}
 
-	this->rotationMatrix = glm::rotate((float)glm::radians(this->rotationAngle), this->rotationAxis);
+	this->rotationMatrix_ = glm::rotate(static_cast<float>(glm::radians(this->rotationAngle_)), this->rotationAxis_);
 }
 
 ///<summary>Изменяет размер объекта с заданной скоростью.</summary>
-///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
-void IEntity::scale(const float scaleXYZ)
+///<param name = 'velocity_xyz'>Скорость изменения размера по всем осям.</param>
+void IEntity::scale(const float velocity_xyz)
 {
-	this->scaleCoefficients += glm::vec3(scaleXYZ * (float)deltaTime);
+	this->scaleCoeffs_ += glm::vec3(velocity_xyz * deltaTime);
 
-	if (this->scaleCoefficients.x == 0 || this->scaleCoefficients.y == 0 || this->scaleCoefficients.z == 0) logger.log("IEntity::scaleObject", QErrorType::error, "Scale = 0");
+	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log("IEntity::scaleObject", QErrorType::error, "Scale = 0");
 	else
 	{
-		if (this->scaleCoefficients.x < 0 || this->scaleCoefficients.y < 0 || this->scaleCoefficients.z < 0) logger.log("IEntity::scaleObject", QErrorType::warning, "Scale < 0");
+		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log("IEntity::scaleObject", QErrorType::warning, "Scale < 0");
 	}
 
-	this->scaleMatrix = glm::scale(this->scaleCoefficients);
+	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
 }
 
 ///<summary>Изменяет размер объекта с заданной скоростью.</summary>
-///<param name = 'scaleX'>Скорость изменения размера по X.</param>
-///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
-///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
-void IEntity::scale(const float scaleX, const float scaleY, const float scaleZ)
+///<param name = 'velocity_x'>Скорость изменения размера по X.</param>
+///<param name = 'velocity_y'>Скорость изменения размера по Y.</param>
+///<param name = 'velocity_z'>Скорость изменения размера по Z.</param>
+void IEntity::scale(const float velocity_x, const float velocity_y, const float velocity_z)
 {
-	this->scaleCoefficients += glm::vec3(scaleX * deltaTime, scaleY * deltaTime, scaleZ * deltaTime);
+	this->scaleCoeffs_ += glm::vec3(velocity_x * deltaTime, velocity_y * deltaTime, velocity_z * deltaTime);
 
-	if (this->scaleCoefficients.x == 0 || this->scaleCoefficients.y == 0 || this->scaleCoefficients.z == 0) logger.log("IEntity::scaleModel", QErrorType::error, "Scale = 0");
+	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log("IEntity::scaleModel", QErrorType::error, "Scale = 0");
 	else
 	{
-		if (this->scaleCoefficients.x < 0 || this->scaleCoefficients.y < 0 || this->scaleCoefficients.z < 0) logger.log("IEntity::scaleModel", QErrorType::warning, "Scale < 0");
+		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log("IEntity::scaleModel", QErrorType::warning, "Scale < 0");
 	}
 
-	this->scaleMatrix = glm::scale(this->scaleCoefficients);
+	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
 }
 
 ///<summary>Задаёт ambient цвет в RGB формате.</summary>
@@ -65,7 +65,7 @@ void IEntity::scale(const float scaleX, const float scaleY, const float scaleZ)
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void IEntity::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->material.setAmbientColor(red, green, blue);
+	this->material_.setAmbientColor(red, green, blue);
 }
 
 ///<summary>Задаёт diffuse цвет в RGB формате.</summary>
@@ -74,7 +74,7 @@ void IEntity::setAmbientColor(const unsigned char red, const unsigned char green
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void IEntity::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->material.setDiffuseColor(red, green, blue);
+	this->material_.setDiffuseColor(red, green, blue);
 }
 
 ///<summary>Задаёт specular цвет в RGB формате.</summary>
@@ -83,22 +83,22 @@ void IEntity::setDiffuseColor(const unsigned char red, const unsigned char green
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void IEntity::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->material.setSpecularColor(red, green, blue);
+	this->material_.setSpecularColor(red, green, blue);
 }
 
 ///<summary>Задаёт силу (яркость) блика.</summary>
 ///<param name = 'value'>Значение.</param>
-void IEntity::setShinePower(const float value)
+void IEntity::setShininess(const float value)
 {
-	this->material.setShinePower(value);
+	this->material_.setShininess(value);
 }
 
 ///<summary>Задаёт позицию сущности.</summary>
 ///<param name = 'position'>Позиция.</param>
 void IEntity::setPosition(const glm::vec3 position)
 {
-	this->position = position;
-	this->translationMatrix = glm::translate(this->position);
+	this->position_ = position;
+	this->translationMatrix_ = glm::translate(this->position_);
 }
 
 ///<summary>Задаёт поворот сущности.</summary>
@@ -106,53 +106,53 @@ void IEntity::setPosition(const glm::vec3 position)
 ///<param name = 'axis'>Ось поворота.</param>
 void IEntity::setRotation(const double angle, const glm::vec3 axis)
 {
-	this->rotationAngle = angle;
-	this->rotationAxis = axis;
+	this->rotationAngle_ = angle;
+	this->rotationAxis_ = axis;
 
-	if (this->rotationAngle == 360) this->rotationAngle = 0;
+	if (this->rotationAngle_ == 360) this->rotationAngle_ = 0;
 	else
 	{
-		if (this->rotationAngle > 360) this->rotationAngle -= 360;
+		if (this->rotationAngle_ > 360) this->rotationAngle_ -= 360;
 	}
 
-	this->rotationMatrix = glm::rotate((float)glm::radians(this->rotationAngle), this->rotationAxis);
+	this->rotationMatrix_ = glm::rotate(static_cast<float>(glm::radians(this->rotationAngle_)), this->rotationAxis_);
 }
 
 ///<summary>Задаёт размер сущности от исходного.</summary>
 ///<param name = 'scale'>Коэффициент размера.</param>
 void IEntity::setScale(const glm::vec3 scale)
 {
-	this->scaleCoefficients = scale;
+	this->scaleCoeffs_ = scale;
 
-	if (this->scaleCoefficients.x == 0 || this->scaleCoefficients.y == 0 || this->scaleCoefficients.z == 0) logger.log("IEntity::setScale", QErrorType::error, "Scale = 0");
+	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log("IEntity::setScale", QErrorType::error, "Scale = 0");
 	else
 	{
-		if (this->scaleCoefficients.x < 0 || this->scaleCoefficients.y < 0 || this->scaleCoefficients.z < 0) logger.log("IEntity::setScale", QErrorType::warning, "Scale < 0");
+		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log("IEntity::setScale", QErrorType::warning, "Scale < 0");
 	}
 
-	this->scaleMatrix = glm::scale(this->scaleCoefficients);
+	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
 }
 
 ///<summary>Возвращает имя модели.</summary>
 std::string IEntity::getName() const
 {
-	return this->name;
+	return this->name_;
 }
 
 ///<summary>Возвращает матрицу модели.</summary>
 glm::mat4 IEntity::getModelMatrix() const
 {
-	return this->translationMatrix * this->rotationMatrix * this->scaleMatrix;
+	return this->translationMatrix_ * this->rotationMatrix_ * this->scaleMatrix_;
 }
 
 ///<summary>Возвращает позицию модели.</summary>
 glm::vec3 IEntity::getPosition() const
 {
-	return this->position;
+	return this->position_;
 }
 
 ///<summary>Возвращает размер.</summary>
 glm::vec3 IEntity::getScale() const
 {
-	return this->scaleCoefficients;
+	return this->scaleCoeffs_;
 }

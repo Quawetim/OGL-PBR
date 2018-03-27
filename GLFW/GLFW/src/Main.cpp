@@ -7,6 +7,7 @@
 #include "scene\TestScene.h"
 #include "scene\Scene1.h"
 #include "object\CoordinateAxes.h"
+#include "camera\ICamera.h"
 
 #if defined(_WIN64) && defined(NDEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -37,13 +38,13 @@ int main()
 #endif
 
     // Create window section
-    Config::readConfig(windowInfo, reflectionMapResolution);
+    config::readConfig(windowInfo, reflectionsResolution);
     GLFWmonitor *screen = glfwGetPrimaryMonitor();
 
     // Параметры монитора
     const GLFWvidmode *vidMode = glfwGetVideoMode(screen);
 
-    if (windowInfo.getFullScreen())
+    if (windowInfo.isFullScreen())
     {        
         windowInfo.setWidth(vidMode->width);
         windowInfo.setHeight(vidMode->height);
@@ -73,7 +74,7 @@ int main()
     glfwMakeContextCurrent(windowInfo.getWindowPointer()); 
 
     // Vsync
-    if (windowInfo.getVsync()) glfwSwapInterval(1);
+    if (windowInfo.isVsyncEnabled()) glfwSwapInterval(1);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -93,7 +94,7 @@ int main()
     {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(Callbacks::glDebugOutput, nullptr);
+        glDebugMessageCallback(callbacks::glDebugOutput, nullptr);
 
         // Фильтр ошибок
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
@@ -108,15 +109,15 @@ int main()
 #endif
 
     // Callbacks
-    glfwSetErrorCallback(Callbacks::GLFWErrorCallback);
-    glfwSetFramebufferSizeCallback(windowInfo.getWindowPointer(), Callbacks::FramebufferSizeCallback);
-    glfwSetKeyCallback(windowInfo.getWindowPointer(), Callbacks::KeyCallback);
-    glfwSetScrollCallback(windowInfo.getWindowPointer(), Callbacks::ScrollCallback);
+    glfwSetErrorCallback(callbacks::glfwErrorCallback);
+    glfwSetFramebufferSizeCallback(windowInfo.getWindowPointer(), callbacks::framebufferSizeCallback);
+    glfwSetKeyCallback(windowInfo.getWindowPointer(), callbacks::keyCallback);
+    glfwSetScrollCallback(windowInfo.getWindowPointer(), callbacks::scrollCallback);
 
     // Скрыть курсор, поместить в центр экрана
     //windowInfo.setShowCursor(false);
-    //glfwSetInputMode(windowInfo.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    //glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
+    glfwSetInputMode(windowInfo.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
 
     glViewport(0, 0, windowInfo.getWidth(), windowInfo.getHeight());
 
@@ -130,7 +131,20 @@ int main()
 	glDepthFunc(GL_LESS);
 
     // Отсечение граней, у которых не видно лицевую сторону
-    glEnable(GL_CULL_FACE);        
+    glEnable(GL_CULL_FACE);   
+
+	ICamera *camera_FPC = new FirstPersonCamera();
+	ICamera *camera_TPC = new ThirdPersonCamera();
+	ICamera *camera_static = new StaticCamera();
+	ICamera *camera_free = new FreeCamera();
+
+	std::vector<ICamera*> cameras;
+	cameras.push_back(camera_FPC);
+	//cameras.push_back(camera_TPC);
+	//cameras.push_back(camera_static);
+	//cameras.push_back(camera_free);
+
+	ICamera *camera = cameras[0];
 
 	Shader materialShader("resources/shaders/materialShader.vs", "resources/shaders/materialShader.fs");
 	Shader simpleShader("resources/shaders/simpleShader.vs", "resources/shaders/simpleShader.fs");
@@ -165,21 +179,20 @@ int main()
 
 	glfwSwapInterval(0);
 
-	glm::mat4 P = glm::perspective(glm::radians(FOV), (float)windowInfo.getWidth() / (float)windowInfo.getHeight(), 0.05f, 500.0f);
-	glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
     //***********************************************//
 
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(FOV), static_cast<float>(windowInfo.getWidth()) / static_cast<float>(windowInfo.getHeight()), 0.05f, 500.0f);
+
     // Главный цикл
-    double currentFrameTime = 0.0;
+    float currentFrameTime = 0.0;
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
        
-    double fpsInitTime = glfwGetTime();   
+    float fpsInitTime = static_cast<float>(glfwGetTime());
 
     while (!glfwWindowShouldClose(windowInfo.getWindowPointer()))
     {
-        currentFrameTime = glfwGetTime();
+        currentFrameTime = static_cast<float>(glfwGetTime());
         deltaTime = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
 
@@ -206,14 +219,25 @@ int main()
 
 		//***********************************************//
 				
-		scene1.render(materialShader, P, V);
+		scene1.render(materialShader, projectionMatrix, camera->getViewMatrix());
+		coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
 
-		coordinateAxes.draw(simpleShader, V);
+		// Обработка ввода
+
+		camera->handleInput(windowInfo);
 
         // Меняем кадр
         glfwSwapBuffers(windowInfo.getWindowPointer());
         glfwPollEvents();
     }
+
+	cameras.clear();
+	std::vector<ICamera*>(cameras).swap(cameras);
+
+	delete camera_FPC;
+	delete camera_TPC;
+	delete camera_static;
+	delete camera_free;
 
 	delete cube;
 	delete sphere;

@@ -18,175 +18,210 @@ const std::map<QTextureType, std::string> mapTextureType =
 float FOV = 60.0f;
 
 ///<summary>Размер генерируемой карты отражений.</summary>
-int reflectionMapResolution = 128;
+int reflectionsResolution = 128;
 
 ///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
-double deltaTime = 0.0;
+float deltaTime = 0.0;
 
 ///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
-double lastFrameTime = 0.0;
+float lastFrameTime = 0.0;
 
 ////////////////////////////////////////////////////////////QWindowInfo////////////////////////////////////////////////////////////
+
+///<summary>Конструктор.</summary>
+QWindowInfo::QWindowInfo()
+{
+	this->window_ = nullptr;
+
+	this->width_ = 800;
+	this->height_ = 600;
+
+	this->fullScreen_ = false;
+
+	this->vsync_ = false;
+
+	this->showCursor_ = true;
+
+	this->fps_ = 0;
+}
 
 ///<summary>Задаёт указатель на окно.</summary>
 ///<param name = 'window'>Указатель.</param>
 void QWindowInfo::setWindowPointer(GLFWwindow* window)
 {
-    this->window = window;
+    this->window_ = window;
 }
 
 ///<summary>Задаёт ширину окна.</summary>
 ///<param name = 'width'>Ширина.</param>
 void QWindowInfo::setWidth(const int width)
 {
-    this->width = width;
+    this->width_ = width;
 }
 
 ///<summary>Задаёт высоту окна.</summary>
 ///<param name = 'height'>Высота.</param>
 void QWindowInfo::setHeight(const int height)
 {
-    this->height = height;
+    this->height_ = height;
 }
 
 ///<summary>Задаёт полноэкранный режим.</summary>
 ///<param name = 'fullScreen'>Полноэкранный режим.</param>
 void QWindowInfo::setFullScreen(const bool fullScreen)
 {
-    this->fullScreen = fullScreen;
+    this->fullScreen_ = fullScreen;
 }
 
 ///<summary>Включает/отключает вертикальную синхронизацию.</summary>
 ///<param name = 'vsync'>Вертикальная инхронизация.</param>
 void QWindowInfo::setVsync(const bool vsync)
 {
-    this->vsync = vsync;
+    this->vsync_ = vsync;
 }
 
 ///<summary>Задаёт отображение курсора.</summary>
 ///<param name = 'showCursor'>Отображать курсор.</param>
 void QWindowInfo::setShowCursor(const bool showCursor)
 {
-    this->showCursor = showCursor;
+    this->showCursor_ = showCursor;
 }
 
 ///<summary>Задаёт текущее число кадров в секунду.</summary>
 ///<param name = 'fps'>FPS.</param>
 void QWindowInfo::setFPS(const int fps)
 {
-    this->fps = fps;
+    this->fps_ = fps;
 }
 
 ///<summary>Возвращает указатель на окно.</summary>
 GLFWwindow* QWindowInfo::getWindowPointer() const
 {
-    return this->window;
+    return this->window_;
 }
 
 ///<summary>Возвращает ширину окна.</summary>
 int QWindowInfo::getWidth() const
 {
-    return this->width;
+    return this->width_;
 }
 
 ///<summary>Возвращает высоту окна.</summary>
 int QWindowInfo::getHeight() const
 {
-    return this->height;
+    return this->height_;
 }
 
 ///<summary>Возвращает полуширину окна.</summary>
 float QWindowInfo::getHalfWidth() const
 {
-    return this->width / 2.0f;
+    return this->width_ / 2.0f;
 }
 
 ///<summary>Возвращает полувысоту окна.</summary>
 float QWindowInfo::getHalfHeight() const
 {
-    return this->height / 2.0f;
+    return this->height_ / 2.0f;
 }
 
 ///<summary>Возвращает признак полноэкранности.</summary>
-bool QWindowInfo::getFullScreen() const
+bool QWindowInfo::isFullScreen() const
 {
-    return this->fullScreen;
+    return this->fullScreen_;
 }
 
 ///<summary>Возвращает включена вертикальная синхронизация или нет.</summary>
-bool QWindowInfo::getVsync() const
+bool QWindowInfo::isVsyncEnabled() const
 {
-    return this->vsync;
+    return this->vsync_;
 }
 
 ///<summary>Возвращает признак отображаемости курсора.</summary>
-bool QWindowInfo::getShowCursor() const
+bool QWindowInfo::isShowCursor() const
 {
-    return this->showCursor;
+    return this->showCursor_;
 }
 
 ///<summary>Возвращает текущее число кадров в секунду.</summary>
 int QWindowInfo::getFPS() const
 {
-    return this->fps;
+    return this->fps_;
 }
 
 ////////////////////////////////////////////////////////////QTexture////////////////////////////////////////////////////////////
+
+///<summary>Конструктор.</summary>
+QTexture::QTexture()
+{
+	this->id_ = 0;
+	this->path_ = "resources/textures/test.png";
+	this->type_ = QTextureType::diffuse;
+}
 
 ///<summary>Конструктор.</summary>
 ///<param name = 'path'>Путь к текстуре.</param>
 ///<param name = 'type'>Тип текстуры.</param>
 QTexture::QTexture(std::string path, QTextureType type)
 {
-	this->path = path;
-	this->type = type;
-	this->id = TextureLoader::loadTexture(this->path);
+	this->path_ = path;
+	this->type_ = type;
+	this->id_ = textureLoader::loadTexture(this->path_);
 }
 
 ///<summary>Задаёт тип текстуры.</summary>
 ///<param name = 'type'>Тип текстуры.</param>
 void QTexture::setType(const QTextureType type)
 {
-	this->type = type;
+	this->type_ = type;
 }
 
 ///<summary>Задаёт имя текстуры.</summary>
 ///<param name = 'name'>Имя текстуры.</param>
 void QTexture::setName(const std::string name)
 {
-	this->name = name;
+	this->name_ = name;
 }
 
 ///<summary>Возвращает идентификатор текстуры..</summary>
 unsigned int QTexture::getID() const
 {
-	return this->id;
+	return this->id_;
 }
 
 ///<summary>Возвращает тип текстуры.</summary>
 QTextureType QTexture::getType() const
 {
-	return this->type;
+	return this->type_;
 }
 
 ///<summary>Возвращает имя текстуры.</summary>
 std::string QTexture::getName() const
 {
-	return this->name;
+	return this->name_;
 }
 
 ////////////////////////////////////////////////////////////QMaterial////////////////////////////////////////////////////////////
 
+///<summary>Конструктор.</summary>
+QMaterial::QMaterial()
+{
+	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
+	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
+	this->specularColor_ = glm::vec3(0.7f, 0.7f, 0.7f);
+
+	this->shininess_ = 8.0f;
+}
+
 ///<summary>Сброс к дефолным значениям.</summary>
 void QMaterial::reset()
 {
-	this->ambientColor = glm::vec3(0.05f, 0.05f, 0.05f);
-	this->diffuseColor = glm::vec3(0.5f, 0.5f, 0.5f);
-	this->specularColor = glm::vec3(0.7f, 0.7f, 0.7f);
-	this->shinePower = 8.0f;
+	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
+	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
+	this->specularColor_ = glm::vec3(0.7f, 0.7f, 0.7f);
+	this->shininess_ = 8.0f;
 	
-	this->textures.clear();
-	std::vector<QTexture>(this->textures).swap(this->textures);	
+	this->textures_.clear();
+	std::vector<QTexture>(this->textures_).swap(this->textures_);	
 }
 
 ///<summary>Задаёт ambient цвет в RGB формате.</summary>
@@ -195,7 +230,7 @@ void QMaterial::reset()
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void QMaterial::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->ambientColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->ambientColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт diffuse цвет в RGB формате.</summary>
@@ -204,7 +239,7 @@ void QMaterial::setAmbientColor(const unsigned char red, const unsigned char gre
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void QMaterial::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->diffuseColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->diffuseColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт specular цвет в RGB формате.</summary>
@@ -213,55 +248,55 @@ void QMaterial::setDiffuseColor(const unsigned char red, const unsigned char gre
 ///<param name = 'blue'>Синяя компонента цвета.</param>
 void QMaterial::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->specularColor = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->specularColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт силу (яркость) блика.</summary>
-///<param name = 'value'>Значение.</param>
-void QMaterial::setShinePower(const float value)
+///<param name = 'shininess'>Значение.</param>
+void QMaterial::setShininess(const float shininess)
 {
-	this->shinePower = value;
+	this->shininess_ = shininess;
 }
 
 ///<summary>Задаёт диффузную текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
 void QMaterial::addTexture(QTexture texture)
 {
-	this->textures.push_back(texture);
+	this->textures_.push_back(texture);
 }
 
 ///<summary>Возвращает ambient цвет в RGB формате.</summary>
 glm::vec3 QMaterial::getAmbientColor() const
 {
-	return this->ambientColor;
+	return this->ambientColor_;
 }
 
 ///<summary>Возвращает diffuse цвет в RGB формате.</summary>
 glm::vec3 QMaterial::getDiffuseColor() const
 {
-	return this->diffuseColor;
+	return this->diffuseColor_;
 }
 
 ///<summary>Возвращает specular цвет в RGB формате.</summary>
 glm::vec3 QMaterial::getSpecularColor() const
 {
-	return this->specularColor;
+	return this->specularColor_;
 }
 
 ///<summary>Возвращает силу (яркость) блика.</summary>
-float QMaterial::getShinePower() const
+float QMaterial::getShininess() const
 {
-	return this->shinePower;
+	return this->shininess_;
 }
 
 ///<summary>Возвращает список текстур.</summary>
 std::vector<QTexture> QMaterial::getTextures() const
 {
-	return this->textures;
+	return this->textures_;
 }
 
 ///<summary>Проверяет список текстур на пустоту.</summary>
-bool QMaterial::noTextures() const
+bool QMaterial::isTexturesEmpty() const
 {
-	return this->textures.empty();
+	return this->textures_.empty();
 }

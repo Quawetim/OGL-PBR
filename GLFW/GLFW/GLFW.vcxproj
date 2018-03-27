@@ -202,6 +202,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\callbacks\Callbacks.cpp" />
+    <ClCompile Include="src\camera\ICamera.cpp" />
     <ClCompile Include="src\config\Config.cpp" />
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\includes\Includes.cpp" />
@@ -221,7 +222,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\callbacks\Callbacks.h" />
-    <ClInclude Include="src\camera\Camera.h" />
+    <ClInclude Include="src\camera\ICamera.h" />
     <ClInclude Include="src\config\Config.h" />
     <ClInclude Include="src\errorcodes\ErrorCodes.h" />
     <ClInclude Include="src\includes\Includes.h" />

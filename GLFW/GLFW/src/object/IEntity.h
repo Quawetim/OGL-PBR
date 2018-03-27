@@ -5,40 +5,38 @@ class IEntity
 {
 protected:
 	///<summary>Имя модели.</summary>
-	std::string name;
+	std::string name_;
 
 	///<summary>Матрица перемещенния.</summary>
-	glm::mat4 translationMatrix;
+	glm::mat4 translationMatrix_;
 
 	///<summary>Матрица вращения.</summary>
-	glm::mat4 rotationMatrix;
+	glm::mat4 rotationMatrix_;
 
 	///<summary>Матрица размера.</summary>
-	glm::mat4 scaleMatrix;
+	glm::mat4 scaleMatrix_;
 
 	///<summary>Позиция модели.</summary>
-	glm::vec3 position;
+	glm::vec3 position_;
 
 	///<summary>Угол поворота.</summary>
-	double rotationAngle;
+	double rotationAngle_;
 
 	///<summary>Ось поворота.</summary>
-	glm::vec3 rotationAxis;
+	glm::vec3 rotationAxis_;
 
 	///<summary>Коэффициент размера по каждой из осей.</summary>
-	glm::vec3 scaleCoefficients;
+	glm::vec3 scaleCoeffs_;
 
 	///<summary>Материал.</summary>
-	QMaterial material;
-
-	IEntity() {};
+	QMaterial material_;
 
 public:
 	///<summary>Двигает объект в направлении оси с заданной скоростью.</summary>
-	///<param name = 'velocityX'>Скорость по оси x.</param>
-	///<param name = 'velocityY'>Скорость по оси y.</param>
-	///<param name = 'velocityZ'>Скорость по оси z.</param>
-	void move(const float velocityX, const float velocityY, const float velocityZ);
+	///<param name = 'velocity_x'>Скорость по оси x.</param>
+	///<param name = 'velocity_y'>Скорость по оси y.</param>
+	///<param name = 'velocity_z'>Скорость по оси z.</param>
+	void move(const float velocity_x, const float velocity_y, const float velocity_z);
 
 	///<summary>Вращает объект с заданной скоростью.</summary>
 	///<param name = 'angle'>Скорость поворота в градусах.</param>
@@ -46,14 +44,14 @@ public:
 	void rotate(const double angle, const glm::vec3 axis);
 
 	///<summary>Изменяет размер объекта с заданной скоростью.</summary>
-	///<param name = 'scaleXYZ'>Скорость изменения размера по всем осям.</param>
-	void scale(const float scaleXYZ);
+	///<param name = 'velocity_xyz'>Скорость изменения размера по всем осям.</param>
+	void scale(const float velocity_xyz);
 
 	///<summary>Изменяет размер объекта с заданной скоростью.</summary>
-	///<param name = 'scaleX'>Скорость изменения размера по X.</param>
-	///<param name = 'scaleY'>Скорость изменения размера по Y.</param>
-	///<param name = 'scaleZ'>Скорость изменения размера по Z.</param>
-	void scale(const float scaleX, const float scaleY, const float scaleZ);
+	///<param name = 'velocity_x'>Скорость изменения размера по X.</param>
+	///<param name = 'velocity_y'>Скорость изменения размера по Y.</param>
+	///<param name = 'velocity_z'>Скорость изменения размера по Z.</param>
+	void scale(const float velocity_x, const float velocity_y, const float velocity_z);
 
 	///<summary>Задаёт ambient цвет в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
@@ -74,8 +72,8 @@ public:
 	virtual void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
 
 	///<summary>Задаёт силу (яркость) блика.</summary>
-	///<param name = 'value'>Значение.</param>
-	virtual void setShinePower(const float value);
+	///<param name = 'shininess'>Значение.</param>
+	virtual void setShininess(const float shininess);
 
 	///<summary>Задаёт позицию.</summary>
 	///<param name = 'position'>Позиция.</param>

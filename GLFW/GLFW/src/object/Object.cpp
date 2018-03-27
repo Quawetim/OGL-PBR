@@ -1,41 +1,61 @@
 #include "Object.h"
 
 ///<summary>Конструктор.</summary>
+Object::Object()
+{
+	this->name_ = "Name does not set.";
+
+	this->translationMatrix_ = glm::mat4(1.0f);
+	this->rotationMatrix_ = glm::mat4(1.0f);
+	this->scaleMatrix_ = glm::mat4(1.0f);
+	this->position_ = glm::vec3(0.0f);
+	this->rotationAngle_ = 0.0f;
+	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->scaleCoeffs_ = glm::vec3(1.0f);
+
+	this->useObjectMaterial_ = false;
+}
+
+///<summary>Конструктор.</summary>
 ///<param name = 'name'>Имя объекта.</param>
 Object::Object(std::string name, Model *model)
 {
-	this->name = name;
-	this->models.push_back(model);
+	this->name_ = name;
+	this->models_.push_back(model);
 
-	this->translationMatrix = glm::mat4(1.0f);
-	this->rotationMatrix = glm::mat4(1.0f);
-	this->scaleMatrix = glm::mat4(1.0f);
-	this->position = glm::vec3(0.0f);
-	this->rotationAngle = 0.0f;
-	this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-	this->scaleCoefficients = glm::vec3(1.0f);
+	this->translationMatrix_ = glm::mat4(1.0f);
+	this->rotationMatrix_ = glm::mat4(1.0f);
+	this->scaleMatrix_ = glm::mat4(1.0f);
+	this->position_ = glm::vec3(0.0f);
+	this->rotationAngle_ = 0.0f;
+	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->scaleCoeffs_ = glm::vec3(1.0f);
+
+	this->useObjectMaterial_ = false;
 }
 
 ///<summary>Конструктор.</summary>
 ///<param name = 'name'>Имя объекта.</param>
 Object::Object(std::string name, std::vector<Model*> models)
 {
-	this->name = name;
-	this->models = models;
+	this->name_ = name;
+	this->models_ = models;
 
-	this->translationMatrix = glm::mat4(1.0f);
-	this->rotationMatrix = glm::mat4(1.0f);
-	this->scaleMatrix = glm::mat4(1.0f);
-	this->position = glm::vec3(0.0f);
-	this->rotationAngle = 0.0f;
-	this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-	this->scaleCoefficients = glm::vec3(1.0f);
+	this->translationMatrix_ = glm::mat4(1.0f);
+	this->rotationMatrix_ = glm::mat4(1.0f);
+	this->scaleMatrix_ = glm::mat4(1.0f);
+	this->position_ = glm::vec3(0.0f);
+	this->rotationAngle_ = 0.0f;
+	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->scaleCoeffs_ = glm::vec3(1.0f);
+
+	this->useObjectMaterial_ = false;
 }
 
 ///<summary>Деструктор.</summary>
 Object::~Object()
 {
-	this->models.clear();
+	this->models_.clear();
 }
 
 ///<summary>Отрисовка объекта.
@@ -45,13 +65,13 @@ Object::~Object()
 ///<param name = 'shader'>Шейдер.</param>
 void Object::draw(Shader shader)
 {
-	if (this->models.empty()) logger.log("Object::draw", QErrorType::error, "Models list is empty. Nothing to render.");
+	if (this->models_.empty()) logger.log("Object::draw", QErrorType::error, "Models list is empty. Nothing to render.");
 	else
 	{
-		for (size_t i = 0; i < this->models.size(); i++)
+		for (size_t i = 0; i < this->models_.size(); i++)
 		{
-			if (object_material) this->models[i]->draw(shader, this->material);
-			else this->models[i]->draw(shader);
+			if (useObjectMaterial_) this->models_[i]->draw(shader, this->material_);
+			else this->models_[i]->draw(shader);
 		}
 	}
 }
@@ -60,7 +80,7 @@ void Object::draw(Shader shader)
 ///<param name = 'material'>Материал.</param>
 void Object::setMaterial(QMaterial material)
 {
-	this->material = material;
+	this->material_ = material;
 }
 
 ///<summary>Задаёт флаг использования материала этого объекта для всех моделей, 
@@ -69,29 +89,29 @@ void Object::setMaterial(QMaterial material)
 ///</summary>
 void Object::useObjectMaterial()
 {
-	this->object_material = true;
+	this->useObjectMaterial_ = true;
 }
 
 ///<summary>Добавляет модель к объекту.</summary>
 ///<param name = 'model'>Модель.</param>
 void Object::addModel(Model *model)
 {
-	this->models.push_back(model);
+	this->models_.push_back(model);
 }
 
 ///<summary>Извлекает модель из объекта пл имени.</summary>
 ///<param name = 'name'>Имя извлекаемой модели.</param>
-Model* Object::deleteModel(const std::string name)
+Model* Object::removeModel(const std::string name)
 {
 	Model *model = nullptr;
 
-	for (size_t i = 0; i < this->models.size(); i++)
+	for (size_t i = 0; i < this->models_.size(); i++)
 	{
-		if (this->models[i]->getName() == name)
+		if (this->models_[i]->getName() == name)
 		{
-			model = models[i];
-			this->models.erase(models.begin() + i);
-			std::vector<Model*>(models).swap(models);
+			model = models_[i];
+			this->models_.erase(models_.begin() + i);
+			std::vector<Model*>(models_).swap(models_);
 
 			return model;
 		}

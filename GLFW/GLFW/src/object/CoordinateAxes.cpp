@@ -1,13 +1,12 @@
 #include "CoordinateAxes.h"
 
+///<summary>Конструктор.</summary>
 CoordinateAxes::CoordinateAxes()
 {
-	this->modelMatrix = glm::mat4(1.0f);
-	this->projectionMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.05f, 500.0f);
-	//this->projectionMatrix = glm::ortho(-800.0f, 800.0f, -600.0f, 600.0f, 0.001f, 100.0f);
-	//glOrtho(-1.0 / ratio, 1.0 / ratio, -1.0, 1.0, -10.0, 1.0);
+	this->modelMatrix_ = glm::mat4(1.0f);
+	this->projectionMatrix_ = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, 0.1f, 100.0f);
 
-	float vertex_data[] =
+	float vertexData[] =
 	{
 		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
@@ -19,43 +18,44 @@ CoordinateAxes::CoordinateAxes()
 		0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f
 	};
 
-	glGenVertexArrays(1, &this->VAO);
-	glGenBuffers(1, &this->VBO);
+	glGenVertexArrays(1, &this->VAO_);
+	glGenBuffers(1, &this->VBO_);
 
-	glBindVertexArray(this->VAO);
+	glBindVertexArray(this->VAO_);
 
 	// Setup VBO
-	glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, this->VBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
 
 	// Push positions to layout 0
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
+	// Push colors to layout 1
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
 }
 
+///<summary>Деструктор.</summary>
 CoordinateAxes::~CoordinateAxes()
 {
-	glDeleteVertexArrays(1, &this->VAO);
-	glDeleteBuffers(1, &this->VBO);
+	glDeleteVertexArrays(1, &this->VAO_);
+	glDeleteBuffers(1, &this->VBO_);
 }
 
-void CoordinateAxes::draw(const Shader shader, const glm::mat4 viewMatrix)
+///<summary>Отрисовка осей.</summary>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'view_matrix'>Матрица вида.</param>
+void CoordinateAxes::draw(const Shader shader, const glm::mat4 view_matrix)
 {
 	shader.activate();
-
-	//viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 V = glm::lookAt(glm::vec3(2.0f * cos(45), 2.0f * cos(0), 2.0 * sin(45)), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//glm::mat4 V = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	shader.setProjectionViewModelMatrices(this->projectionMatrix, V, this->modelMatrix);
+	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, this->modelMatrix_);
 	
-	glViewport(5, 5, 60, 60);
+	glViewport(5, 5, 80, 80);
 
-	glBindVertexArray(this->VAO);
+	glBindVertexArray(this->VAO_);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glDrawArrays(GL_LINES, 0, 6);
 	glBindVertexArray(0);

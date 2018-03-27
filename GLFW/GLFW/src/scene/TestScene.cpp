@@ -24,30 +24,23 @@ void TestScene::init(std::vector<Model*> models)
 	v.position = glm::vec3(-1.0f, 1.0f, 0.0f);
 	vertices.push_back(v);
 
-	unsigned int ind;
-	ind = 0;
-	indices.push_back(ind);
-	ind = 1;
-	indices.push_back(ind);
-	ind = 2;
-	indices.push_back(ind);
-	ind = 0;
-	indices.push_back(ind);
-	ind = 2;
-	indices.push_back(ind);
-	ind = 3;
-	indices.push_back(ind);
+	indices.push_back(0);
+	indices.push_back(1);
+	indices.push_back(2);
+	indices.push_back(0);
+	indices.push_back(2);
+	indices.push_back(3);
 
-	rectangle = Mesh("rectangle", vertices, indices, textures);
-	rectangle.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
-	rectangle.setRotation(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	rectangle.setScale(glm::vec3(0.5f));
+	this->rectangle_ = Mesh("rectangle", vertices, indices, textures);
+	this->rectangle_.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
+	this->rectangle_.setRotation(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	this->rectangle_.setScale(glm::vec3(0.5f));
 	
-	Nanosuit = Object("nanosuit", models[1]);
-	Nanosuit.addModel(models[0]);
-	Nanosuit.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
-	Nanosuit.setRotation(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	Nanosuit.setScale(glm::vec3(0.5f));
+	this->nanosuit_ = Object("nanosuit", models[1]);
+	this->nanosuit_.addModel(models[0]);
+	this->nanosuit_.setPosition(glm::vec3(0.0f, -8.0f, 0.0f));
+	this->nanosuit_.setRotation(30.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->nanosuit_.setScale(glm::vec3(0.5f));
 
 	QTexture testTexture("resources/textures/test.png", QTextureType::diffuse);
 
@@ -56,20 +49,22 @@ void TestScene::init(std::vector<Model*> models)
 }
 
 ///<summary>Отрисовка сцены.</summary>
-///<param name = 'shader'></param>
-void TestScene::render(const Shader shader, const glm::mat4 P, const glm::mat4 V)
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'projection_matrix'>Матрица проекции.</param>
+///<param name = 'view_matrix'>Матрица вида.</param>
+void TestScene::render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix)
 {
 	QMaterial material;
 
-	shader.setProjectionViewModelMatrices(P, V, rectangle.getModelMatrix());
-	rectangle.draw(shader, material);
-	rectangle.move(0.0f, 1.0f, 0.0f);
-	rectangle.rotate(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	rectangle.scale(0.1f);
+	shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->rectangle_.getModelMatrix());
+	this->rectangle_.draw(shader, material);
+	this->rectangle_.move(0.0f, 1.0f, 0.0f);
+	this->rectangle_.rotate(45.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	this->rectangle_.scale(0.1f);
 
-	shader.setProjectionViewModelMatrices(P, V, Nanosuit.getModelMatrix());
-	Nanosuit.draw(shader);
-	Nanosuit.move(0.0f, 0.2f, 0.0f);
-	Nanosuit.rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	Nanosuit.scale(0.01f);
+	shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->nanosuit_.getModelMatrix());
+	this->nanosuit_.draw(shader);
+	this->nanosuit_.move(0.0f, 0.2f, 0.0f);
+	this->nanosuit_.rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->nanosuit_.scale(0.01f);
 }

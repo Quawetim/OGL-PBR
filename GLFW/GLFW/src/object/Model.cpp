@@ -5,13 +5,13 @@
 ///<param name = 'path'>Путь к модели.</param>
 Model::Model(std::string path)
 {
-    this->translationMatrix = glm::mat4(1.0f);
-    this->rotationMatrix = glm::mat4(1.0f);
-    this->scaleMatrix = glm::mat4(1.0f);
-    this->position = glm::vec3(0.0f);
-    this->rotationAngle = 0.0f;
-    this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->scaleCoefficients = glm::vec3(1.0f);
+    this->translationMatrix_ = glm::mat4(1.0f);
+    this->rotationMatrix_ = glm::mat4(1.0f);
+    this->scaleMatrix_ = glm::mat4(1.0f);
+    this->position_ = glm::vec3(0.0f);
+    this->rotationAngle_ = 0.0f;
+    this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->scaleCoeffs_ = glm::vec3(1.0f);
 
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -26,8 +26,8 @@ Model::Model(std::string path)
     int dot_pos = path.find_last_of('.');
     int last_slash_pos = path.find_last_of('/');
 
-    this->name = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
-    this->dir = path.substr(0, last_slash_pos);
+    this->name_ = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    this->dir_ = path.substr(0, last_slash_pos);
 
     handleNode(scene->mRootNode, scene);
 }
@@ -40,7 +40,7 @@ void Model::handleNode(const aiNode *node, const aiScene *scene)
     for (size_t i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
-        this->meshes.push_back(handleMesh(mesh, scene));
+        this->meshes_.push_back(handleMesh(mesh, scene));
     }
 
     for (size_t i = 0; i < node->mNumChildren; i++)
@@ -137,8 +137,8 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 ///<summary>Загрузка текстур модели.</summary>
 ///<param name = 'material'>Материал assimp.</param>
 ///<param name = 'type'>Тип текстуры assimp.</param>
-///<param name = 'textureType'>Тип текстуры в шейдере.</param>
-std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType textureType)
+///<param name = 'texture_type'>Тип текстуры в шейдере.</param>
+std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType texture_type)
 {
 	std::vector<QTexture> textures;
 
@@ -149,11 +149,11 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 
 		material->GetTexture(type, i, &s);
 
-		for (unsigned int j = 0; j < loaded_textures.size(); j++)
+		for (unsigned int j = 0; j < loadedTextures_.size(); j++)
 		{
-			if (std::strcmp(loaded_textures[j].getName().data(), s.C_Str()) == 0)
+			if (std::strcmp(loadedTextures_[j].getName().data(), s.C_Str()) == 0)
 			{
-				textures.push_back(loaded_textures[j]);
+				textures.push_back(loadedTextures_[j]);
 				skip_loading = true;
 				break;
 			}
@@ -161,11 +161,11 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 
 		if (!skip_loading)
 		{
-			QTexture texture(std::string(dir + "/" + s.C_Str()), textureType);
+			QTexture texture(std::string(dir_ + "/" + s.C_Str()), texture_type);
 			texture.setName(s.C_Str());
 
 			textures.push_back(texture);
-			loaded_textures.push_back(texture);
+			loadedTextures_.push_back(texture);
 		}
 	}
 
@@ -176,9 +176,9 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 ///<param name = 'shader'>Шейдер.</param>
 void Model::draw(const Shader shader)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
+    for (size_t i = 0; i < this->meshes_.size(); i++)
     {
-		this->meshes[i].draw(shader, this->material);
+		this->meshes_[i].draw(shader, this->material_);
     }
 }
 
@@ -187,9 +187,9 @@ void Model::draw(const Shader shader)
 ///<param name = 'material'>Материал.</param>
 void Model::draw(const Shader shader, const QMaterial material)
 {
-	for (size_t i = 0; i < this->meshes.size(); i++)
+	for (size_t i = 0; i < this->meshes_.size(); i++)
 	{
-		this->meshes[i].draw(shader, material);
+		this->meshes_[i].draw(shader, material);
 	}
 }
 
@@ -199,11 +199,11 @@ void Model::draw(const Shader shader, const QMaterial material)
 ///<param name = 'use'>Использовать текстуру или нет.</param>
 void Model::useTexture(const std::string mesh_name, const QTextureType texture_type, const bool use)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
+    for (size_t i = 0; i < this->meshes_.size(); i++)
     {
-        if (this->meshes[i].getName() == mesh_name)
+        if (this->meshes_[i].getName() == mesh_name)
         {
-            this->meshes[i].useTexture(texture_type, use);
+            this->meshes_[i].useTexture(texture_type, use);
             return;
         }
     }
@@ -216,8 +216,8 @@ void Model::useTexture(const std::string mesh_name, const QTextureType texture_t
 ///<param name = 'texture'>Текстура.</param>
 void Model::useTestTexture(const QTexture texture)
 {
-    for (size_t i = 0; i < this->meshes.size(); i++)
+    for (size_t i = 0; i < this->meshes_.size(); i++)
     {
-        this->meshes[i].useTestTexture(texture);
+        this->meshes_[i].useTestTexture(texture);
     }
 }

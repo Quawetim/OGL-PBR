@@ -6,7 +6,7 @@
 ///<param name = 'scancode'>Scancode.</param>
 ///<param name = 'action'>Действие.</param>
 ///<param name = 'mods'>Модификаторы.</param>
-void Callbacks::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void callbacks::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static int PrevCamera;
     
@@ -38,16 +38,16 @@ void Callbacks::KeyCallback(GLFWwindow* window, int key, int scancode, int actio
 ///<param name = 'window'>Указатель на окно.</param>
 ///<param name = 'xoffset'>Смещение по оси X.</param>
 ///<param name = 'yoffset'>Смещение по оси Y.</param>
-void Callbacks::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+void callbacks::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
     if (yoffset > 0)
     {
-        if (FOV > 10.0f) FOV -= (float)yoffset * 10.0f;
+        if (FOV > 10.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
         else FOV = 10.0f;
     }
     else
     {
-        if (FOV < 90.0f) FOV -= (float)yoffset * 10.0f;
+        if (FOV < 90.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
         else FOV = 90.0f;
     }
 }
@@ -56,7 +56,7 @@ void Callbacks::ScrollCallback(GLFWwindow* window, double xoffset, double yoffse
 ///<param name = 'window'>Указатель на окно.</param>
 ///<param name = 'width'>Новая ширина.</param>
 ///<param name = 'height'>Новая высота.</param>
-void Callbacks::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
+void callbacks::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
     windowInfo.setWidth(width);
@@ -71,7 +71,7 @@ void Callbacks::FramebufferSizeCallback(GLFWwindow* window, int width, int heigh
 ///<param name = 'length'>Длина сообщения.</param>
 ///<param name = 'message'>Сообщение.</param>
 ///<param name = 'userParam'>Параметры.</param>
-void APIENTRY Callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+void APIENTRY callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     std::stringstream ss;
 
@@ -134,7 +134,7 @@ void APIENTRY Callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GL
 ///<summary>Обработка ошибок GLFW.</summary>
 ///<param name = 'errorCode'>Код ошибки.</param>
 ///<param name = 'message'>Сообщение.</param>
-void Callbacks::GLFWErrorCallback(int errorCode, const char* message)
+void callbacks::glfwErrorCallback(int errorCode, const char* message)
 {
     std::cout << "GLFW Error: " << std::endl;
     std::cout << "Message: " << message << std::endl;
@@ -143,7 +143,7 @@ void Callbacks::GLFWErrorCallback(int errorCode, const char* message)
 ///<summary>Возвращает ошибку glGetError().</summary>
 ///<param name = 'file'>Имя файла с ошибкой.</param>
 ///<param name = 'line'>Номер строки с ошибкой.</param>
-GLenum Callbacks::glCheckError(const char *file, int line)
+GLenum callbacks::glCheckError(const char *file, int line)
 {
     GLenum errorCode;
 

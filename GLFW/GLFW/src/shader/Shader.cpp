@@ -89,11 +89,11 @@ Shader::Shader(std::string vs_path, std::string fs_path)
     checkCompilationErrors(fragment, "FRAGMENT");
     
     // Full shader
-    ID = glCreateProgram();
-    glAttachShader(ID, vertex);
-    glAttachShader(ID, fragment);
-    glLinkProgram(ID);
-    checkCompilationErrors(ID, "PROGRAM");
+    this->id_ = glCreateProgram();
+    glAttachShader(this->id_, vertex);
+    glAttachShader(this->id_, fragment);
+    glLinkProgram(this->id_);
+    checkCompilationErrors(this->id_, "PROGRAM");
     
     glDeleteShader(vertex);
     glDeleteShader(fragment);
@@ -102,13 +102,13 @@ Shader::Shader(std::string vs_path, std::string fs_path)
 ///<summary>Возвращает идентификатор шейдера.</summary>
 unsigned int Shader::getID() const
 {
-    return this->ID;
+    return this->id_;
 }
 
 ///<summary>Активация шейдера.</summary>
 void Shader::activate() const
 {
-    glUseProgram(this->ID);
+    glUseProgram(this->id_);
 }
 
 ///<summary>Задаёт (передаёт) значение переменной типа bool в шейдере по имени.</summary>
@@ -117,7 +117,7 @@ void Shader::activate() const
 void Shader::setBool(const std::string &name, const bool value) const
 {
 	this->activate();
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
+    glUniform1i(glGetUniformLocation(this->id_, name.c_str()), (int)value);
 }
 
 ///<summary>Задаёт (передаёт) значение переменной типа int в шейдере по имени.</summary>
@@ -126,7 +126,7 @@ void Shader::setBool(const std::string &name, const bool value) const
 void Shader::setInt(const std::string &name, const int value) const
 {
 	this->activate();
-    glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+    glUniform1i(glGetUniformLocation(this->id_, name.c_str()), value);
 }
 
 ///<summary>Задаёт (передаёт) значение переменной типа float в шейдере по имени.</summary>
@@ -135,7 +135,7 @@ void Shader::setInt(const std::string &name, const int value) const
 void Shader::setFloat(const std::string &name, const float value) const
 {
 	this->activate();
-    glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+    glUniform1f(glGetUniformLocation(this->id_, name.c_str()), value);
 }
 
 ///<summary>Задаёт (передаёт) значение переменной типа vec3 в шейдере по имени.</summary>
@@ -144,7 +144,7 @@ void Shader::setFloat(const std::string &name, const float value) const
 void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
 {
 	this->activate();
-    glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+    glUniform3fv(glGetUniformLocation(this->id_, name.c_str()), 1, &value[0]);
 }
 
 ///<summary>Задаёт (передаёт) значение переменной типа mat4 в шейдере по имени.</summary>
@@ -153,7 +153,7 @@ void Shader::setVec3(const std::string &name, const glm::vec3 &value) const
 void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 {
 	this->activate();
-    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(this->id_, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицу проекции.</summary>
@@ -161,7 +161,7 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const
 void Shader::setProjectionMatrix(const glm::mat4 projectionMatrix) const
 {
 	this->activate();
-    glUniformMatrix4fv(glGetUniformLocation(ID, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(this->id_, "projectionMatrix"), 1, GL_FALSE, &projectionMatrix[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицу вида.</summary>
@@ -169,7 +169,7 @@ void Shader::setProjectionMatrix(const glm::mat4 projectionMatrix) const
 void Shader::setViewMatrix(const glm::mat4 viewMatrix) const
 {
 	this->activate();
-    glUniformMatrix4fv(glGetUniformLocation(ID, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(this->id_, "viewMatrix"), 1, GL_FALSE, &viewMatrix[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицу модели.</summary>
@@ -177,17 +177,17 @@ void Shader::setViewMatrix(const glm::mat4 viewMatrix) const
 void Shader::setModelMatrix(const glm::mat4 modelMatrix) const
 {
 	this->activate();
-    glUniformMatrix4fv(glGetUniformLocation(ID, "modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(this->id_, "modelMatrix"), 1, GL_FALSE, &modelMatrix[0][0]);
 }
 
 ///<summary>Задаёт (передаёт) матрицы проекции, вида и модели.</summary>
-///<param name = 'projectionMatrix'>Матрица проекции.</param>
-///<param name = 'viewMatrix'>Матрица вида.</param>
-///<param name = 'modelMatrix'>Матрица модели.</param>
-void Shader::setProjectionViewModelMatrices(const glm::mat4 projectionMatrix, const glm::mat4 viewMatrix, const glm::mat4 modelMatrix) const
+///<param name = 'projection_matrix'>Матрица проекции.</param>
+///<param name = 'view_matrix'>Матрица вида.</param>
+///<param name = 'model_matrix'>Матрица модели.</param>
+void Shader::setProjectionViewModelMatrices(const glm::mat4 projection_matrix, const glm::mat4 view_matrix, const glm::mat4 model_matrix) const
 {
 	this->activate();
-    this->setProjectionMatrix(projectionMatrix);
-    this->setViewMatrix(viewMatrix);
-    this->setModelMatrix(modelMatrix);
+    this->setProjectionMatrix(projection_matrix);
+    this->setViewMatrix(view_matrix);
+    this->setModelMatrix(model_matrix);
 }

@@ -6,9 +6,9 @@ Logger::Logger()
 {
     CreateDirectory(L"log", NULL);
 
-    this->logfile.open("log\\log.txt", std::ios::app);
+    this->logfile_.open("log\\log.txt", std::ios::app);
     
-    if (!logfile)
+    if (!logfile_)
     {
 #ifdef _DEBUG
         std::cout << "Failed to initialize Logger." << std::endl;
@@ -23,7 +23,7 @@ Logger::Logger()
 ///<summary>Деструктор.</summary>
 Logger::~Logger() 
 {
-    this->logfile.close();
+    this->logfile_.close();
 };
 
 ///<summary>Логирует ошибку.</summary>
@@ -52,7 +52,7 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
         default:                    ss_msg << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
     }
 
-    this->logfile << ss_msg.str();
+    this->logfile_ << ss_msg.str();
 
 #ifdef _DEBUG
     std::cout << ss_msg.str();
@@ -95,7 +95,7 @@ void Logger::start(std::string source)
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    this->logfile << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
+    this->logfile_ << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
 
 #ifdef _DEBUG
     std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program starts." << std::endl;
@@ -118,8 +118,8 @@ void Logger::stop(std::string source, bool error, std::string message)
     strftime(buffer, sizeof(buffer), "%d.%m.%Y | %H:%M:%S", timeinfo);
     std::string date_time(buffer);
 
-    this->logfile << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
-    this->logfile << "---------------------------------------------------" << std::endl;
+    this->logfile_ << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
+    this->logfile_ << "---------------------------------------------------" << std::endl;
 
 
     if (error)

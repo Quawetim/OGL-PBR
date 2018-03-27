@@ -7,31 +7,35 @@
 ///<param name = 'textures'>Текстуры.</param>
 Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures)
 {
-	this->name = name;
-    this->vertices = vertices;
-    this->indices = indices;
-    this->textures = textures;
+	this->name_ = name;
+    this->vertices_ = vertices;
+    this->indices_ = indices;
+    this->textures_ = textures;
 
-    this->translationMatrix = glm::mat4(1.0f);
-    this->rotationMatrix = glm::mat4(1.0f);
-    this->scaleMatrix = glm::mat4(1.0f);
-    this->position = glm::vec3(0.0f);
-    this->rotationAngle = 0.0f;
-    this->rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-    this->scaleCoefficients = glm::vec3(1.0f);
+    this->translationMatrix_ = glm::mat4(1.0f);
+    this->rotationMatrix_ = glm::mat4(1.0f);
+    this->scaleMatrix_ = glm::mat4(1.0f);
+    this->position_ = glm::vec3(0.0f);
+    this->rotationAngle_ = 0.0f;
+    this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+    this->scaleCoeffs_ = glm::vec3(1.0f);
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+	this->useDiffuseMaps_ = true;
+	this->useSpecularMaps_ = true;
+	this->useNormalMaps_ = true;
 
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &this->VAO_);
+    glGenBuffers(1, &this->VBO_);
+    glGenBuffers(1, &this->EBO_);
+
+    glBindVertexArray(this->VAO_);
 
     // Setup VBO
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, this->VBO_);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(QVertexData), &vertices[0], GL_STATIC_DRAW);
 
     // Setup EBO
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO_);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
     // Push positions to layout 0
@@ -77,7 +81,7 @@ void Mesh::draw(const Shader shader, const QMaterial material)
 	shader.setVec3("material.ambientColor", material.getAmbientColor());
 	shader.setVec3("material.diffuseColor", material.getDiffuseColor());
 	shader.setVec3("material.specularColor", material.getSpecularColor());
-	shader.setFloat("material.shinePower", material.getShinePower());
+	shader.setFloat("material.shininess", material.getShininess());
 
 	// Push texture flags
 	shader.setBool("diffuseMap1_flag", false);
@@ -86,15 +90,15 @@ void Mesh::draw(const Shader shader, const QMaterial material)
 
 	std::vector<QTexture> pointer;
 
-	if (material.noTextures()) pointer = textures;
+	if (material.isTexturesEmpty()) pointer = textures_;
 	else pointer = material.getTextures();
 
 	// Push textures, i = texture unit
 	for (size_t i = 0; i < pointer.size(); i++)
 	{
-		if (pointer[i].getType() == QTextureType::diffuse && !this->use_diffuse_map) continue;
-		if (pointer[i].getType() == QTextureType::specular && !this->use_specular_map) continue;
-		if (pointer[i].getType() == QTextureType::normal && !this->use_normal_map) continue;
+		if (pointer[i].getType() == QTextureType::diffuse && !this->useDiffuseMaps_) continue;
+		if (pointer[i].getType() == QTextureType::specular && !this->useSpecularMaps_) continue;
+		if (pointer[i].getType() == QTextureType::normal && !this->useNormalMaps_) continue;
 
 		glActiveTexture(GL_TEXTURE0 + i);
 
@@ -122,8 +126,8 @@ void Mesh::draw(const Shader shader, const QMaterial material)
 
 	shader.activate();
 
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(this->VAO_);
+	glDrawElements(GL_TRIANGLES, this->indices_.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -136,9 +140,9 @@ void Mesh::useTexture(const QTextureType type, const bool use)
 {
     switch (type)
     {
-        case QTextureType::diffuse:     this->use_diffuse_map = use; break;
-        case QTextureType::specular:    this->use_specular_map = use; break;
-        case QTextureType::normal:      this->use_normal_map = use; break;
+        case QTextureType::diffuse:     this->useDiffuseMaps_ = use; break;
+        case QTextureType::specular:    this->useSpecularMaps_ = use; break;
+        case QTextureType::normal:      this->useNormalMaps_ = use; break;
     }
 }
 
@@ -146,7 +150,7 @@ void Mesh::useTexture(const QTextureType type, const bool use)
 ///<param name = 'texture'>Текстура.</param>
 void Mesh::useTestTexture(const QTexture texture)
 {
-	this->textures.clear();
-	std::vector<QTexture>(this->textures).swap(this->textures);
-	this->textures.push_back(texture);
+	this->textures_.clear();
+	std::vector<QTexture>(this->textures_).swap(this->textures_);
+	this->textures_.push_back(texture);
 }

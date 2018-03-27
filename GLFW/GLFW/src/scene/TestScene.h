@@ -8,8 +8,8 @@
 class TestScene : public IScene
 {
 private:
-	Mesh rectangle;
-	Object Nanosuit;
+	Mesh rectangle_;
+	Object nanosuit_;
 
 public:
 	///<summary>Деструктор.</summary>
@@ -20,6 +20,8 @@ public:
 	void init(std::vector<Model*> models);
 
 	///<summary>Отрисовка сцены.</summary>
-	///<param name = 'shader'></param>
-	void render(const Shader shader, const glm::mat4 P, const glm::mat4 V);
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'projection_matrix'>Матрица проекции.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	void render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix);
 };

@@ -5,7 +5,7 @@ struct QMaterial
     vec3 ambientColor;
     vec3 diffuseColor;
     vec3 specularColor;
-    float shinePower;
+    float shininess;
 };
 
 in vec3 fragmentNormal;
@@ -24,59 +24,60 @@ uniform sampler2D diffuseMap1;
 uniform sampler2D specularMap1;
 uniform sampler2D normalMap1;
 
-vec3 computePointLight(int id, vec3 normal, vec3 fragpos, vec3 viewdir)
+vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_direction)
 {
-    vec3 light_position = vec3(0.0f, 0.0f, 15.0f);
-    vec3 light_color = vec3(0.8f, 0.8f, 0.92f);
-    float light_power = 10.0f;
+    vec3 lightPosition = vec3(0.0f, 0.0f, 15.0f);
+    vec3 lightColor = vec3(0.8f, 0.8f, 0.92f);
+    float lightPower = 10.0f;
 
-    vec3 light_direction = normalize(light_position - fragpos);
+    vec3 lightDirection = normalize(lightPosition - fragment_position);
 
-    float diff = max(dot(normal, light_direction), 0.0f);
+    float diff = max(dot(normal, lightDirection), 0.0f);
     float spec;
 
-    bool blinn_phong = true;
-    if (blinn_phong)
+    bool isBlinnPhong = true;
+
+    if (isBlinnPhong)
     {
-        vec3 half_way_direction = normalize(light_direction + viewdir);
-        spec = pow(max(dot(normal, half_way_direction), 0.0f), material.shinePower * 8.0f);
+        vec3 halfWayDirection = normalize(lightDirection + view_direction);
+        spec = pow(max(dot(normal, halfWayDirection), 0.0f), material.shininess * 8.0f);
     }
     else
     {
-        vec3 reflection_direction = reflect(-light_direction, normal);
-        spec = pow(max(dot(viewdir, reflection_direction), 0.0f), material.shinePower);
+        vec3 reflectionDirection = reflect(-lightDirection, normal);
+        spec = pow(max(dot(view_direction, reflectionDirection), 0.0f), material.shininess);
     }    
 
-    vec3 ambient_color, diffuse_color, specular_color;
+    vec3 ambientColor, diffuseColor, specularColor;
 
     if (diffuseMap1_flag)
     {
-        ambient_color = 0.05f * texture(diffuseMap1, textureCoords).rgb;
-        diffuse_color = light_color * light_power * texture(diffuseMap1, textureCoords).rgb * diff;
+        ambientColor = 0.05f * texture(diffuseMap1, textureCoords).rgb;
+        diffuseColor = lightColor * lightPower * texture(diffuseMap1, textureCoords).rgb * diff;
     }
     else
     {
-        ambient_color = material.ambientColor * material.diffuseColor;
-        diffuse_color = light_color * light_power * material.diffuseColor * diff;
+        ambientColor = material.ambientColor * material.diffuseColor;
+        diffuseColor = lightColor * lightPower * material.diffuseColor * diff;
     }
 
     if (specularMap1_flag)
     {
-        specular_color = light_color * light_power * texture(specularMap1, textureCoords).rgb * spec;
+        specularColor = lightColor * lightPower * texture(specularMap1, textureCoords).rgb * spec;
     }
     else
     {
-        specular_color = light_color * light_power * material.specularColor * spec;
+        specularColor = lightColor * lightPower * material.specularColor * spec;
     }
 
-    float dist = length(light_position - fragpos);
+    float dist = length(lightPosition - fragment_position);
     float attenuation = 1.0f / (1.0f + 0.09f * dist + 0.032f * dist * dist);
 
-    ambient_color *= attenuation;
-    diffuse_color *= attenuation;
-    specular_color *= attenuation;
+    ambientColor *= attenuation;
+    diffuseColor *= attenuation;
+    specularColor *= attenuation;
 
-    return ambient_color + diffuse_color + specular_color;
+    return ambientColor + diffuseColor + specularColor;
 }
 
 void main()
@@ -87,9 +88,9 @@ void main()
     {
         vec3 cameraPosition = vec3(0.0f, 0.0f, 20.0f);
         vec3 normal = normalize(fragmentNormal);
-        vec3 viewdir = normalize(cameraPosition - fragmentPosition);
+        vec3 viewDirection = normalize(cameraPosition - fragmentPosition);
 
-        fragmentColor = computePointLight(0, normal, fragmentPosition, viewdir);
+        fragmentColor = computePointLight(0, normal, fragmentPosition, viewDirection);
     }
     else
     {

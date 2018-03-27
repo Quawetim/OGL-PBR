@@ -6,7 +6,7 @@
 class Logger
 {
 private:
-    std::ofstream logfile;
+    std::ofstream logfile_;
 
 public:
     ///<summary>Конструктор.</summary>
