@@ -1,4 +1,32 @@
 #include "Callbacks.h"
+#include "..\camera\ICamera.h"
+
+///<summary>Обработка позиции курсора.</summary>
+///<param name = 'window'>Указатель на окно.</param>
+///<param name = 'xpos'>Координата по оси x.</param>
+///<param name = 'ypos'>Координата по оси y.</param>
+void InputHandler::handleCursorPosition(GLFWwindow* window, double xpos, double ypos)
+{
+
+}
+
+///<summary>Обработка колёсика мышки.</summary>
+///<param name = 'window'>Указатель на окно.</param>
+///<param name = 'xoffset'>Смещение по оси X.</param>
+///<param name = 'yoffset'>Смещение по оси Y.</param>
+void InputHandler::handleScroll(GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (yoffset > 0)
+	{
+		if (FOV > 10.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
+		else FOV = 10.0f;
+	}
+	else
+	{
+		if (FOV < 90.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
+		else FOV = 90.0f;
+	}
+}
 
 ///<summary>Обработка клавиатуры.</summary>
 ///<param name = 'window'>Указатель на окно.</param>
@@ -6,7 +34,7 @@
 ///<param name = 'scancode'>Scancode.</param>
 ///<param name = 'action'>Действие.</param>
 ///<param name = 'mods'>Модификаторы.</param>
-void callbacks::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     static int PrevCamera;
     
@@ -32,31 +60,16 @@ void callbacks::keyCallback(GLFWwindow* window, int key, int scancode, int actio
     //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     //    glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
     //}
-}
 
-///<summary>Обработка колёсика мышки.</summary>
-///<param name = 'window'>Указатель на окно.</param>
-///<param name = 'xoffset'>Смещение по оси X.</param>
-///<param name = 'yoffset'>Смещение по оси Y.</param>
-void callbacks::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    if (yoffset > 0)
-    {
-        if (FOV > 10.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
-        else FOV = 10.0f;
-    }
-    else
-    {
-        if (FOV < 90.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
-        else FOV = 90.0f;
-    }
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "space" << std::endl;
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) std::cout << "tab" << std::endl;
 }
 
 ///<summary>Обработка изменения размера окна.</summary>
 ///<param name = 'window'>Указатель на окно.</param>
 ///<param name = 'width'>Новая ширина.</param>
 ///<param name = 'height'>Новая высота.</param>
-void callbacks::framebufferSizeCallback(GLFWwindow* window, int width, int height)
+void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
     windowInfo.setWidth(width);

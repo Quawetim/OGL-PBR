@@ -108,11 +108,15 @@ int main()
     }
 #endif
 
+	InputHandler inputHandler;
+	inputHandler.setEventHandling();
+
     // Callbacks
     glfwSetErrorCallback(callbacks::glfwErrorCallback);
-    glfwSetFramebufferSizeCallback(windowInfo.getWindowPointer(), callbacks::framebufferSizeCallback);
-    glfwSetKeyCallback(windowInfo.getWindowPointer(), callbacks::keyCallback);
-    glfwSetScrollCallback(windowInfo.getWindowPointer(), callbacks::scrollCallback);
+    glfwSetFramebufferSizeCallback(windowInfo.getWindowPointer(), QInputHandle::framebufferSizeDispatch);
+    glfwSetKeyCallback(windowInfo.getWindowPointer(), QInputHandle::keyboardDispatch);
+	glfwSetCursorPosCallback(windowInfo.getWindowPointer(), QInputHandle::cursorPosDispatch);
+	glfwSetScrollCallback(windowInfo.getWindowPointer(), QInputHandle::scrollDispatch);
 
     // Скрыть курсор, поместить в центр экрана
     //windowInfo.setShowCursor(false);
@@ -140,8 +144,8 @@ int main()
 
 	std::vector<ICamera*> cameras;
 	cameras.push_back(camera_FPC);
-	//cameras.push_back(camera_TPC);
-	//cameras.push_back(camera_static);
+	cameras.push_back(camera_TPC);
+	cameras.push_back(camera_static);
 	//cameras.push_back(camera_free);
 
 	ICamera *camera = cameras[0];
@@ -223,7 +227,7 @@ int main()
 		coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
 
 		// Обработка ввода
-
+				
 		camera->handleInput(windowInfo);
 
         // Меняем кадр

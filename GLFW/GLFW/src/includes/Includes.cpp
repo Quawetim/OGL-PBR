@@ -3,6 +3,8 @@
 ///<summary>Логгер. Логирует ошибки на экран и в файл "log.txt".</summary>
 Logger logger;
 
+QInputHandle *QInputHandle::inputHandle_;
+
 ///<summary>Структура, которая хранит информацию об окне.</summary>
 QWindowInfo windowInfo;
 

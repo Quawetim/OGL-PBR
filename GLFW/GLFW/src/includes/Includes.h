@@ -56,6 +56,63 @@ struct QVertexData
     glm::vec3 bitangent;
 };
 
+class QInputHandle
+{
+private:
+	static QInputHandle *inputHandle_;
+
+protected:
+	///<summary>Обработка позиции курсора.</summary>
+	///<param name = 'window'>Указатель на окно.</param>
+	///<param name = 'xpos'>Координата по оси x.</param>
+	///<param name = 'ypos'>Координата по оси y.</param>
+	virtual void handleCursorPosition(GLFWwindow* window, double xpos, double ypos) = 0;
+
+	///<summary>Обработка колёсика мышки.</summary>
+	///<param name = 'window'>Указатель на окно.</param>
+	///<param name = 'xoffset'>Смещение по оси X.</param>
+	///<param name = 'yoffset'>Смещение по оси Y.</param>
+	virtual void handleScroll(GLFWwindow* window, double xoffset, double yoffset) = 0;
+
+	///<summary>Обработка клавиатуры.</summary>
+	///<param name = 'window'>Указатель на окно.</param>
+	///<param name = 'key'>Клавиша.</param>
+	///<param name = 'scancode'>Scancode.</param>
+	///<param name = 'action'>Действие.</param>
+	///<param name = 'mods'>Модификаторы.</param>
+	virtual void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods) = 0;
+
+	///<summary>Обработка изменения размера окна.</summary>
+	///<param name = 'window'>Указатель на окно.</param>
+	///<param name = 'width'>Новая ширина.</param>
+	///<param name = 'height'>Новая высота.</param>
+	virtual void handleFramebufferSize(GLFWwindow* window, int width, int height) = 0;
+
+public:
+	///<summary>Включить обработку ввода для этого объекта.</summary>
+	virtual void setEventHandling() { inputHandle_ = this; }
+
+	static void cursorPosDispatch(GLFWwindow* window, double xpos, double ypos)
+	{
+		if (inputHandle_) inputHandle_->handleCursorPosition(window, xpos, ypos);
+	}
+
+	static void scrollDispatch(GLFWwindow* window, double xoffset, double yoffset)
+	{
+		if (inputHandle_) inputHandle_->handleScroll(window, xoffset, yoffset);
+	}
+
+	static void keyboardDispatch(GLFWwindow *window, int key, int scancode, int action, int mods)
+	{
+		if (inputHandle_) inputHandle_->handleKeyboard(window, key, scancode, action, mods);
+	}	
+
+	static void framebufferSizeDispatch(GLFWwindow* window, int width, int height)
+	{
+		if (inputHandle_) inputHandle_->handleFramebufferSize(window, width, height);
+	}
+};
+
 ///<summary>Класс, который хранит информацию об окне.</summary>
 class QWindowInfo
 {

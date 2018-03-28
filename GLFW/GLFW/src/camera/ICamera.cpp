@@ -9,8 +9,8 @@ ICamera::ICamera()
 	this->right_ = glm::normalize(glm::cross(this->front_, this->up_));
 
 	this->pitch_ = 0.0f;
-	this->yaw_ = -90.0f;
-	this->roll_ = 90.0f;
+	this->yaw_ = 0.0f;
+	this->roll_ = 0.0f;
 
 	this->viewMatrix_ = glm::mat4(1.0f);
 	this->viewMatrixAxes_ = glm::mat4(1.0f);
@@ -32,6 +32,14 @@ glm::mat4 ICamera::getViewMatrixAxes()
 
 ////////////////////////////////////////////////////////////FirstPersonCamera////////////////////////////////////////////////////////////
 
+///<summary>Конструктор.</summary>
+FirstPersonCamera::FirstPersonCamera()
+{
+	this->pitch_ = 0.0f;
+	this->yaw_ = 0.0f;
+	this->roll_ = 0.0f;
+}
+
 ///<summary>Вычисляет матрицу вида камеры.</summary>
 void FirstPersonCamera::computeViewMatrix()
 {
@@ -41,9 +49,15 @@ void FirstPersonCamera::computeViewMatrix()
 ///<summary>Вычисляет матрицу вида осей координат.</summary>
 void FirstPersonCamera::computeViewMatrixAxes()
 {
-	float angle = glm::radians(this->yaw_ + 180.0f);
+	float angle = glm::radians(this->yaw_ + 90.0f);
+	float height = glm::normalize(this->position_).y;
 
-	this->viewMatrixAxes_ = glm::lookAt(glm::vec3(2.0f * cos(angle), 0.5f, 2.0f * sin(angle)), glm::vec3(0.0f), this->up_);
+	this->viewMatrixAxes_ = glm::lookAt(glm::vec3(this->axesRadius_ * cos(angle), height, this->axesRadius_ * sin(angle)), glm::vec3(0.0f), this->up_);
+}
+
+void FirstPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	
 }
 
 ///<summary>Обработка клавиатуры.</summary>
@@ -52,7 +66,7 @@ void FirstPersonCamera::handleInput(QWindowInfo windowInfo)
 {
 	double cursorX, cursorY;
 	float offsetX, offsetY;
-	
+
 	glfwGetCursorPos(windowInfo.getWindowPointer(), &cursorX, &cursorY);
 
 	offsetX = static_cast<float>(cursorX) - windowInfo.getHalfWidth();
@@ -68,13 +82,14 @@ void FirstPersonCamera::handleInput(QWindowInfo windowInfo)
 	if (this->yaw_ > 360.0f) this->yaw_ -= 360.0f;
 	if (this->yaw_ < -360.0f) this->yaw_ += 360.0f;
 
-	/*if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_E) == GLFW_PRESS) this->roll_ -= deltaTime * this->cameraVelocities_.roll;
+	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_E) == GLFW_PRESS) this->roll_ -= deltaTime * this->cameraVelocities_.roll;
 	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_Q) == GLFW_PRESS) this->roll_ += deltaTime * this->cameraVelocities_.roll;
 
 	if (this->roll_ > 360.0f) this->roll_ -= 360.0f;
-	if (this->roll_ < -360.0f) this->roll_ += 360.0f;*/
+	if (this->roll_ < -360.0f) this->roll_ += 360.0f;
 
-	this->front_ = glm::normalize(glm::vec3(cos(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)), sin(glm::radians(this->pitch_)), sin(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_))));
+	this->front_ = glm::normalize(glm::vec3(sin(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)), sin(glm::radians(this->pitch_)),
+		-1.0f * cos(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_))));
 	//this->up_ = glm::normalize(glm::vec3(cos(glm::radians(this->roll_)), sin(glm::radians(this->roll_)), cos(glm::radians(this->roll_))));
 	this->right_ = glm::normalize(glm::cross(this->front_, this->up_));
 
@@ -90,37 +105,96 @@ void FirstPersonCamera::handleInput(QWindowInfo windowInfo)
 
 ////////////////////////////////////////////////////////////ThirdPersonCamera////////////////////////////////////////////////////////////
 
+///<summary>Конструктор.</summary>
+ThirdPersonCamera::ThirdPersonCamera()
+{
+	this->pitch_ = 0.0f;
+	this->yaw_ = 90.0f;
+	this->roll_ = 0.0f;
+}
+
 ///<summary>Вычисляет матрицу вида камеры.</summary>
 void ThirdPersonCamera::computeViewMatrix()
 {
-	
+	this->viewMatrix_ = glm::lookAt(this->position_, glm::vec3(0.0f), this->up_);
 }
 
 ///<summary>Вычисляет матрицу вида осей координат.</summary>
 void ThirdPersonCamera::computeViewMatrixAxes()
 {
+	float angle = glm::radians(this->yaw_);
+	float height = glm::normalize(this->position_).y;
 
+	this->viewMatrixAxes_ = glm::lookAt(glm::vec3(this->axesRadius_ * cos(angle), height, this->axesRadius_ * sin(angle)), glm::vec3(0.0f), this->up_);
+}
+
+void ThirdPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "TP CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>
 ///<param name = 'windowInfo'>Указатель на окно.</param>
 void ThirdPersonCamera::handleInput(QWindowInfo windowInfo)
 {
-	
+	double cursorX, cursorY;
+	float offsetX, offsetY;
+
+	glfwGetCursorPos(windowInfo.getWindowPointer(), &cursorX, &cursorY);
+
+	offsetX = static_cast<float>(cursorX) - windowInfo.getHalfWidth();
+	offsetY = windowInfo.getHalfHeight() - static_cast<float>(cursorY);
+
+	this->pitch_ += offsetY * deltaTime * this->cameraVelocities_.pitch;
+
+	if (this->pitch_ > 40.0f) this->pitch_ = 40.0f;
+	if (this->pitch_ < -40.0f) this->pitch_ = -40.0f;
+
+	this->yaw_ -= offsetX * deltaTime * this->cameraVelocities_.yaw;
+
+	if (this->yaw_ > 360.0f) this->yaw_ -= 360.0f;
+	if (this->yaw_ < -360.0f) this->yaw_ += 360.0f;
+
+	this->position_ = glm::vec3(this->radius_ * cos(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)), this->radius_ * sin(glm::radians(this->pitch_)), 
+		this->radius_ * sin(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)));
+
+	glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
 }
 
 ////////////////////////////////////////////////////////////StaticCamera////////////////////////////////////////////////////////////
 
+///<summary>Конструктор.</summary>
+StaticCamera::StaticCamera()
+{
+	this->direction_ = glm::vec3(0.0f, 0.0f, 0.0f);
+}
+
+///<summary>Конструктор.</summary>
+///<param name = 'position'>Позиция.</param>
+///<param name = 'direction'>направление.</param>
+///<param name = 'up'>Вектор вверх.</param>
+StaticCamera::StaticCamera(glm::vec3 position, glm::vec3 direction, glm::vec3 up)
+{
+	this->position_ = position;
+	this->direction_ = direction;
+	this->up_ = up;
+}
+
 ///<summary>Вычисляет матрицу вида камеры.</summary>
 void StaticCamera::computeViewMatrix()
 {
-
+	this->viewMatrix_ = glm::lookAt(this->position_, this->direction_, this->up_);
 }
 
 ///<summary>Вычисляет матрицу вида осей координат.</summary>
 void StaticCamera::computeViewMatrixAxes()
 {
+	this->viewMatrixAxes_ = glm::lookAt(glm::normalize(this->position_), glm::vec3(0.0f), this->up_);
+}
 
+void StaticCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "STATIC CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>
@@ -132,6 +206,14 @@ void StaticCamera::handleInput(QWindowInfo windowInfo)
 
 ////////////////////////////////////////////////////////////FreeCamera////////////////////////////////////////////////////////////
 
+///<summary>Конструктор.</summary>
+FreeCamera::FreeCamera()
+{
+	this->pitch_ = 0.0f;
+	this->yaw_ = 0.0f;
+	this->roll_ = 0.0f;
+}
+
 ///<summary>Вычисляет матрицу вида камеры.</summary>
 void FreeCamera::computeViewMatrix()
 {
@@ -142,6 +224,11 @@ void FreeCamera::computeViewMatrix()
 void FreeCamera::computeViewMatrixAxes()
 {
 
+}
+
+void FreeCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "FREE CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>

@@ -1,5 +1,6 @@
 #pragma once
 #include "..\includes\Includes.h"
+#include "..\callbacks\Callbacks.h"
 
 ///<summary>Скорости для каждого направления.</summary>
 struct QCameraVelocities
@@ -52,6 +53,9 @@ protected:
 	///<summary>Крен.</summary>
 	float roll_;
 
+	///<summary>Радиус облёта камеры для осей координат.</summary>
+	const float axesRadius_ = 2.0f;
+
 	///<summary>Скорости для каждого направления.</summary>
 	QCameraVelocities cameraVelocities_;
 
@@ -68,7 +72,7 @@ protected:
 	virtual void computeViewMatrixAxes() = 0;
 
 public:
-	///<summary></summary>
+	///<summary>Конструктор.</summary>
 	ICamera();
 
 	///<summary>Обработка клавиатуры.</summary>
@@ -92,7 +96,12 @@ private:
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
 
+	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 public:
+	///<summary>Конструктор.</summary>
+	FirstPersonCamera();
+
 	///<summary>Обработка клавиатуры.</summary>
 	///<param name = 'windowInfo'>Указатель на окно.</param>
 	void handleInput(QWindowInfo windowInfo);
@@ -102,8 +111,8 @@ public:
 class ThirdPersonCamera : public ICamera
 {
 private:
-	///<summary>Расстояние между камерой и объектом.</summary>
-	float radius = 20.0f;
+	///<summary>Радиус облёта камеры.</summary>
+	const float radius_ = 20.0f;
 
 	///<summary>Вычисляет матрицу вида камеры.</summary>
 	void computeViewMatrix();
@@ -111,7 +120,12 @@ private:
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
 
+	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 public:
+	///<summary>Конструктор.</summary>
+	ThirdPersonCamera();
+
 	///<summary>Обработка клавиатуры.</summary>
 	///<param name = 'windowInfo'>Указатель на окно.</param>
 	void handleInput(QWindowInfo windowInfo);
@@ -121,11 +135,27 @@ public:
 class StaticCamera : public ICamera
 {
 private:
+	///<summary>Направление камеры.</summary>
+	glm::vec3 direction_;
+
 	///<summary>Вычисляет матрицу вида камеры.</summary>
 	void computeViewMatrix();
+
+	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
 
+	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 public:
+	///<summary>Конструктор.</summary>
+	StaticCamera();
+
+	///<summary>Конструктор.</summary>
+	///<param name = 'position'>Позиция.</param>
+	///<param name = 'direction'>направление.</param>
+	///<param name = 'up'>Вектор вверх.</param>
+	StaticCamera(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
+
 	///<summary>Обработка клавиатуры.</summary>
 	///<param name = 'windowInfo'>Указатель на окно.</param>
 	void handleInput(QWindowInfo windowInfo);
@@ -141,7 +171,12 @@ private:
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
 
+	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 public:
+	///<summary>Конструктор.</summary>
+	FreeCamera();
+
 	///<summary>Обработка клавиатуры.</summary>
 	///<param name = 'windowInfo'>Указатель на окно.</param>
 	void handleInput(QWindowInfo windowInfo);
