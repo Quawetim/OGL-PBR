@@ -8,9 +8,9 @@ struct QMaterial
     float shininess;
 };
 
+in vec3 textureCoords;
 in vec3 fragmentNormal;
 in vec3 fragmentPosition;
-in vec2 textureCoords;
 
 out vec3 fragmentColor;
 
@@ -28,11 +28,11 @@ uniform sampler2D normalMap1;
 
 vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_direction)
 {
-    vec3 lightPosition = vec3(0.0f, 0.0f, 15.0f);
-    vec3 lightDiffuseColor = vec3(0.8f, 0.8f, 0.92f);
+    vec3 lightPosition = vec3(0.0f, 0.0f, 0.0f);
+    vec3 lightDiffuseColor = vec3(0.99f, 0.99f, 0.89f);
     vec3 lightSpecularColor = vec3(0.7f, 0.7f, 0.7f);
-    float lightPower = 460.0f;
-    float lightRadius = 1.0f;
+    float lightPower = 120.0f;
+    float lightRadius = 10.0f;
 
     vec3 lightDirection = normalize(lightPosition - fragment_position);
 
@@ -44,7 +44,7 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
     if (isBlinnPhong)
     {
         vec3 halfWayDirection = normalize(lightDirection + view_direction);
-        spec = pow(max(dot(normal, halfWayDirection), 0.0f), material.shininess * 16.0);
+        spec = pow(max(dot(normal, halfWayDirection), 0.0f), material.shininess);
     }
     else
     {
@@ -54,25 +54,9 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
 
     vec3 ambientColor, diffuseColor, specularColor;
 
-    if (diffuseMap1_flag)
-    {
-        ambientColor = 0.05f * texture(diffuseMap1, textureCoords).rgb;
-        diffuseColor = lightDiffuseColor * lightPower * texture(diffuseMap1, textureCoords).rgb * diff;
-    }
-    else
-    {
-        ambientColor = material.ambientColor * material.diffuseColor;
-        diffuseColor = lightDiffuseColor * lightPower * material.diffuseColor * diff;
-    }
-
-    if (specularMap1_flag)
-    {
-        specularColor = lightSpecularColor * lightPower * texture(specularMap1, textureCoords).rgb * spec;
-    }
-    else
-    {
-        specularColor = lightSpecularColor * lightPower * material.specularColor * spec;
-    }
+    ambientColor = material.ambientColor * material.diffuseColor;
+    diffuseColor = lightDiffuseColor * lightPower * material.diffuseColor * diff;
+    specularColor = lightSpecularColor * lightPower * material.specularColor * spec;
 
     float dist = length(lightPosition - fragment_position);
 
@@ -102,8 +86,7 @@ void main()
     }
     else
     {
-        if (diffuseMap1_flag) fragmentColor = texture(diffuseMap1, textureCoords).rgb;
-        else fragmentColor = material.diffuseColor;
+        fragmentColor = material.diffuseColor;
     }
 
     fragmentColor = pow(fragmentColor, vec3(1.0f / gamma));

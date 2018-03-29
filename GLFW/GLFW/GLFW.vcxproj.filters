@@ -52,6 +52,12 @@
     <Filter Include="Файлы исходного кода\scene">
       <UniqueIdentifier>{c36b0f71-971e-45ed-a96c-3a57d307c18e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\object\coordinate_axes">
+      <UniqueIdentifier>{6498480b-1657-4f24-8e0b-86b13707b5a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Файлы исходного кода\object\skybox">
+      <UniqueIdentifier>{c7736895-344b-4488-9be2-b80a0f8c33c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -76,6 +82,12 @@
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
     <None Include="resources\shaders\simpleShader.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\skyboxShader.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\skyboxShader.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
   </ItemGroup>
@@ -125,11 +137,14 @@
     <ClCompile Include="src\scene\TestScene.cpp">
       <Filter>Файлы исходного кода\scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\object\CoordinateAxes.cpp">
-      <Filter>Файлы исходного кода\object</Filter>
-    </ClCompile>
     <ClCompile Include="src\camera\ICamera.cpp">
       <Filter>Файлы исходного кода\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object\coordinate_axes\CoordinateAxes.cpp">
+      <Filter>Файлы исходного кода\object\coordinate_axes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object\skybox\Skybox.cpp">
+      <Filter>Файлы исходного кода\object\skybox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -178,11 +193,14 @@
     <ClInclude Include="src\scene\TestScene.h">
       <Filter>Файлы исходного кода\scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\object\CoordinateAxes.h">
-      <Filter>Файлы исходного кода\object</Filter>
-    </ClInclude>
     <ClInclude Include="src\camera\ICamera.h">
       <Filter>Файлы исходного кода\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object\coordinate_axes\CoordinateAxes.h">
+      <Filter>Файлы исходного кода\object\coordinate_axes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object\skybox\Skybox.h">
+      <Filter>Файлы исходного кода\object\skybox</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

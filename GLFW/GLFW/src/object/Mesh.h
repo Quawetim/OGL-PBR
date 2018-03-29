@@ -35,6 +35,9 @@ private:
     bool useNormalMaps_;
 
 public:
+	///<summary>Конструктор.</summary>
+	Mesh();
+
     ///<summary>Конструктор.</summary>
     ///<param name = 'name'>Имя меша.</param>
     ///<param name = 'vertices'>Вершины меша.</param>

@@ -84,6 +84,9 @@ public:
 
 	///<summary>¬ычисл€ет и возвращает матрицу вида осей координат.</summary>
 	glm::mat4 getViewMatrixAxes();
+
+	///<summary>¬озвращает позицию камеры.</summary>
+	glm::vec3 getPosition() const;
 };
 
 ///<summary>First person camera.</summary>

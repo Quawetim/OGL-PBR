@@ -97,13 +97,14 @@ void Scene1::init(std::vector<Model*> models)
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'projection_matrix'>Матрица проекции.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
-void Scene1::render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix)
+///<param name = 'camera_position'>Позиция камеры.</param>
+void Scene1::render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
 	// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
-		shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->cubes_[i].getModelMatrix());
-		this->cubes_[i].draw(shader);
+		//shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->cubes_[i].getModelMatrix());
+		this->cubes_[i].draw(shader, projection_matrix, view_matrix, camera_position);
 	}
 
 	this->cubes_[0].rotate(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -115,8 +116,8 @@ void Scene1::render(const Shader shader, const glm::mat4 projection_matrix, cons
 	// Сферы
 	for (size_t i = 0; i < cubes_.size(); i++)
 	{
-		shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->spheres_[i].getModelMatrix());
-		this->spheres_[i].draw(shader);
+		//shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->spheres_[i].getModelMatrix());
+		this->spheres_[i].draw(shader, projection_matrix, view_matrix, camera_position);
 
 		if (this->decrease_)
 		{
@@ -135,8 +136,8 @@ void Scene1::render(const Shader shader, const glm::mat4 projection_matrix, cons
 	// Цилиндры
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
-		shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->cylinders_[i].getModelMatrix());
-		this->cylinders_[i].draw(shader);
+		//shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->cylinders_[i].getModelMatrix());
+		this->cylinders_[i].draw(shader, projection_matrix, view_matrix, camera_position);
 		this->cylinders_[i].rotate(10.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 }

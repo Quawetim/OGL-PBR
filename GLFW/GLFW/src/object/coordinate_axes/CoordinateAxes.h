@@ -1,5 +1,5 @@
 #pragma once
-#include "../includes/Includes.h"
+#include "../../includes/Includes.h"
 
 ///<summary>Объект координатные оси.
 ///<para>x - красная.</para>

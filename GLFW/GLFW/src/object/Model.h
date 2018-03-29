@@ -34,6 +34,9 @@ private:
     std::vector<QTexture> loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType texture_type);	
 
 public:
+	///<summary>Конструктор.</summary>
+	Model();
+
     ///<summary>Конструктор.</summary>
     ///<param name = 'path'>Путь к модели.</param>
     Model(std::string path);

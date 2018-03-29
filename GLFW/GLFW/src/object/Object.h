@@ -34,7 +34,10 @@ public:
 	///<para>иначе - с заданным цветом модели.</para>
 	///</summary>
 	///<param name = 'shader'>Шейдер.</param>
-	void draw(Shader shader);
+	///<param name = 'projection_matrix'>Матрица проекции.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	void draw(Shader shader, glm::mat4 projection_matrix, glm::mat4 view_matrix, glm::vec3 camera_position);
 
 	///<summary>Задаёт материал объекта.</summary>
 	///<param name = 'material'>Материал.</param>

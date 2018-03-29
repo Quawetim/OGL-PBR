@@ -53,7 +53,7 @@ void CoordinateAxes::draw(const Shader shader, const glm::mat4 view_matrix)
 	shader.activate();
 	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, this->modelMatrix_);
 	
-	glViewport(5, 5, 80, 80);
+	glViewport(5, 5, 60, 60);
 
 	glBindVertexArray(this->VAO_);
 	glClear(GL_DEPTH_BUFFER_BIT);

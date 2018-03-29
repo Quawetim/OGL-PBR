@@ -2,6 +2,21 @@
 #include "..\texture_loader\TextureLoader.h"
 
 ///<summary>Конструктор.</summary>
+Model::Model()
+{
+	this->translationMatrix_ = glm::mat4(1.0f);
+	this->rotationMatrix_ = glm::mat4(1.0f);
+	this->scaleMatrix_ = glm::mat4(1.0f);
+	this->position_ = glm::vec3(0.0f);
+	this->rotationAngle_ = 0.0f;
+	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->scaleCoeffs_ = glm::vec3(1.0f);
+
+	this->name_ = "not loaded";
+	this->dir_ = "";
+}
+
+///<summary>Конструктор.</summary>
 ///<param name = 'path'>Путь к модели.</param>
 Model::Model(std::string path)
 {

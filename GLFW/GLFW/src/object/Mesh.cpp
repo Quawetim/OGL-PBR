@@ -1,6 +1,24 @@
 #include "Mesh.h"
 
 ///<summary>Конструктор.</summary>
+Mesh::Mesh()
+{
+	this->name_ = "not loaded";
+
+	this->translationMatrix_ = glm::mat4(1.0f);
+	this->rotationMatrix_ = glm::mat4(1.0f);
+	this->scaleMatrix_ = glm::mat4(1.0f);
+	this->position_ = glm::vec3(0.0f);
+	this->rotationAngle_ = 0.0f;
+	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->scaleCoeffs_ = glm::vec3(1.0f);
+
+	this->useDiffuseMaps_ = true;
+	this->useSpecularMaps_ = true;
+	this->useNormalMaps_ = true;
+}
+
+///<summary>Конструктор.</summary>
 ///<param name = 'name'>Имя меша.</param>
 ///<param name = 'vertices'>Вершины меша.</param>
 ///<param name = 'indices'>Индексы вершин.</param>
@@ -76,6 +94,8 @@ void Mesh::draw(const Shader shader, const QMaterial material)
 	unsigned int normalNumber = 1;
 
 	std::string number, name;	
+
+	shader.activate();
 	
 	// Push material params
 	shader.setVec3("material.ambientColor", material.getAmbientColor());
@@ -122,9 +142,7 @@ void Mesh::draw(const Shader shader, const QMaterial material)
 		glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
 	}
 
-	glActiveTexture(GL_TEXTURE0);
-
-	shader.activate();
+	glActiveTexture(GL_TEXTURE0);	
 
 	glBindVertexArray(this->VAO_);
 	glDrawElements(GL_TRIANGLES, this->indices_.size(), GL_UNSIGNED_INT, 0);

@@ -207,9 +207,9 @@ std::string QTexture::getName() const
 ///<summary>Конструктор.</summary>
 QMaterial::QMaterial()
 {
-	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
-	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
-	this->specularColor_ = glm::vec3(0.7f, 0.7f, 0.7f);
+	this->ambientColor_ = glm::vec3(0.1f, 0.1f, 0.1f);
+	this->diffuseColor_ = glm::vec3(0.4f, 0.4f, 0.4f);
+	this->specularColor_ = glm::vec3(0.6f, 0.6f, 0.6f);
 
 	this->shininess_ = 8.0f;
 }

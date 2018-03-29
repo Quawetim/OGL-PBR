@@ -3,18 +3,26 @@
 ///<summary>Проверка на ошибки компиляции шейдера.</summary>
 ///<param name = 'id'>Идентификатор шейдера.</param>
 ///<param name = 'type'>Тип шейдера.</param>
-void Shader::checkCompilationErrors(const unsigned int id, const std::string type) const
+void Shader::checkCompilationErrors(const unsigned int id, const int type) const
 {
     int success;
     char log[1024];
     
-    if (type != "PROGRAM")
+    if (type != 0)
     {
         glGetShaderiv(id, GL_COMPILE_STATUS, &success);
         if (!success)
         {
-            glGetShaderInfoLog(id, 1024, NULL, log);
-			std::string msg = "Shader compilation error. Type: " + type + "\n" + log;
+			std::string msg;
+
+			glGetShaderInfoLog(id, 1024, NULL, log);
+
+			switch (type)
+			{
+				case 1: msg = "Shader compilation error.\nType: Vertex.\nName: " + this->vsName_ + "\n" + std::string(log); break;
+				case 2: msg = "Shader compilation error.\nType: Fragment.\nName: " + this->fsName_ + "\n" + std::string(log); break;
+			}
+            
             logger.log("Shader::checkCompileErrors", QErrorType::error, msg);
         }
     }
@@ -24,7 +32,7 @@ void Shader::checkCompilationErrors(const unsigned int id, const std::string typ
         if (!success)
         {
             glGetProgramInfoLog(id, 1024, NULL, log);
-			std::string msg = "Program linking error. Type: " + type + "\n" + log;
+			std::string msg = "Program linking error.\nType: Program.\n" + std::string(log);
             logger.log("Shader::checkCompileErrors", QErrorType::error, msg);
         }
     }
@@ -35,7 +43,19 @@ void Shader::checkCompilationErrors(const unsigned int id, const std::string typ
 ///<param name = 'fs_path'>Путь к фрагментному шейдеру.</param>
 Shader::Shader(std::string vs_path, std::string fs_path)
 {
-    // Reading
+	int dot_pos, last_slash_pos;
+
+	dot_pos = vs_path.find_last_of('.');
+	last_slash_pos = vs_path.find_last_of('/');
+
+	this->vsName_ = vs_path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+
+	dot_pos = fs_path.find_last_of('.');
+	last_slash_pos = fs_path.find_last_of('/');
+
+	this->fsName_ = fs_path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    
+	// Reading
     std::string vs_code, fs_code;
     std::ifstream vs_file, fs_file;
 
@@ -80,20 +100,20 @@ Shader::Shader(std::string vs_path, std::string fs_path)
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, NULL);
     glCompileShader(vertex);
-    checkCompilationErrors(vertex, "VERTEX");
+    checkCompilationErrors(vertex, 1);
     
     // Fragment Shader
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fShaderCode, NULL);
     glCompileShader(fragment);
-    checkCompilationErrors(fragment, "FRAGMENT");
+    checkCompilationErrors(fragment, 2);
     
     // Full shader
     this->id_ = glCreateProgram();
     glAttachShader(this->id_, vertex);
     glAttachShader(this->id_, fragment);
     glLinkProgram(this->id_);
-    checkCompilationErrors(this->id_, "PROGRAM");
+    checkCompilationErrors(this->id_, 0);
     
     glDeleteShader(vertex);
     glDeleteShader(fragment);

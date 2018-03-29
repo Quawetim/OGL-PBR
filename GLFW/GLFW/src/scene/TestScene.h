@@ -9,7 +9,7 @@ class TestScene : public IScene
 {
 private:
 	Mesh rectangle_;
-	Object nanosuit_;
+	std::vector<Object> objects_;
 
 public:
 	///<summary>Деструктор.</summary>
@@ -23,5 +23,6 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'projection_matrix'>Матрица проекции.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
-	void render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix);
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	void render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix, const glm::vec3 camera_position);
 };

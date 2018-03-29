@@ -63,8 +63,14 @@ Object::~Object()
 ///<para>иначе - с заданным цветом модели.</para>
 ///</summary>
 ///<param name = 'shader'>Шейдер.</param>
-void Object::draw(Shader shader)
+///<param name = 'projection_matrix'>Матрица проекции.</param>
+///<param name = 'camera_position'>Позиция камеры.</param>
+void Object::draw(Shader shader, glm::mat4 projection_matrix, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
+	shader.activate();
+	shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->getModelMatrix());
+	shader.setVec3("cameraPosition", camera_position);
+
 	if (this->models_.empty()) logger.log("Object::draw", QErrorType::error, "Models list is empty. Nothing to render.");
 	else
 	{

@@ -30,6 +30,12 @@ glm::mat4 ICamera::getViewMatrixAxes()
 	return this->viewMatrixAxes_;
 }
 
+///<summary>Возвращает позицию камеры.</summary>
+glm::vec3 ICamera::getPosition() const
+{
+	return this->position_;
+}
+
 ////////////////////////////////////////////////////////////FirstPersonCamera////////////////////////////////////////////////////////////
 
 ///<summary>Конструктор.</summary>
@@ -74,19 +80,19 @@ void FirstPersonCamera::handleInput(QWindowInfo windowInfo)
 
 	this->pitch_ += offsetY * deltaTime * this->cameraVelocities_.pitch;
 
-	if (this->pitch_ > 360.0f) this->pitch_ -= 360.0f;
-	if (this->pitch_ < -360.0f) this->pitch_ += 360.0f;
+	if (this->pitch_ > 60.0f) this->pitch_ = 60.0f;
+	if (this->pitch_ < -60.0f) this->pitch_ = -60.0f;
 
 	this->yaw_ += offsetX * deltaTime * this->cameraVelocities_.yaw;
 
 	if (this->yaw_ > 360.0f) this->yaw_ -= 360.0f;
 	if (this->yaw_ < -360.0f) this->yaw_ += 360.0f;
 
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_E) == GLFW_PRESS) this->roll_ -= deltaTime * this->cameraVelocities_.roll;
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_Q) == GLFW_PRESS) this->roll_ += deltaTime * this->cameraVelocities_.roll;
+	//if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_E) == GLFW_PRESS) this->roll_ -= deltaTime * this->cameraVelocities_.roll;
+	//if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_Q) == GLFW_PRESS) this->roll_ += deltaTime * this->cameraVelocities_.roll;
 
-	if (this->roll_ > 360.0f) this->roll_ -= 360.0f;
-	if (this->roll_ < -360.0f) this->roll_ += 360.0f;
+	//if (this->roll_ > 360.0f) this->roll_ -= 360.0f;
+	//if (this->roll_ < -360.0f) this->roll_ += 360.0f;
 
 	this->front_ = glm::normalize(glm::vec3(sin(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)), sin(glm::radians(this->pitch_)),
 		-1.0f * cos(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_))));

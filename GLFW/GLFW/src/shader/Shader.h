@@ -9,10 +9,16 @@ private:
 	///<summary>Идентификатор шейдера.</summary>
     unsigned int id_;
 
+	///<summary>Имя вершинного шейдера.</summary>
+	std::string vsName_;
+
+	///<summary>Имя фрагментного шейдера.</summary>
+	std::string fsName_;
+
     ///<summary>Проверка на ошибки компиляции шейдера.</summary>
     ///<param name = 'id'>Идентификатор шейдера.</param>
     ///<param name = 'type'>Тип шейдера.</param>
-    void checkCompilationErrors(const unsigned int id, const std::string type) const;
+    void checkCompilationErrors(const unsigned int id, const int type) const;
 
 public:
     ///<summary>Конструктор.</summary>

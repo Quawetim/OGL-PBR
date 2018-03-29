@@ -6,8 +6,9 @@
 #include "object\Object.h"
 #include "scene\TestScene.h"
 #include "scene\Scene1.h"
-#include "object\CoordinateAxes.h"
+#include "object\coordinate_axes\CoordinateAxes.h"
 #include "camera\ICamera.h"
+#include "object\skybox\Skybox.h"
 
 #if defined(_WIN64) && defined(NDEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -123,6 +124,10 @@ int main()
     glfwSetInputMode(windowInfo.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
 
+	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////
+
     glViewport(0, 0, windowInfo.getWidth(), windowInfo.getHeight());
 
     // Цвет фона, RGBA
@@ -152,6 +157,7 @@ int main()
 
 	Shader materialShader("resources/shaders/materialShader.vs", "resources/shaders/materialShader.fs");
 	Shader simpleShader("resources/shaders/simpleShader.vs", "resources/shaders/simpleShader.fs");
+	Shader skyboxShader("resources/shaders/skyboxShader.vs", "resources/shaders/skyboxShader.fs");
 
 	std::vector<Model*> models;
 
@@ -169,62 +175,79 @@ int main()
 	Scene1 scene1;
 	scene1.init(models);
 
-    //*************DEBUG*****************************//
+	Skybox skybox(100.0f);
 
-	/*std::vector<Model*> testModels;
-	
-	testModels.push_back(cube);
+	////////////////////////////////DEBUG////////////////////////////////
 
-	Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
-	testModels.push_back(nanosuit);
+	bool testSceneEnabled = false;
 
 	TestScene testScene;
-	testScene.init(testModels);*/
+
+	if (testSceneEnabled)
+	{
+		std::vector<Model*> testModels;
+		Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
+		testModels.push_back(nanosuit);
+
+		Model *deadpool = new Model("_old/resources/3dmodels/deadpool.obj");
+		testModels.push_back(deadpool);
+		
+		testScene.init(testModels);
+	}
 
 	glfwSwapInterval(0);
 
-    //***********************************************//
+	////////////////////////////////DEBUG////////////////////////////////
+
+	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(FOV), static_cast<float>(windowInfo.getWidth()) / static_cast<float>(windowInfo.getHeight()), 0.05f, 500.0f);
 
-    // Главный цикл
     float currentFrameTime = 0.0;
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
        
     float fpsInitTime = static_cast<float>(glfwGetTime());
 
-    while (!glfwWindowShouldClose(windowInfo.getWindowPointer()))
-    {
-        currentFrameTime = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
+	while (!glfwWindowShouldClose(windowInfo.getWindowPointer()))
+	{
+		currentFrameTime = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrameTime - lastFrameTime;
+		lastFrameTime = currentFrameTime;
 
-        windowInfo.setFPS(windowInfo.getFPS() + 1);
-        	
-        if (currentFrameTime - fpsInitTime >= 0.01f)
-        {
-        	//sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
-        	//sprintf(text2, "Diploma at %d FPS", nbFrames);
-            std::stringstream title;
-            title << "Diploma at " << windowInfo.getFPS() << " FPS. Frame time: " << 1000.0 / (double)windowInfo.getFPS() << "ms.";
+		windowInfo.setFPS(windowInfo.getFPS() + 1);
 
-        	glfwSetWindowTitle(windowInfo.getWindowPointer(), title.str().c_str());
-            windowInfo.setFPS(0);
-            fpsInitTime += 1.0;
-        }
+		if (currentFrameTime - fpsInitTime >= 0.01f)
+		{
+			//sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
+			//sprintf(text2, "Diploma at %d FPS", nbFrames);
+			std::stringstream title;
+			title << "Diploma at " << windowInfo.getFPS() << " FPS. Frame time: " << 1000.0 / (double)windowInfo.getFPS() << "ms.";
 
-        // Очистить экран
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			glfwSetWindowTitle(windowInfo.getWindowPointer(), title.str().c_str());
+			windowInfo.setFPS(0);
+			fpsInitTime += 1.0;
+		}
 
-		//*************DEBUG*****************************//
-            
-		//testScene.render(materialShader, P, V);
+		// Очистить экран
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//***********************************************//
-				
-		scene1.render(materialShader, projectionMatrix, camera->getViewMatrix());
+		////////////////////////////////DEBUG////////////////////////////////
+
+		if (testSceneEnabled) testScene.render(materialShader, projectionMatrix, camera->getViewMatrix(), camera->getPosition());
+		else
+		{
+		
+		////////////////////////////////DEBUG////////////////////////////////
+
+		scene1.render(materialShader, projectionMatrix, camera->getViewMatrix(), camera->getPosition());
+		skybox.draw(skyboxShader, projectionMatrix, camera->getViewMatrix(), camera->getPosition());
+
+		// GUI
+
 		coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
+
+		}
 
 		// Обработка ввода
 				
