@@ -7,6 +7,9 @@ private:
 	///<summary>Модель.</summary>
 	Model model_;
 
+	///<summary>Идентификатор текстуры.</summary>
+	unsigned int cubeMapID;
+
 public:
 	///<summary>Конструктор.</summary>
 	///<param name = 'size'>Размер скайбокса.</param>

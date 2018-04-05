@@ -7,5 +7,9 @@ namespace textureLoader
 {
     ///<summary>Загрузка текстуры из файла.</summary>
     ///<param name = 'path'>Путь к текстуре.</param>
-    unsigned int loadTexture(std::string path);
+    unsigned int loadTexture(const std::string path);
+
+	///<summary>Загрузка кубической текстуры.</summary>
+	///<param name = 'folder'>Папка с текстурами граней.</param>
+	unsigned int loadCubeMap(const std::string folder);
 };

@@ -5,6 +5,7 @@
 Skybox::Skybox(const float size)
 {
 	this->model_ = Model("resources/3dmodels/skybox.obj");
+	this->cubeMapID = textureLoader::loadCubeMap("resources/textures/skybox");
 
 	this->scaleCoeffs_ = glm::vec3(size);
 	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
@@ -22,7 +23,11 @@ void Skybox::draw(const Shader shader, const glm::mat4 projection_matrix, const 
 	shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->getModelMatrix());
 	shader.setVec3("cameraPosition", camera_position);
 
+	glBindTexture(GL_TEXTURE_CUBE_MAP, this->cubeMapID);
+
 	model_.draw(shader);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	glDepthFunc(GL_LESS);
 }
