@@ -9,13 +9,13 @@ public:
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'xpos'>Координата по оси x.</param>
 	///<param name = 'ypos'>Координата по оси y.</param>
-	virtual void handleCursorPosition(GLFWwindow* window, double xpos, double ypos);
+	void handleCursorPosition(GLFWwindow* window, double xpos, double ypos) override;
 
 	///<summary>Обработка колёсика мышки.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'xoffset'>Смещение по оси X.</param>
 	///<param name = 'yoffset'>Смещение по оси Y.</param>
-	virtual void handleScroll(GLFWwindow* window, double xoffset, double yoffset);
+	void handleScroll(GLFWwindow* window, double xoffset, double yoffset) override;
 
 	///<summary>Обработка клавиатуры.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
@@ -23,13 +23,13 @@ public:
 	///<param name = 'scancode'>Scancode.</param>
 	///<param name = 'action'>Действие.</param>
 	///<param name = 'mods'>Модификаторы.</param>
-	virtual void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
+	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods) override;
 
 	///<summary>Обработка изменения размера окна.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'width'>Новая ширина.</param>
 	///<param name = 'height'>Новая высота.</param>
-	virtual void handleFramebufferSize(GLFWwindow* window, int width, int height);
+	void handleFramebufferSize(GLFWwindow* window, int width, int height) override;
 };
 
 namespace callbacks

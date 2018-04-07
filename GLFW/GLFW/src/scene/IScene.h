@@ -1,6 +1,6 @@
 #pragma once
 #include "../includes/Includes.h"
-#include "../object/Model.h"
+#include "../object/Object.h"
 
 ///<summary>Класс-контенер для объектов aka сцена, уровень.</summary>
 class IScene

@@ -1,6 +1,5 @@
 #pragma once
 #include "..\includes\Includes.h"
-#include "..\callbacks\Callbacks.h"
 
 ///<summary>Скорости для каждого направления.</summary>
 struct QCameraVelocities
@@ -76,8 +75,7 @@ public:
 	ICamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	///<param name = 'windowInfo'>Указатель на окно.</param>
-	virtual void handleInput(QWindowInfo windowInfo) = 0;
+	virtual void handleInput() = 0;
 
 	///<summary>Вычисляет и возвращает матрицу вида камеры.</summary>
     glm::mat4 getViewMatrix();
@@ -106,8 +104,7 @@ public:
 	FirstPersonCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	///<param name = 'windowInfo'>Указатель на окно.</param>
-	void handleInput(QWindowInfo windowInfo);
+	void handleInput() override;
 };
  
 ///<summary>Third person camera.</summary>
@@ -130,8 +127,7 @@ public:
 	ThirdPersonCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	///<param name = 'windowInfo'>Указатель на окно.</param>
-	void handleInput(QWindowInfo windowInfo);
+	void handleInput() override;
 };
 
 ///<summary>Статичная камера.</summary>
@@ -160,8 +156,7 @@ public:
 	StaticCamera(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
 
 	///<summary>Обработка клавиатуры.</summary>
-	///<param name = 'windowInfo'>Указатель на окно.</param>
-	void handleInput(QWindowInfo windowInfo);
+	void handleInput() override;
 };
 
 ///<summary>Свободная камера.</summary>
@@ -181,6 +176,5 @@ public:
 	FreeCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	///<param name = 'windowInfo'>Указатель на окно.</param>
-	void handleInput(QWindowInfo windowInfo);
+	void handleInput() override;
 };

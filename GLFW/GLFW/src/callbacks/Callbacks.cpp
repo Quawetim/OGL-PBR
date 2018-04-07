@@ -1,5 +1,6 @@
 #include "Callbacks.h"
 #include "..\camera\ICamera.h"
+#include "..\renderer\Renderer.h"
 
 ///<summary>Обработка позиции курсора.</summary>
 ///<param name = 'window'>Указатель на окно.</param>
@@ -72,8 +73,8 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
 void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
-    windowInfo.setWidth(width);
-    windowInfo.setHeight(height);
+    renderer->setWindowWidth(width);
+    renderer->setWindowHeight(height);
 }
 
 ///<summary>Вывод ошибок в консоль.</summary>

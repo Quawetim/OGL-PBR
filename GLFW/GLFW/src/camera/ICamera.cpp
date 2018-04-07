@@ -1,4 +1,6 @@
 #include "ICamera.h"
+#include "..\callbacks\Callbacks.h"
+#include "..\renderer\Renderer.h"
 
 ///<summary>Конструктор.</summary>
 ICamera::ICamera()
@@ -67,16 +69,15 @@ void FirstPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-///<param name = 'windowInfo'>Указатель на окно.</param>
-void FirstPersonCamera::handleInput(QWindowInfo windowInfo)
+void FirstPersonCamera::handleInput()
 {
 	double cursorX, cursorY;
 	float offsetX, offsetY;
 
-	glfwGetCursorPos(windowInfo.getWindowPointer(), &cursorX, &cursorY);
+	if (renderer->isOgl()) glfwGetCursorPos(renderer->getWindow().OGLwindow, &cursorX, &cursorY);
 
-	offsetX = static_cast<float>(cursorX) - windowInfo.getHalfWidth();
-	offsetY = windowInfo.getHalfHeight() - static_cast<float>(cursorY);
+	offsetX = static_cast<float>(cursorX) - renderer->getWindowHalfWidth();
+	offsetY = renderer->getWindowHalfHeight() - static_cast<float>(cursorY);
 
 	this->pitch_ += offsetY * deltaTime * this->cameraVelocities_.pitch;
 
@@ -99,14 +100,17 @@ void FirstPersonCamera::handleInput(QWindowInfo windowInfo)
 	//this->up_ = glm::normalize(glm::vec3(cos(glm::radians(this->roll_)), sin(glm::radians(this->roll_)), cos(glm::radians(this->roll_))));
 	this->right_ = glm::normalize(glm::cross(this->front_, this->up_));
 
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_W) == GLFW_PRESS) this->position_ += deltaTime * this->cameraVelocities_.forward * this->front_;
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_S) == GLFW_PRESS) this->position_ -= deltaTime * this->cameraVelocities_.backward * this->front_;
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_A) == GLFW_PRESS) this->position_ -= deltaTime * this->cameraVelocities_.strafe * this->right_;
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_D) == GLFW_PRESS) this->position_ += deltaTime * this->cameraVelocities_.strafe * this->right_;
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) this->position_.y += deltaTime * this->cameraVelocities_.strafe;
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) this->position_.y -= deltaTime * this->cameraVelocities_.strafe;
+	if (renderer->isOgl())
+	{
+		if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_W) == GLFW_PRESS) this->position_ += deltaTime * this->cameraVelocities_.forward * this->front_;
+		if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_S) == GLFW_PRESS) this->position_ -= deltaTime * this->cameraVelocities_.backward * this->front_;
+		if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_A) == GLFW_PRESS) this->position_ -= deltaTime * this->cameraVelocities_.strafe * this->right_;
+		if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_D) == GLFW_PRESS) this->position_ += deltaTime * this->cameraVelocities_.strafe * this->right_;
+		if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) this->position_.y += deltaTime * this->cameraVelocities_.strafe;
+		if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) this->position_.y -= deltaTime * this->cameraVelocities_.strafe;
 
-	glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
+		glfwSetCursorPos(renderer->getWindow().OGLwindow, renderer->getWindowHalfWidth(), renderer->getWindowHalfHeight());
+	}
 }
 
 ////////////////////////////////////////////////////////////ThirdPersonCamera////////////////////////////////////////////////////////////
@@ -136,20 +140,19 @@ void ThirdPersonCamera::computeViewMatrixAxes()
 
 void ThirdPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "TP CAM" << std::endl;
+	if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "TP CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-///<param name = 'windowInfo'>Указатель на окно.</param>
-void ThirdPersonCamera::handleInput(QWindowInfo windowInfo)
+void ThirdPersonCamera::handleInput()
 {
 	double cursorX, cursorY;
 	float offsetX, offsetY;
 
-	glfwGetCursorPos(windowInfo.getWindowPointer(), &cursorX, &cursorY);
+	glfwGetCursorPos(renderer->getWindow().OGLwindow, &cursorX, &cursorY);
 
-	offsetX = static_cast<float>(cursorX) - windowInfo.getHalfWidth();
-	offsetY = windowInfo.getHalfHeight() - static_cast<float>(cursorY);
+	offsetX = static_cast<float>(cursorX) - renderer->getWindowHalfWidth();
+	offsetY = renderer->getWindowHalfHeight() - static_cast<float>(cursorY);
 
 	this->pitch_ += offsetY * deltaTime * this->cameraVelocities_.pitch;
 
@@ -164,7 +167,7 @@ void ThirdPersonCamera::handleInput(QWindowInfo windowInfo)
 	this->position_ = glm::vec3(this->radius_ * cos(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)), this->radius_ * sin(glm::radians(this->pitch_)), 
 		this->radius_ * sin(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)));
 
-	glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
+	glfwSetCursorPos(renderer->getWindow().OGLwindow, renderer->getWindowHalfWidth(), renderer->getWindowHalfHeight());
 }
 
 ////////////////////////////////////////////////////////////StaticCamera////////////////////////////////////////////////////////////
@@ -200,12 +203,11 @@ void StaticCamera::computeViewMatrixAxes()
 
 void StaticCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "STATIC CAM" << std::endl;
+	if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "STATIC CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-///<param name = 'windowInfo'>Указатель на окно.</param>
-void StaticCamera::handleInput(QWindowInfo windowInfo)
+void StaticCamera::handleInput()
 {
 
 }
@@ -234,12 +236,11 @@ void FreeCamera::computeViewMatrixAxes()
 
 void FreeCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "FREE CAM" << std::endl;
+	if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "FREE CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-///<param name = 'windowInfo'>Указатель на окно.</param>
-void FreeCamera::handleInput(QWindowInfo windowInfo)
+void FreeCamera::handleInput()
 {
 
 }

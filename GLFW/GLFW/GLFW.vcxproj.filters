@@ -58,6 +58,9 @@
     <Filter Include="Файлы исходного кода\object\skybox">
       <UniqueIdentifier>{c7736895-344b-4488-9be2-b80a0f8c33c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\renderer">
+      <UniqueIdentifier>{cd38555d-c934-4ce2-b706-e3c4f2284e0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -101,9 +104,6 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="src\config\Config.cpp">
-      <Filter>Файлы исходного кода\config</Filter>
-    </ClCompile>
     <ClCompile Include="src\callbacks\Callbacks.cpp">
       <Filter>Файлы исходного кода\callbacks</Filter>
     </ClCompile>
@@ -146,11 +146,14 @@
     <ClCompile Include="src\object\skybox\Skybox.cpp">
       <Filter>Файлы исходного кода\object\skybox</Filter>
     </ClCompile>
+    <ClCompile Include="src\renderer\Renderer.cpp">
+      <Filter>Файлы исходного кода\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\renderer\OpenGLRenderer.cpp">
+      <Filter>Файлы исходного кода\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\config\Config.h">
-      <Filter>Файлы исходного кода\config</Filter>
-    </ClInclude>
     <ClInclude Include="src\callbacks\Callbacks.h">
       <Filter>Файлы исходного кода\callbacks</Filter>
     </ClInclude>
@@ -201,6 +204,9 @@
     </ClInclude>
     <ClInclude Include="src\object\skybox\Skybox.h">
       <Filter>Файлы исходного кода\object\skybox</Filter>
+    </ClInclude>
+    <ClInclude Include="src\renderer\Renderer.h">
+      <Filter>Файлы исходного кода\renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

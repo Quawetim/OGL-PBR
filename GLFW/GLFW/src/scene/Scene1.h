@@ -1,8 +1,6 @@
 #pragma once
 #include "../includes/Includes.h"
 #include "IScene.h"
-#include "../object/Object.h"
-#include "../texture_loader/TextureLoader.h"
 
 ///<summary>—цена 1.</summary>
 class Scene1 : public IScene

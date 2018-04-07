@@ -93,5 +93,5 @@ void main()
         fragmentColor = texture(cubeMap, textureCoords);
     }
 
-    fragmentColor = pow(fragmentColor, vec4(vec3(1.0f / gamma), 1.0f));   
+    fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));   
 }

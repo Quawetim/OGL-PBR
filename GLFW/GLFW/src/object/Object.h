@@ -1,6 +1,5 @@
 #pragma once
 #include "..\includes\Includes.h"
-#include "IEntity.h"
 #include "Model.h"
 
 ///<summary>Основная сущность. Контейнер моделей.</summary>

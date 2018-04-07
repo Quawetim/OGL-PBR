@@ -113,91 +113,6 @@ public:
 	}
 };
 
-///<summary>Класс, который хранит информацию об окне.</summary>
-class QWindowInfo
-{
-private: 
-	///<summary>Указатель на окно.</summary>
-    GLFWwindow* window_;
- 
-	///<summary>Ширина окна.</summary>
-    int width_;
- 
-	///<summary>Высота окна.</summary>
-    int height_;
-
-	///<summary>Полный экран.</summary>
-    bool fullScreen_;
-  
-	///<summary>Вертикальная синхронизация.</summary>
-    bool vsync_;
- 
-	///<summary>Отображение курсора.</summary>
-    bool showCursor_;
-
-	///<summary>FPS.</summary>
-    int fps_;
-
-public:
-	///<summary>Конструктор.</summary>
-	QWindowInfo();
-
-    ///<summary>Задаёт указатель на окно.</summary>
-    ///<param name = 'window'>Указатель.</param>
-    void setWindowPointer(GLFWwindow* window);
-
-    ///<summary>Задаёт ширину окна.</summary>
-    ///<param name = 'width'>Ширина.</param>
-    void setWidth(const int width);
-
-    ///<summary>Задаёт высоту окна.</summary>
-    ///<param name = 'height'>Высота.</param>
-    void setHeight(const int height);
-
-    ///<summary>Задаёт полноэкранный режим.</summary>
-    ///<param name = 'fullScreen'>Полноэкранный режим.</param>
-    void setFullScreen(const bool fullScreen);
-
-    ///<summary>Включает/отключает вертикальную синхронизацию.</summary>
-    ///<param name = 'vsync'>Вертикальная инхронизация.</param>
-    void setVsync(const bool vsync);
-
-    ///<summary>Задаёт отображение курсора.</summary>
-    ///<param name = 'showCursor'>Отображать курсор.</param>
-    void setShowCursor(const bool showCursor);
-
-    ///<summary>Задаёт текущее число кадров в секунду.</summary>
-    ///<param name = 'fps'>FPS.</param>
-    void setFPS(const int fps);
-
-    ///<summary>Возвращает указатель на окно.</summary>
-    GLFWwindow* getWindowPointer() const;
-
-    ///<summary>Возвращает ширину окна.</summary>
-    int getWidth() const;
-
-    ///<summary>Возвращает высоту окна.</summary>
-    int getHeight() const;
-
-    ///<summary>Возвращает полуширину окна.</summary>
-    float getHalfWidth() const;
-
-    ///<summary>Возвращает полувысоту окна.</summary>
-    float getHalfHeight() const;
-
-    ///<summary>Возвращает признак полноэкранности.</summary>
-    bool isFullScreen() const;
-
-    ///<summary>Возвращает включена вертикальная синхронизация или нет.</summary>
-    bool isVsyncEnabled() const;
-
-    ///<summary>Возвращает признак отображаемости курсора.</summary>
-    bool isShowCursor() const;
-
-    ///<summary>Возвращает текущее число кадров в секунду.</summary>
-    int getFPS() const;
-};
-
 ///<summary>Класс, хранящий информацию о текстуре.</summary>
 class QTexture
 {
@@ -312,17 +227,11 @@ public:
 	bool isTexturesEmpty() const;
 };
 
-///<summary>Структура, которая хранит информацию об окне.</summary>
-extern QWindowInfo windowInfo;
-
 ///<summary>Задаёт соответствие QTextureType и string.</summary>
 extern const std::map<QTextureType, std::string> mapTextureType;
  
 ///<summary>Field of view.</summary>
 extern float FOV;
-
-///<summary>Размер генерируемой карты отражений.</summary>
-extern int reflectionsResolution;
  
 ///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
 extern float deltaTime;

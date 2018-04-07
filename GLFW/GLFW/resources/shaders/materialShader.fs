@@ -44,7 +44,7 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
     if (isBlinnPhong)
     {
         vec3 halfWayDirection = normalize(lightDirection + view_direction);
-        spec = pow(max(dot(normal, halfWayDirection), 0.0f), material.shininess * 16.0);
+        spec = pow(max(dot(normal, halfWayDirection), 0.0f), material.shininess * 4.0);
     }
     else
     {

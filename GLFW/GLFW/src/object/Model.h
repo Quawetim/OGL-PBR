@@ -1,6 +1,5 @@
 #pragma once
 #include "..\includes\Includes.h"
-#include "IEntity.h"
 #include "Mesh.h"
 
 ///<summary>Сложный 3D-объект, состоящий из нескольких простых. Контейнер мешей.</summary>

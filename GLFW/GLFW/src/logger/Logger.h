@@ -1,5 +1,4 @@
 #pragma once
-
 #include "..\includes\Includes.h"
 
 ///<summary>Логгер. Логирует ошибки на экран и в файл "log.txt".</summary>

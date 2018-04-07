@@ -1,8 +1,6 @@
 #include "includes\Includes.h"
+#include "renderer\Renderer.h"
 #include "callbacks\Callbacks.h"
-#include "config\Config.h"
-#include "object\Mesh.h"
-#include "object\Model.h"
 #include "object\Object.h"
 #include "scene\TestScene.h"
 #include "scene\Scene1.h"
@@ -18,129 +16,14 @@ int main()
 {
     logger.start("MAIN");
 
-    if (!glfwInit())
-    {
-        logger.log("MAIN", QErrorType::error, "Failed to initialize GLFW.");
-        logger.stop("MAIN");
-        return Q_ERROR_INIT_GLFW;
-    }
-    
-    // OpenGL 4.3       
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        
-    // MSAAx4
-    glfwWindowHint(GLFW_SAMPLES, 4);
-        
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef _DEBUG
-    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-#endif
-
-    // Create window section
-    config::readConfig(windowInfo, reflectionsResolution);
-    GLFWmonitor *screen = glfwGetPrimaryMonitor();
-
-    // Параметры монитора
-    const GLFWvidmode *vidMode = glfwGetVideoMode(screen);
-
-    if (windowInfo.isFullScreen())
-    {        
-        windowInfo.setWidth(vidMode->width);
-        windowInfo.setHeight(vidMode->height);
-        
-        // Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
-        GLFWwindow* wnd = glfwCreateWindow(windowInfo.getWidth(), windowInfo.getHeight(), "Diploma", screen, NULL);
-        windowInfo.setWindowPointer(wnd);
-    }
-    else
-    {
-        // Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
-        GLFWwindow* wnd = glfwCreateWindow(windowInfo.getWidth(), windowInfo.getHeight(), "Diploma", NULL, NULL);
-        windowInfo.setWindowPointer(wnd);
-    }
-
-    if (!windowInfo.getWindowPointer())
-    {
-        logger.log("MAIN", QErrorType::error, "Failed to initialize WINDOW.");
-        logger.stop("MAIN");
-        glfwTerminate();
-        return Q_ERROR_INIT_WINDOW;
-    }   
-
-    // Окно в центр экрана
-    glfwSetWindowPos(windowInfo.getWindowPointer(), vidMode->width / 2 - (int)windowInfo.getHalfWidth(), vidMode->height / 2 - (int)windowInfo.getHalfHeight());
-
-    glfwMakeContextCurrent(windowInfo.getWindowPointer()); 
-
-    // Vsync
-    if (windowInfo.isVsyncEnabled()) glfwSwapInterval(1);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        logger.log("MAIN", QErrorType::error, "Failed to initialize GLAD.");
-        logger.stop("MAIN");
-        return Q_ERROR_INIT_GLAD;
-    }
-
-    int GL_Current_Version_Major = GLVersion.major;
-    int GL_Current_Version_Minor = GLVersion.minor;
-
-    // Debug output
-#ifdef _DEBUG
-    GLint gl_context_flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &gl_context_flags);
-    if (gl_context_flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-    {
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(callbacks::glDebugOutput, nullptr);
-
-        // Фильтр ошибок
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-    }
-    else
-    {
-        logger.log("MAIN", QErrorType::error, "Failed to initialize GL DebugOutput.");
-        logger.stop("MAIN");       
-        glfwTerminate();
-        return Q_ERROR_INIT_DEBUG_OUTPUT;
-    }
-#endif
+	renderer = new OpenGLRenderer();
 
 	InputHandler inputHandler;
 	inputHandler.setEventHandling();
 
-    // Callbacks
-    glfwSetErrorCallback(callbacks::glfwErrorCallback);
-    glfwSetFramebufferSizeCallback(windowInfo.getWindowPointer(), QInputHandle::framebufferSizeDispatch);
-    glfwSetKeyCallback(windowInfo.getWindowPointer(), QInputHandle::keyboardDispatch);
-	glfwSetCursorPosCallback(windowInfo.getWindowPointer(), QInputHandle::cursorPosDispatch);
-	glfwSetScrollCallback(windowInfo.getWindowPointer(), QInputHandle::scrollDispatch);
-
-    // Скрыть курсор, поместить в центр экрана
-    //windowInfo.setShowCursor(false);
-    glfwSetInputMode(windowInfo.getWindowPointer(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetCursorPos(windowInfo.getWindowPointer(), windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
-
 	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////
 
-	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////
-
-    glViewport(0, 0, windowInfo.getWidth(), windowInfo.getHeight());
-
-    // Цвет фона, RGBA
-    glClearColor(0.0f, 0.6f, 0.8f, 0.0f);
-
-    // Включаем буфер глубины
-    glEnable(GL_DEPTH_TEST);
-
-	// Выбираем фрагмент, ближайший к камере
-	glDepthFunc(GL_LESS);
-
-    // Отсечение граней, у которых не видно лицевую сторону
-    glEnable(GL_CULL_FACE);   
+	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   
 
 	ICamera *camera_FPC = new FirstPersonCamera();
 	ICamera *camera_TPC = new ThirdPersonCamera();
@@ -201,62 +84,63 @@ int main()
 
 	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
-	glm::mat4 projectionMatrix = glm::perspective(glm::radians(FOV), static_cast<float>(windowInfo.getWidth()) / static_cast<float>(windowInfo.getHeight()), 0.05f, 500.0f);
-
     float currentFrameTime = 0.0;
 
     logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
        
     float fpsInitTime = static_cast<float>(glfwGetTime());
 
-	while (!glfwWindowShouldClose(windowInfo.getWindowPointer()))
+	while (!renderer->quit())
 	{
 		currentFrameTime = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrameTime - lastFrameTime;
 		lastFrameTime = currentFrameTime;
 
-		windowInfo.setFPS(windowInfo.getFPS() + 1);
+		renderer->setFPS(renderer->getFPS() + 1);
 
 		if (currentFrameTime - fpsInitTime >= 0.01f)
 		{
 			//sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
 			//sprintf(text2, "Diploma at %d FPS", nbFrames);
 			std::stringstream title;
-			title << "Diploma at " << windowInfo.getFPS() << " FPS. Frame time: " << 1000.0 / (double)windowInfo.getFPS() << "ms.";
+			title << "Diploma at " << renderer->getFPS() << " FPS. Frame time: " << 1000.0 / static_cast<double>(renderer->getFPS()) << "ms.";
 
-			glfwSetWindowTitle(windowInfo.getWindowPointer(), title.str().c_str());
-			windowInfo.setFPS(0);
+			renderer->setWindowTitle(title.str());
+			renderer->setFPS(0);
 			fpsInitTime += 1.0;
 		}
 
 		// Очистить экран
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderer->clearScreen();
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		if (testSceneEnabled) testScene.render(materialShader, projectionMatrix, camera->getViewMatrix(), camera->getPosition());
+		if (testSceneEnabled) testScene.render(materialShader, renderer->getProjectionMatrix(), camera->getViewMatrix(), camera->getPosition());
 		else
 		{
 		
-		////////////////////////////////DEBUG////////////////////////////////
+			////////////////////////////////DEBUG////////////////////////////////
 
-		scene1.render(materialShader, projectionMatrix, camera->getViewMatrix(), camera->getPosition());
-		skybox.draw(skyboxShader, projectionMatrix, camera->getViewMatrix(), camera->getPosition());
+			scene1.render(materialShader, renderer->getProjectionMatrix(), camera->getViewMatrix(), camera->getPosition());
+			skybox.draw(skyboxShader, renderer->getProjectionMatrix(), camera->getViewMatrix(), camera->getPosition());
 
-		// GUI
+			// GUI
 
-		coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
+			coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
 
 		}
 
 		// Обработка ввода
 				
-		camera->handleInput(windowInfo);
+		camera->handleInput();
 
         // Меняем кадр
-        glfwSwapBuffers(windowInfo.getWindowPointer());
-        glfwPollEvents();
+
+		renderer->swapBuffers();
+		renderer->pollEvents();
     }
+
+	delete renderer;
 
 	cameras.clear();
 	std::vector<ICamera*>(cameras).swap(cameras);
@@ -271,7 +155,6 @@ int main()
 	delete cylinder;
 
     // Выход из программы.
-    glfwTerminate();
     logger.stop("MAIN", false);
     return Q_GOOD_EXIT;
 

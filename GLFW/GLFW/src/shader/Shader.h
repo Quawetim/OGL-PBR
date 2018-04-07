@@ -1,5 +1,4 @@
 #pragma once
-
 #include "..\includes\Includes.h"
  
 ///<summary>Класс шейдер.</summary>

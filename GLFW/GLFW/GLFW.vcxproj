@@ -205,7 +205,6 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
   <ItemGroup>
     <ClCompile Include="src\callbacks\Callbacks.cpp" />
     <ClCompile Include="src\camera\ICamera.cpp" />
-    <ClCompile Include="src\config\Config.cpp" />
     <ClCompile Include="src\glad\glad.c" />
     <ClCompile Include="src\includes\Includes.cpp" />
     <ClCompile Include="src\logger\Logger.cpp" />
@@ -216,6 +215,8 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\object\Model.cpp" />
     <ClCompile Include="src\object\Object.cpp" />
     <ClCompile Include="src\object\skybox\Skybox.cpp" />
+    <ClCompile Include="src\renderer\OpenGLRenderer.cpp" />
+    <ClCompile Include="src\renderer\Renderer.cpp" />
     <ClCompile Include="src\scene\Scene1.cpp" />
     <ClCompile Include="src\scene\TestScene.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
@@ -226,7 +227,6 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\callbacks\Callbacks.h" />
     <ClInclude Include="src\camera\ICamera.h" />
-    <ClInclude Include="src\config\Config.h" />
     <ClInclude Include="src\errorcodes\ErrorCodes.h" />
     <ClInclude Include="src\includes\Includes.h" />
     <ClInclude Include="src\logger\Logger.h" />
@@ -236,6 +236,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\object\Mesh.h" />
     <ClInclude Include="src\object\Model.h" />
     <ClInclude Include="src\object\skybox\Skybox.h" />
+    <ClInclude Include="src\renderer\Renderer.h" />
     <ClInclude Include="src\scene\IScene.h" />
     <ClInclude Include="src\scene\Scene1.h" />
     <ClInclude Include="src\scene\TestScene.h" />

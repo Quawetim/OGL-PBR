@@ -1,4 +1,5 @@
 #include "CoordinateAxes.h"
+#include "..\..\renderer\Renderer.h"
 
 ///<summary>Конструктор.</summary>
 CoordinateAxes::CoordinateAxes()
@@ -60,5 +61,5 @@ void CoordinateAxes::draw(const Shader shader, const glm::mat4 view_matrix)
 	glDrawArrays(GL_LINES, 0, 6);
 	glBindVertexArray(0);
 
-	glViewport(0, 0, windowInfo.getWidth(), windowInfo.getHeight());
+	glViewport(0, 0, renderer->getWindowWidth(), renderer->getWindowHeight());
 }
