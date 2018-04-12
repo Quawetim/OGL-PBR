@@ -3,6 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <vector>
+#include <list>
 #include <map>
 #include <string>
 #include <iostream>
@@ -178,6 +179,9 @@ private:
 public:
 	///<summary>Конструктор.</summary>
 	QMaterial();
+
+	///<summary>Деструктор.</summary>
+	~QMaterial();
 
 	///<summary>Сброс к дефолным значениям.</summary>
 	void reset();

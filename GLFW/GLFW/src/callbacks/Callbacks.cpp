@@ -72,7 +72,7 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
 ///<param name = 'height'>Новая высота.</param>
 void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+	renderer->setViewport(width, height);
     renderer->setWindowWidth(width);
     renderer->setWindowHeight(height);
 }

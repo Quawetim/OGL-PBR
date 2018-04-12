@@ -130,6 +130,112 @@ OpenGLRenderer::~OpenGLRenderer()
 	glfwTerminate();
 }
 
+void OpenGLRenderer::drawModel(Model* model, Shader shader, QMaterial material)
+{
+	for (size_t j = 0; j < model->getMeshes().size(); j++)
+	{		
+		unsigned int diffuseNumber = 1;
+		unsigned int specularNumber = 1;
+		unsigned int normalNumber = 1;
+
+		std::string number, name;
+
+		std::vector<QTexture> pointer;
+
+		// костылище
+		// проверить на жор памяти копированием
+		if (material.isTexturesEmpty()) pointer = model->getMeshes()[j].getTextures();
+		else pointer = material.getTextures();
+
+		// Push textures, i = texture unit
+		for (size_t i = 0; i < pointer.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+
+			name = mapTextureType.find(pointer[i].getType())->second;
+
+			switch (pointer[i].getType())
+			{
+				case QTextureType::diffuse:     number = std::to_string(diffuseNumber++); break;
+				case QTextureType::specular:    number = std::to_string(specularNumber++); break;
+				case QTextureType::normal:      number = std::to_string(normalNumber++); break;
+				default:
+					{
+						logger.log("Mesh::drawMesh", QErrorType::error, "Unexpected texture type");
+						logger.stop("Mesh::drawMesh", true, "Unexpected texture type");
+						exit(Q_ERROR_UNEXPECTED_TEXTURE_TYPE);
+					}
+			}
+
+			shader.setBool(std::string(name + number + "_flag"), true);
+			shader.setInt(std::string(name + number), i);
+			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
+		}
+
+		glActiveTexture(GL_TEXTURE0);
+
+		glBindVertexArray(model->getMeshes()[j].getVAO());
+		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+}
+
+///<summary>Отрисовка объекта.</summary>
+///<param name = 'object'>Объект.</param>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'view_matrix'>Матрица вида.</param>
+///<param name = 'camera_position'>Позиция камеры.</param>
+void OpenGLRenderer::drawObject(Object* object, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
+{
+	shader.activate();
+	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, object->getModelMatrix());
+	shader.setVec3("cameraPosition", camera_position);
+
+	// Push material params
+	shader.setVec3("material.ambientColor", object->getMaterial().getAmbientColor());
+	shader.setVec3("material.diffuseColor", object->getMaterial().getDiffuseColor());
+	shader.setVec3("material.specularColor", object->getMaterial().getSpecularColor());
+	shader.setFloat("material.shininess", object->getMaterial().getShininess());
+
+	// Push texture flags
+	shader.setBool("diffuseMap1_flag", false);
+	shader.setBool("specularMap1_flag", false);
+	shader.setBool("normalMap1_flag", false);
+
+	// Для каждой из моделей в объекте
+	for (size_t i = 0; i < object->getModels().size(); i++)
+	{
+		drawModel(object->getModels()[i], shader, object->getMaterial());
+	}
+}
+
+///<summary>Отрисовка скайбокса.</summary>
+///<param name = 'skybox'>Объект.</param>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'view_matrix'>Матрица вида.</param>
+///<param name = 'camera_position'>Позиция камеры.</param>
+void OpenGLRenderer::drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
+{
+	glDepthFunc(GL_EQUAL);
+
+	shader.activate();
+	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, skybox->getModelMatrix());
+	shader.setVec3("cameraPosition", camera_position);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getCubeMapID());
+
+	for (size_t i = 0; i < skybox->getModels().size(); i++)
+	{
+		drawModel(skybox->getModels()[i], shader, skybox->getMaterial());
+	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	glDepthFunc(GL_LESS);
+}
+
 ///<summary>Очистка экрана.</summary>
 void OpenGLRenderer::clearScreen() const
 {
@@ -152,6 +258,14 @@ void OpenGLRenderer::pollEvents() const
 bool OpenGLRenderer::quit() const
 {
 	return glfwWindowShouldClose(this->window_.OGLwindow);
+}
+
+///<summary>Задаёт параметры вьюпорта.</summary>
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
+void OpenGLRenderer::setViewport(const int width, const int height)
+{
+	glViewport(0, 0, width, height);
 }
 
 ///<summary>Возвращает указатель на окно.</summary>

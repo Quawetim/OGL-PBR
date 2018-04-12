@@ -22,7 +22,7 @@ Renderer::Renderer()
 ///<summary>Деструктор.</summary>
 Renderer::~Renderer()
 {
-
+	
 }
 
 ///<summary>Читает параметры из файла config.</summary>

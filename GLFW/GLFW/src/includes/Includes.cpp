@@ -89,7 +89,16 @@ QMaterial::QMaterial()
 	this->diffuseColor_ = glm::vec3(0.4f, 0.4f, 0.4f);
 	this->specularColor_ = glm::vec3(0.6f, 0.6f, 0.6f);
 
-	this->shininess_ = 8.0f;
+	this->shininess_ = 6.0f;
+}
+
+///<summary>Деструктор.</summary>
+QMaterial::~QMaterial()
+{
+	for (size_t i = 0; i < this->textures_.size(); i++)
+	{
+		//textureLoader::deleteTexture(this->textures_[i].getID());
+	}
 }
 
 ///<summary>Сброс к дефолным значениям.</summary>

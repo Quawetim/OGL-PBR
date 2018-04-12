@@ -12,8 +12,6 @@ Object::Object()
 	this->rotationAngle_ = 0.0f;
 	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->scaleCoeffs_ = glm::vec3(1.0f);
-
-	this->useObjectMaterial_ = false;
 }
 
 ///<summary>Конструктор.</summary>
@@ -30,8 +28,6 @@ Object::Object(std::string name, Model *model)
 	this->rotationAngle_ = 0.0f;
 	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->scaleCoeffs_ = glm::vec3(1.0f);
-
-	this->useObjectMaterial_ = false;
 }
 
 ///<summary>Конструктор.</summary>
@@ -48,54 +44,12 @@ Object::Object(std::string name, std::vector<Model*> models)
 	this->rotationAngle_ = 0.0f;
 	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->scaleCoeffs_ = glm::vec3(1.0f);
-
-	this->useObjectMaterial_ = false;
 }
 
 ///<summary>Деструктор.</summary>
 Object::~Object()
 {
 	this->models_.clear();
-}
-
-///<summary>Отрисовка объекта.
-///<para>Если задан флаг "objectColors", то все модели рисуются с цветом объекта, </para>
-///<para>иначе - с заданным цветом модели.</para>
-///</summary>
-///<param name = 'shader'>Шейдер.</param>
-///<param name = 'projection_matrix'>Матрица проекции.</param>
-///<param name = 'camera_position'>Позиция камеры.</param>
-void Object::draw(Shader shader, glm::mat4 projection_matrix, glm::mat4 view_matrix, glm::vec3 camera_position)
-{
-	shader.activate();
-	shader.setProjectionViewModelMatrices(projection_matrix, view_matrix, this->getModelMatrix());
-	shader.setVec3("cameraPosition", camera_position);
-
-	if (this->models_.empty()) logger.log("Object::draw", QErrorType::error, "Models list is empty. Nothing to render.");
-	else
-	{
-		for (size_t i = 0; i < this->models_.size(); i++)
-		{
-			if (useObjectMaterial_) this->models_[i]->draw(shader, this->material_);
-			else this->models_[i]->draw(shader);
-		}
-	}
-}
-
-///<summary>Задаёт материал объекта.</summary>
-///<param name = 'material'>Материал.</param>
-void Object::setMaterial(QMaterial material)
-{
-	this->material_ = material;
-}
-
-///<summary>Задаёт флаг использования материала этого объекта для всех моделей, 
-///<para>принадлежащих объекту.</para>
-///<para>Приоритет выше флага модели, но ниже флага текстур.</para>
-///</summary>
-void Object::useObjectMaterial()
-{
-	this->useObjectMaterial_ = true;
 }
 
 ///<summary>Добавляет модель к объекту.</summary>
@@ -127,4 +81,22 @@ Model* Object::removeModel(const std::string name)
 	logger.log("Object::popModel", QErrorType::error, msg);
 
 	return model;
+}
+
+///<summary>Задаёт материал.</summary>
+void Object::setMaterial(QMaterial material)
+{
+	this->material_ = material;
+}
+
+///<summary>Возвращает материал.</summary>
+QMaterial Object::getMaterial() const
+{
+	return this->material_;
+}
+
+///<summary>Возвращает модели, из которых состоит объект.</summary>
+const std::vector<Model*>& Object::getModels() const
+{
+	return this->models_;
 }

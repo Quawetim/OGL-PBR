@@ -11,9 +11,7 @@ public:
 	virtual void init(std::vector<Model*> models) = 0;
 
 	///<summary>Отрисовка сцены.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'projection_matrix'>Матрица проекции.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix, const glm::vec3 camera_position) = 0;
+	virtual void render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position) = 0;
 };

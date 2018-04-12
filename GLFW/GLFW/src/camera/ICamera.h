@@ -104,7 +104,7 @@ public:
 	FirstPersonCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput() override;
+	void handleInput();
 };
  
 ///<summary>Third person camera.</summary>
@@ -127,7 +127,7 @@ public:
 	ThirdPersonCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput() override;
+	void handleInput();
 };
 
 ///<summary>Статичная камера.</summary>
@@ -156,7 +156,7 @@ public:
 	StaticCamera(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput() override;
+	void handleInput();
 };
 
 ///<summary>Свободная камера.</summary>
@@ -176,5 +176,5 @@ public:
 	FreeCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput() override;
+	void handleInput();
 };

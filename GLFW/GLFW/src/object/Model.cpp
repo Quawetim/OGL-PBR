@@ -187,52 +187,8 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 	return textures;
 }
 
-///<summary>Отрисовка модели.</summary>
-///<param name = 'shader'>Шейдер.</param>
-void Model::draw(const Shader shader)
+///<summary>Возвращает меши, из которых состоит модель.</summary>
+const std::vector<Mesh>& Model::getMeshes() const
 {
-    for (size_t i = 0; i < this->meshes_.size(); i++)
-    {
-		this->meshes_[i].draw(shader, this->material_);
-    }
-}
-
-///<summary>Отрисовка модели с заданным материалом.</summary>
-///<param name = 'shader'>Шейдер.</param>
-///<param name = 'material'>Материал.</param>
-void Model::draw(const Shader shader, const QMaterial material)
-{
-	for (size_t i = 0; i < this->meshes_.size(); i++)
-	{
-		this->meshes_[i].draw(shader, material);
-	}
-}
-
-///<summary>Задаёт флаг использования текстуры меша name.</summary>
-///<param name = 'mesh_name'>Имя меша.</param>
-///<param name = 'texture_type'>Тип текстуры флага.</param>
-///<param name = 'use'>Использовать текстуру или нет.</param>
-void Model::useTexture(const std::string mesh_name, const QTextureType texture_type, const bool use)
-{
-    for (size_t i = 0; i < this->meshes_.size(); i++)
-    {
-        if (this->meshes_[i].getName() == mesh_name)
-        {
-            this->meshes_[i].useTexture(texture_type, use);
-            return;
-        }
-    }
-
-    std::string msg = "Mesh \"" + mesh_name + "\" not found.";
-    logger.log("Model::setTextureFlag", QErrorType::warning, msg);
-}
-
-///<summary>Задаёт всем мешам тестовую текстуру.</summary>
-///<param name = 'texture'>Текстура.</param>
-void Model::useTestTexture(const QTexture texture)
-{
-    for (size_t i = 0; i < this->meshes_.size(); i++)
-    {
-        this->meshes_[i].useTestTexture(texture);
-    }
+	return this->meshes_;
 }

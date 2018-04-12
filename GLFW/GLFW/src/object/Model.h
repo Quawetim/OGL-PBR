@@ -40,22 +40,6 @@ public:
     ///<param name = 'path'>Путь к модели.</param>
     Model(std::string path);
 
-	///<summary>Отрисовка модели.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	void draw(const Shader shader);
-
-	///<summary>Отрисовка модели с заданным материалом.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'material'>Материал.</param>
-	void draw(const Shader shader, const QMaterial material);
-
-    ///<summary>Задаёт флаг использования текстуры меша name.</summary>
-    ///<param name = 'mesh_name'>Имя меша.</param>
-    ///<param name = 'texture_type'>Тип текстуры флага.</param>
-    ///<param name = 'use'>Использовать текстуру или нет.</param>
-    void useTexture(const std::string mesh_name, const QTextureType texture_type, const bool use);
-
-    ///<summary>Задаёт всем мешам тестовую текстуру.</summary>
-    ///<param name = 'texture'>Текстура.</param>
-    void useTestTexture(const QTexture texture);
+	///<summary>Возвращает меши, из которых состоит модель.</summary>
+	const std::vector<Mesh>& getMeshes() const;
 };

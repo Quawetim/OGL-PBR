@@ -1,5 +1,7 @@
 #pragma once
 #include "../includes/Includes.h"
+#include "../object/Object.h"
+#include "../object/skybox/Skybox.h"
 
 struct QWindow
 {
@@ -45,12 +47,28 @@ protected:
 	///<summary>Матрица проекции.</summary>
 	glm::mat4 projectionMatrix_;
 
+	virtual void drawModel(Model* model, Shader shader, QMaterial material) = 0;
+
 public:
 	///<summary>Конструктор.</summary>
 	Renderer();
 
 	///<summary>Деструктор.</summary>
 	~Renderer();
+
+	///<summary>Отрисовка объекта.</summary>
+	///<param name = 'object'>Объект.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	virtual void drawObject(Object* object, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+
+	///<summary>Отрисовка скайбокса.</summary>
+	///<param name = 'skybox'>Объект.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	virtual void drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Очистка экрана.</summary>
 	virtual void clearScreen() const = 0;
@@ -63,6 +81,11 @@ public:
 
 	///<summary>Флаг выхода из главного цикла.</summary>
 	virtual bool quit() const = 0;
+
+	///<summary>Задаёт параметры вьюпорта.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	virtual void setViewport(const int width, const int height) = 0;
 
 	///<summary>Возвращает указатель на окно.</summary>
 	virtual QWindow getWindow() const = 0;
@@ -132,6 +155,9 @@ extern Renderer* renderer;
 ///<summary>OpenGL рендерер.</summary>
 class OpenGLRenderer : public Renderer
 {
+private:
+	void drawModel(Model* model, Shader shader, QMaterial material);
+
 public:
 	///<summary>Конструктор.</summary>
 	OpenGLRenderer();
@@ -139,22 +165,41 @@ public:
 	///<summary>Деструктор.</summary>
 	~OpenGLRenderer();
 
+	///<summary>Отрисовка объекта.</summary>
+	///<param name = 'object'>Объект.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	void drawObject(Object* object, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
+
+	///<summary>Отрисовка скайбокса.</summary>
+	///<param name = 'skybox'>Объект.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	void drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
+
 	///<summary>Очистка экрана.</summary>
-	void clearScreen() const override;
+	void clearScreen() const;
 
 	///<summary>Поменять передний и задний буфферы местами.</summary>
-	void swapBuffers() const override;
+	void swapBuffers() const;
 
 	///<summary>Обработка ивентов.</summary>
-	void pollEvents() const override;
+	void pollEvents() const;
 
 	///<summary>Флаг выхода из главного цикла.</summary>
-	bool quit() const override;
+	bool quit() const;
+
+	///<summary>Задаёт параметры вьюпорта.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	void setViewport(const int width, const int height);
 
 	///<summary>Возвращает указатель на окно.</summary>
-	QWindow getWindow() const override;
+	QWindow getWindow() const;
 
 	///<summary>Задаёт имя окна.</summary>
 	///<param name = 'title'>Имя.</param>
-	void setWindowTitle(const std::string title) override;
+	void setWindowTitle(const std::string title);
 };

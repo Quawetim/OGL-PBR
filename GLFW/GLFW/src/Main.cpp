@@ -58,8 +58,8 @@ int main()
 	Scene1 scene1;
 	scene1.init(models);
 
-	Skybox skybox(100.0f);
-
+	Skybox* skybox = new Skybox(100.0f);		// жрёт кучу памяти из-за огромного размера текстур (2048*2048*6*3 байт = 72 Мб)
+	
 	////////////////////////////////DEBUG////////////////////////////////
 
 	bool testSceneEnabled = false;
@@ -115,24 +115,24 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		if (testSceneEnabled) testScene.render(materialShader, renderer->getProjectionMatrix(), camera->getViewMatrix(), camera->getPosition());
+		////////////////////////////////DEBUG////////////////////////////////
+
+		if (testSceneEnabled) testScene.render(materialShader, camera->getViewMatrix(), camera->getPosition());
 		else
 		{
-		
-			////////////////////////////////DEBUG////////////////////////////////
-
-			scene1.render(materialShader, renderer->getProjectionMatrix(), camera->getViewMatrix(), camera->getPosition());
-			skybox.draw(skyboxShader, renderer->getProjectionMatrix(), camera->getViewMatrix(), camera->getPosition());
-
-			// GUI
-
-			coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
-
+			scene1.render(materialShader, camera->getViewMatrix(), camera->getPosition());			
 		}
+
+		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
+
+		// GUI
+
+		coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
 
 		// Обработка ввода
 				
 		camera->handleInput();
+		//skybox->setPosition(camera->getPosition());
 
         // Меняем кадр
 
@@ -140,19 +140,21 @@ int main()
 		renderer->pollEvents();
     }
 
-	delete renderer;
+	delete skybox;
+
+	delete cylinder;
+	delete sphere;
+	delete cube;
+
+	delete camera_free;
+	delete camera_static;
+	delete camera_TPC;
+	delete camera_FPC;	
 
 	cameras.clear();
-	std::vector<ICamera*>(cameras).swap(cameras);
+	std::vector<ICamera*>(cameras).swap(cameras);	
 
-	delete camera_FPC;
-	delete camera_TPC;
-	delete camera_static;
-	delete camera_free;
-
-	delete cube;
-	delete sphere;
-	delete cylinder;
+	delete renderer;
 
     // Выход из программы.
     logger.stop("MAIN", false);

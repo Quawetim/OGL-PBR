@@ -24,38 +24,27 @@ private:
  
 	///<summary>Текстуры.</summary>
     std::vector<QTexture> textures_;
- 
-	///<summary>Флаг использования diffuseMap.</summary>
-    bool useDiffuseMaps_;
 
-	///<summary>Флаг использования specularMap.</summary>
-    bool useSpecularMaps_;
- 
-	///<summary>Флаг использования normalMap.</summary>
-    bool useNormalMaps_;
-
-public:
 	///<summary>Конструктор.</summary>
 	Mesh();
 
-    ///<summary>Конструктор.</summary>
-    ///<param name = 'name'>Имя меша.</param>
-    ///<param name = 'vertices'>Вершины меша.</param>
-    ///<param name = 'indices'>Индексы вершин.</param>
-    ///<param name = 'textures'>Текстуры.</param>
-    Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
+	///<summary>Конструктор.</summary>
+	///<param name = 'name'>Имя меша.</param>
+	///<param name = 'vertices'>Вершины меша.</param>
+	///<param name = 'indices'>Индексы вершин.</param>
+	///<param name = 'textures'>Текстуры.</param>
+	Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
 
-	///<summary>Отрисовка меша.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'material'>Материал.</param>
-	void draw(const Shader shader, const QMaterial material);
+public:
+	///<summary>Деструктор.</summary>
+	~Mesh();
 
-    ///<summary>Задаёт флаг использования текстуры меша.</summary>
-    ///<param name = 'type'>Тип текстуры.</param>
-    ///<param name = 'use'>Использовать текстуру или нет.</param>
-    void useTexture(const QTextureType type, const bool use);
+	///<summary>Возвращает номер VAO.</summary>
+	unsigned int getVAO() const;
 
-    ///<summary>Задаёт мешу тестовую текстуру.</summary>
-    ///<param name = 'texture'>Текстура.</param>
-    void useTestTexture(const QTexture texture);
+	///<summary>Возвращает размер вектора индексов вершин.</summary>
+	unsigned int getIndicesSize() const;
+
+	///<summary>Возвращает текстуры, привязанные к мешу.</summary>
+	const std::vector<QTexture>& getTextures() const;
 };

@@ -12,4 +12,8 @@ namespace textureLoader
 	///<summary>Загрузка кубической текстуры.</summary>
 	///<param name = 'folder'>Папка с текстурами граней.</param>
 	unsigned int loadCubeMap(const std::string folder);
+
+	///<summary>Удаляет текстуру из памяти.</summary>
+	///<param name = 'ID'>Идентификатор текстуры.</param>
+	void deleteTexture(unsigned int ID);
 };

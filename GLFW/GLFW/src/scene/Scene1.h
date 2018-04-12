@@ -6,9 +6,9 @@
 class Scene1 : public IScene
 {
 private:
-	std::vector<Object> cubes_;
-	std::vector<Object> spheres_;
-	std::vector<Object> cylinders_;
+	std::vector<Object*> cubes_;
+	std::vector<Object*> spheres_;
+	std::vector<Object*> cylinders_;
 	bool decrease_;
 
 public:
@@ -20,9 +20,7 @@ public:
 	void init(std::vector<Model*> models);
 
 	///<summary>Отрисовка сцены.</summary>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'projection_matrix'>Матрица проекции.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	void render(const Shader shader, const glm::mat4 projection_matrix, const glm::mat4 view_matrix, const glm::vec3 camera_position);
+	void render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position);
 };

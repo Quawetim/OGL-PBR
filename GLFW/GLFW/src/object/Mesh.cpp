@@ -12,10 +12,6 @@ Mesh::Mesh()
 	this->rotationAngle_ = 0.0f;
 	this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->scaleCoeffs_ = glm::vec3(1.0f);
-
-	this->useDiffuseMaps_ = true;
-	this->useSpecularMaps_ = true;
-	this->useNormalMaps_ = true;
 }
 
 ///<summary>Конструктор.</summary>
@@ -37,10 +33,6 @@ Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsi
     this->rotationAngle_ = 0.0f;
     this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
     this->scaleCoeffs_ = glm::vec3(1.0f);
-
-	this->useDiffuseMaps_ = true;
-	this->useSpecularMaps_ = true;
-	this->useNormalMaps_ = true;
 
     glGenVertexArrays(1, &this->VAO_);
     glGenBuffers(1, &this->VBO_);
@@ -84,91 +76,29 @@ Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsi
     glBindVertexArray(0);
 }
 
-///<summary>Отрисовка меша.</summary>
-///<param name = 'shader'>Шейдер.</param>
-///<param name = 'material'>Материал.</param>
-void Mesh::draw(const Shader shader, const QMaterial material)
+///<summary>Деструктор.</summary>
+Mesh::~Mesh()
 {
-	unsigned int diffuseNumber = 1;
-	unsigned int specularNumber = 1;
-	unsigned int normalNumber = 1;
-
-	std::string number, name;	
-
-	shader.activate();
-	
-	// Push material params
-	shader.setVec3("material.ambientColor", material.getAmbientColor());
-	shader.setVec3("material.diffuseColor", material.getDiffuseColor());
-	shader.setVec3("material.specularColor", material.getSpecularColor());
-	shader.setFloat("material.shininess", material.getShininess());
-
-	// Push texture flags
-	shader.setBool("diffuseMap1_flag", false);
-	shader.setBool("specularMap1_flag", false);
-	shader.setBool("normalMap1_flag", false);
-
-	std::vector<QTexture> pointer;
-
-	if (material.isTexturesEmpty()) pointer = textures_;
-	else pointer = material.getTextures();
-
-	// Push textures, i = texture unit
-	for (size_t i = 0; i < pointer.size(); i++)
+	for (size_t i = 0; i < this->textures_.size(); i++)
 	{
-		if (pointer[i].getType() == QTextureType::diffuse && !this->useDiffuseMaps_) continue;
-		if (pointer[i].getType() == QTextureType::specular && !this->useSpecularMaps_) continue;
-		if (pointer[i].getType() == QTextureType::normal && !this->useNormalMaps_) continue;
-
-		glActiveTexture(GL_TEXTURE0 + i);
-
-		name = mapTextureType.find(pointer[i].getType())->second;
-
-		switch (pointer[i].getType())
-		{
-			case QTextureType::diffuse:     number = std::to_string(diffuseNumber++); break;
-			case QTextureType::specular:    number = std::to_string(specularNumber++); break;
-			case QTextureType::normal:      number = std::to_string(normalNumber++); break;
-			default:
-				{
-					logger.log("Mesh::drawMesh", QErrorType::error, "Unexpected texture type");
-					logger.stop("Mesh::drawMesh", true, "Unexpected texture type");
-					exit(Q_ERROR_UNEXPECTED_TEXTURE_TYPE);
-				}
-		}
-
-		shader.setBool(std::string(name + number + "_flag"), true);
-		shader.setInt(std::string(name + number), i);
-		glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
+		//textureLoader::deleteTexture(this->textures_[i].getID());
 	}
-
-	glActiveTexture(GL_TEXTURE0);	
-
-	glBindVertexArray(this->VAO_);
-	glDrawElements(GL_TRIANGLES, this->indices_.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-
-	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-///<summary>Задаёт флаг использования текстуры меша.</summary>
-///<param name = 'type'>Тип текстуры.</param>
-///<param name = 'use'>Использовать текстуру или нет.</param>
-void Mesh::useTexture(const QTextureType type, const bool use)
+///<summary>Возвращает номер VAO.</summary>
+unsigned int Mesh::getVAO() const
 {
-    switch (type)
-    {
-        case QTextureType::diffuse:     this->useDiffuseMaps_ = use; break;
-        case QTextureType::specular:    this->useSpecularMaps_ = use; break;
-        case QTextureType::normal:      this->useNormalMaps_ = use; break;
-    }
+	return this->VAO_;
 }
 
-///<summary>Задаёт мешу тестовую текстуру.</summary>
-///<param name = 'texture'>Текстура.</param>
-void Mesh::useTestTexture(const QTexture texture)
+///<summary>Возвращает размер вектора индексов вершин.</summary>
+unsigned int Mesh::getIndicesSize() const
 {
-	this->textures_.clear();
-	std::vector<QTexture>(this->textures_).swap(this->textures_);
-	this->textures_.push_back(texture);
+	return this->indices_.size();
+}
+
+///<summary>Возвращает текстуры, привязанные к мешу.</summary>
+const std::vector<QTexture>& Mesh::getTextures() const
+{
+	return this->textures_;
 }

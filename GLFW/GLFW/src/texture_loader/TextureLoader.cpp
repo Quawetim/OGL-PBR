@@ -106,3 +106,10 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 
 	return ID;
 }
+
+///<summary>Удаляет текстуру из памяти.</summary>
+///<param name = 'ID'>Идентификатор текстуры.</param>
+void textureLoader::deleteTexture(unsigned int ID)
+{
+	glDeleteTextures(1, &ID);
+}
