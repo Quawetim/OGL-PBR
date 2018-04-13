@@ -17,13 +17,13 @@ private:
     unsigned int EBO_;
 
 	///<summary>Вершины меша.</summary>
-    std::vector<QVertexData> vertices_;
+    std::vector<VertexData> vertices_;
  
 	///<summary>Индексы вершин.</summary>
     std::vector<unsigned int> indices_;
  
 	///<summary>Текстуры.</summary>
-    std::vector<QTexture> textures_;
+    std::vector<Texture> textures_;
 
 	///<summary>Конструктор.</summary>
 	Mesh();
@@ -33,7 +33,7 @@ private:
 	///<param name = 'vertices'>Вершины меша.</param>
 	///<param name = 'indices'>Индексы вершин.</param>
 	///<param name = 'textures'>Текстуры.</param>
-	Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures);
+	Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
 public:
 	///<summary>Деструктор.</summary>
@@ -46,5 +46,5 @@ public:
 	unsigned int getIndicesSize() const;
 
 	///<summary>Возвращает текстуры, привязанные к мешу.</summary>
-	const std::vector<QTexture>& getTextures() const;
+	const std::vector<Texture>& getTextures() const;
 };

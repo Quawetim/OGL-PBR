@@ -6,18 +6,15 @@ Logger logger;
 
 Renderer* renderer;
 
-QInputHandle *QInputHandle::inputHandle_;
+InputHandle *InputHandle::inputHandle_;
 
-///<summary>Задаёт соответствие QTextureType и string.</summary>
-const std::map<QTextureType, std::string> mapTextureType = 
-{ 
-    {QTextureType::diffuse, "diffuseMap"}, 
-    {QTextureType::specular, "specularMap"}, 
-    {QTextureType::normal, "normalMap"} 
+///<summary>Задаёт соответствие TextureType и её TextureKeys в шейдере.</summary>
+const std::map<TextureType, TextureKeys> mapTextureType = 
+{
+	{ TextureType::diffuse, {"diffuseMaps", "useDiffuseMaps", "diffuseMapsCount"} },
+	{ TextureType::specular, {"specularMaps", "useSpecularMaps", "specularMapsCount" } },
+	{ TextureType::normal, {"normalMaps", "useNormalMaps", "normalMapsCount" } }
 };
-
-///<summary>Field of view.</summary>
-float FOV = 60.0f;
 
 ///<summary>Размер генерируемой карты отражений.</summary>
 int reflectionsResolution = 128;
@@ -31,17 +28,17 @@ float lastFrameTime = 0.0;
 ////////////////////////////////////////////////////////////QTexture////////////////////////////////////////////////////////////
 
 ///<summary>Конструктор.</summary>
-QTexture::QTexture()
+Texture::Texture()
 {
 	this->id_ = 0;
 	this->path_ = "resources/textures/test.png";
-	this->type_ = QTextureType::diffuse;
+	this->type_ = TextureType::diffuse;
 }
 
 ///<summary>Конструктор.</summary>
 ///<param name = 'path'>Путь к текстуре.</param>
 ///<param name = 'type'>Тип текстуры.</param>
-QTexture::QTexture(std::string path, QTextureType type)
+Texture::Texture(std::string path, TextureType type)
 {
 	this->path_ = path;
 	this->type_ = type;
@@ -50,32 +47,32 @@ QTexture::QTexture(std::string path, QTextureType type)
 
 ///<summary>Задаёт тип текстуры.</summary>
 ///<param name = 'type'>Тип текстуры.</param>
-void QTexture::setType(const QTextureType type)
+void Texture::setType(const TextureType type)
 {
 	this->type_ = type;
 }
 
 ///<summary>Задаёт имя текстуры.</summary>
 ///<param name = 'name'>Имя текстуры.</param>
-void QTexture::setName(const std::string name)
+void Texture::setName(const std::string name)
 {
 	this->name_ = name;
 }
 
 ///<summary>Возвращает идентификатор текстуры..</summary>
-unsigned int QTexture::getID() const
+unsigned int Texture::getID() const
 {
 	return this->id_;
 }
 
 ///<summary>Возвращает тип текстуры.</summary>
-QTextureType QTexture::getType() const
+TextureType Texture::getType() const
 {
 	return this->type_;
 }
 
 ///<summary>Возвращает имя текстуры.</summary>
-std::string QTexture::getName() const
+std::string Texture::getName() const
 {
 	return this->name_;
 }
@@ -83,17 +80,17 @@ std::string QTexture::getName() const
 ////////////////////////////////////////////////////////////QMaterial////////////////////////////////////////////////////////////
 
 ///<summary>Конструктор.</summary>
-QMaterial::QMaterial()
+Material::Material()
 {
-	this->ambientColor_ = glm::vec3(0.1f, 0.1f, 0.1f);
-	this->diffuseColor_ = glm::vec3(0.4f, 0.4f, 0.4f);
-	this->specularColor_ = glm::vec3(0.6f, 0.6f, 0.6f);
+	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
+	this->diffuseColor_ = glm::vec3(0.3f, 0.3f, 0.3f);
+	this->specularColor_ = glm::vec3(0.4f, 0.4f, 0.4f);
 
-	this->shininess_ = 6.0f;
+	this->shininess_ = 8.0f;
 }
 
 ///<summary>Деструктор.</summary>
-QMaterial::~QMaterial()
+Material::~Material()
 {
 	for (size_t i = 0; i < this->textures_.size(); i++)
 	{
@@ -102,7 +99,7 @@ QMaterial::~QMaterial()
 }
 
 ///<summary>Сброс к дефолным значениям.</summary>
-void QMaterial::reset()
+void Material::reset()
 {
 	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
 	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
@@ -110,14 +107,14 @@ void QMaterial::reset()
 	this->shininess_ = 8.0f;
 	
 	this->textures_.clear();
-	std::vector<QTexture>(this->textures_).swap(this->textures_);	
+	std::vector<Texture>(this->textures_).swap(this->textures_);	
 }
 
 ///<summary>Задаёт ambient цвет в RGB формате.</summary>
 ///<param name = 'red'>Красная компонента цвета.</param>
 ///<param name = 'green'>Зелёная компонента цвета.</param>
 ///<param name = 'blue'>Синяя компонента цвета.</param>
-void QMaterial::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+void Material::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
 	this->ambientColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
@@ -126,7 +123,7 @@ void QMaterial::setAmbientColor(const unsigned char red, const unsigned char gre
 ///<param name = 'red'>Красная компонента цвета.</param>
 ///<param name = 'green'>Зелёная компонента цвета.</param>
 ///<param name = 'blue'>Синяя компонента цвета.</param>
-void QMaterial::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+void Material::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
 	this->diffuseColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
@@ -135,57 +132,57 @@ void QMaterial::setDiffuseColor(const unsigned char red, const unsigned char gre
 ///<param name = 'red'>Красная компонента цвета.</param>
 ///<param name = 'green'>Зелёная компонента цвета.</param>
 ///<param name = 'blue'>Синяя компонента цвета.</param>
-void QMaterial::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+void Material::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
 	this->specularColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
 ///<summary>Задаёт силу (яркость) блика.</summary>
 ///<param name = 'shininess'>Значение.</param>
-void QMaterial::setShininess(const float shininess)
+void Material::setShininess(const float shininess)
 {
 	this->shininess_ = shininess;
 }
 
 ///<summary>Задаёт диффузную текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
-void QMaterial::addTexture(QTexture texture)
+void Material::addTexture(Texture texture)
 {
 	this->textures_.push_back(texture);
 }
 
 ///<summary>Возвращает ambient цвет в RGB формате.</summary>
-glm::vec3 QMaterial::getAmbientColor() const
+glm::vec3 Material::getAmbientColor() const
 {
 	return this->ambientColor_;
 }
 
 ///<summary>Возвращает diffuse цвет в RGB формате.</summary>
-glm::vec3 QMaterial::getDiffuseColor() const
+glm::vec3 Material::getDiffuseColor() const
 {
 	return this->diffuseColor_;
 }
 
 ///<summary>Возвращает specular цвет в RGB формате.</summary>
-glm::vec3 QMaterial::getSpecularColor() const
+glm::vec3 Material::getSpecularColor() const
 {
 	return this->specularColor_;
 }
 
 ///<summary>Возвращает силу (яркость) блика.</summary>
-float QMaterial::getShininess() const
+float Material::getShininess() const
 {
 	return this->shininess_;
 }
 
 ///<summary>Возвращает список текстур.</summary>
-std::vector<QTexture> QMaterial::getTextures() const
+std::vector<Texture> Material::getTextures() const
 {
 	return this->textures_;
 }
 
 ///<summary>Проверяет список текстур на пустоту.</summary>
-bool QMaterial::isTexturesEmpty() const
+bool Material::isTexturesEmpty() const
 {
 	return this->textures_.empty();
 }

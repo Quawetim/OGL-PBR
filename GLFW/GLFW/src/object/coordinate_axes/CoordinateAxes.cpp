@@ -63,3 +63,15 @@ void CoordinateAxes::draw(const Shader shader, const glm::mat4 view_matrix)
 
 	glViewport(0, 0, renderer->getWindowWidth(), renderer->getWindowHeight());
 }
+
+///<summary>Возвращает VAO.</summary>
+unsigned int CoordinateAxes::getVAO() const
+{
+	return this->VAO_;
+}
+
+///<summary>Возвращает матрицу модели.</summary>
+glm::mat4 CoordinateAxes::getModelMatrix() const
+{
+	return this->modelMatrix_;
+}

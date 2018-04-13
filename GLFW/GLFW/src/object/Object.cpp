@@ -78,19 +78,19 @@ Model* Object::removeModel(const std::string name)
 	}
 
 	std::string msg = "Model \"" + name + "\" not found.";
-	logger.log("Object::popModel", QErrorType::error, msg);
+	logger.log(__FUNCTION__, ErrorType::error, msg);
 
 	return model;
 }
 
 ///<summary>Задаёт материал.</summary>
-void Object::setMaterial(QMaterial material)
+void Object::setMaterial(Material material)
 {
 	this->material_ = material;
 }
 
 ///<summary>Возвращает материал.</summary>
-QMaterial Object::getMaterial() const
+Material Object::getMaterial() const
 {
 	return this->material_;
 }

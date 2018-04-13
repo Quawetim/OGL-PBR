@@ -19,7 +19,7 @@ Mesh::Mesh()
 ///<param name = 'vertices'>Вершины меша.</param>
 ///<param name = 'indices'>Индексы вершин.</param>
 ///<param name = 'textures'>Текстуры.</param>
-Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsigned int> indices, std::vector<QTexture> textures)
+Mesh::Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
 {
 	this->name_ = name;
     this->vertices_ = vertices;
@@ -42,7 +42,7 @@ Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsi
 
     // Setup VBO
     glBindBuffer(GL_ARRAY_BUFFER, this->VBO_);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(QVertexData), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), &vertices[0], GL_STATIC_DRAW);
 
     // Setup EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO_);
@@ -50,27 +50,27 @@ Mesh::Mesh(std::string name, std::vector<QVertexData> vertices, std::vector<unsi
 
     // Push positions to layout 0
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)0);
 	glEnableVertexAttribArray(0);
 
     // Push normals to layout 1
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, normal));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, normal));
 	glEnableVertexAttribArray(1);
 
     // Push texture coordinates to layout 2
     glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, textureCoords));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, textureCoords));
 	glEnableVertexAttribArray(2);
     
     // Push tangent to layout 3
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, tangent));
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, tangent));
 	glEnableVertexAttribArray(3);
 
     // Push bitangent to layout 4
     glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(QVertexData), (void*)offsetof(QVertexData, bitangent));
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (void*)offsetof(VertexData, bitangent));
 	glEnableVertexAttribArray(4);
 
     glBindVertexArray(0);
@@ -98,7 +98,7 @@ unsigned int Mesh::getIndicesSize() const
 }
 
 ///<summary>Возвращает текстуры, привязанные к мешу.</summary>
-const std::vector<QTexture>& Mesh::getTextures() const
+const std::vector<Texture>& Mesh::getTextures() const
 {
 	return this->textures_;
 }

@@ -18,7 +18,7 @@ public:
     ///<param name = 'source'>Источник.</param>
     ///<param name = 'error_type'>Тип ошибки.</param>
     ///<param name = 'message'>Сообщение.</param>
-    void log(std::string source, enum QErrorType error_type, std::string message);
+    void log(std::string source, enum ErrorType error_type, std::string message);
 
     ///<summary>Логирует запуск программы.</summary>
     ///<param name = 'source'>Источник.</param>

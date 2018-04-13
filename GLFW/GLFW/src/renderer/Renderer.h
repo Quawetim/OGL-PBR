@@ -41,13 +41,20 @@ protected:
 	///<summary>FPS.</summary>
 	int fps_;
 
+	///<summary>FOV.</summary>
+	float fov_;
+
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
 
 	///<summary>Матрица проекции.</summary>
 	glm::mat4 projectionMatrix_;
 
-	virtual void drawModel(Model* model, Shader shader, QMaterial material) = 0;
+	///<summary>Отрисовка модели.</summary>
+	///<param name = 'model'>Модель.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'material'>Материал.</param>
+	virtual void drawModel(Model* model, Shader shader, Material material) = 0;
 
 public:
 	///<summary>Конструктор.</summary>
@@ -70,6 +77,11 @@ public:
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	virtual void drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
+	///<summary>Отрисовка осей координат.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	//virtual void drawCoordinateAxes(Shader shader, glm::mat4 view_matrix) = 0;
+
 	///<summary>Очистка экрана.</summary>
 	virtual void clearScreen() const = 0;
 
@@ -83,9 +95,14 @@ public:
 	virtual bool quit() const = 0;
 
 	///<summary>Задаёт параметры вьюпорта.</summary>
+	///<param name = 'x'>Координата x левого нижнего угла.</param>
+	///<param name = 'y'>Координата y левого нижнего угла.</param>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	virtual void setViewport(const int width, const int height) = 0;
+	virtual void setViewport(const int x, const int y, const int width, const int height) = 0;
+
+	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
+	virtual void restoreViewPort() = 0;
 
 	///<summary>Возвращает указатель на окно.</summary>
 	virtual QWindow getWindow() const = 0;
@@ -121,6 +138,10 @@ public:
 	///<param name = 'fps'>FPS.</param>
 	void setFPS(const int fps);
 
+	///<summary>Задаёт текущее значение FOV.</summary>
+	///<param name = 'fov'>FOV.</param>
+	void setFOV(const int fov);
+
 	///<summary>Возвращает ширину окна.</summary>
 	int getWindowWidth() const;
 
@@ -145,6 +166,9 @@ public:
 	///<summary>Возвращает текущее число кадров в секунду.</summary>
 	int getFPS() const;
 
+	///<summary>Возвращает текущее значение FOV.</summary>
+	int getFOV() const;
+
 	///<summary>Возвращает матрицу проекции.</summary>
 	glm::mat4 getProjectionMatrix() const;
 };
@@ -156,7 +180,11 @@ extern Renderer* renderer;
 class OpenGLRenderer : public Renderer
 {
 private:
-	void drawModel(Model* model, Shader shader, QMaterial material);
+	///<summary>Отрисовка модели.</summary>
+	///<param name = 'model'>Модель.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'material'>Материал.</param>
+	void drawModel(Model* model, Shader shader, Material material);
 
 public:
 	///<summary>Конструктор.</summary>
@@ -179,6 +207,11 @@ public:
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	void drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
 
+	///<summary>Отрисовка осей координат.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	//void drawCoordinateAxes(Shader shader, glm::mat4 view_matrix);
+
 	///<summary>Очистка экрана.</summary>
 	void clearScreen() const;
 
@@ -192,9 +225,14 @@ public:
 	bool quit() const;
 
 	///<summary>Задаёт параметры вьюпорта.</summary>
+	///<param name = 'x'>Координата x левого нижнего угла.</param>
+	///<param name = 'y'>Координата y левого нижнего угла.</param>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	void setViewport(const int width, const int height);
+	void setViewport(const int x, const int y, const int width, const int height);
+
+	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
+	void restoreViewPort();
 
 	///<summary>Возвращает указатель на окно.</summary>
 	QWindow getWindow() const;

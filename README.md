@@ -12,7 +12,7 @@
 4. get/set, add/remove, create/destroy, start/stop, insert/delete, increment/decrement, old/new, begin/end, first/last, up/down, min/max, next/previous, old/new, open/close, show/hide, suspend/resume.
     
 ## Структуры, enum, классы
-1. Имена структур начинаются с буквы `Q`, далее в `UpperCamelCase`. **Пример: QSomeStructure**;
+1. Cтруктуры именуются в `UpperCamelCase`. **Пример: SomeStructure**;
 2. Enum'ы именуются аналогично структурам;
 3. Значения enum'ов именуются в `under_score`. **Пример: some_value**
 4. Значения enum'ов следует использовать с именем самого enum'а. **Пример: QEnum::enum**;

@@ -8,9 +8,9 @@ OpenGLRenderer::OpenGLRenderer()
 
 	if (!glfwInit())
 	{
-		logger.log("MAIN", QErrorType::error, "Failed to initialize GLFW.");
-		logger.stop("MAIN");
-		exit(Q_ERROR_INIT_GLFW);
+		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize GLFW.");
+		logger.stop(__FUNCTION__);
+		exit(ERROR_INIT_GLFW);
 	}
 
 	// OpenGL 4.3       
@@ -49,10 +49,10 @@ OpenGLRenderer::OpenGLRenderer()
 
 	if (!this->window_.OGLwindow)
 	{
-		logger.log("MAIN", QErrorType::error, "Failed to initialize WINDOW.");
-		logger.stop("MAIN");
+		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize WINDOW.");
+		logger.stop(__FUNCTION__);
 		glfwTerminate();
-		exit(Q_ERROR_INIT_WINDOW);
+		exit(ERROR_INIT_WINDOW);
 	}
 
 	// Окно в центр экрана
@@ -65,9 +65,9 @@ OpenGLRenderer::OpenGLRenderer()
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		logger.log("MAIN", QErrorType::error, "Failed to initialize GLAD.");
-		logger.stop("MAIN");
-		exit(Q_ERROR_INIT_GLAD);
+		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize GLAD.");
+		logger.stop(__FUNCTION__);
+		exit(ERROR_INIT_GLAD);
 	}
 
 	int GL_Current_Version_Major = GLVersion.major;
@@ -88,19 +88,19 @@ OpenGLRenderer::OpenGLRenderer()
 	}
 	else
 	{
-		logger.log("MAIN", QErrorType::error, "Failed to initialize GL DebugOutput.");
-		logger.stop("MAIN");
+		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize GL DebugOutput.");
+		logger.stop(__FUNCTION__);
 		glfwTerminate();
-		exit(Q_ERROR_INIT_DEBUG_OUTPUT);
+		exit(ERROR_INIT_DEBUG_OUTPUT);
 	}
 #endif
 
 	// Callbacks
 	glfwSetErrorCallback(callbacks::glfwErrorCallback);
-	glfwSetFramebufferSizeCallback(this->window_.OGLwindow, QInputHandle::framebufferSizeDispatch);
-	glfwSetKeyCallback(this->window_.OGLwindow, QInputHandle::keyboardDispatch);
-	glfwSetCursorPosCallback(this->window_.OGLwindow, QInputHandle::cursorPosDispatch);
-	glfwSetScrollCallback(this->window_.OGLwindow, QInputHandle::scrollDispatch);
+	glfwSetFramebufferSizeCallback(this->window_.OGLwindow, InputHandle::framebufferSizeDispatch);
+	glfwSetKeyCallback(this->window_.OGLwindow, InputHandle::keyboardDispatch);
+	glfwSetCursorPosCallback(this->window_.OGLwindow, InputHandle::cursorPosDispatch);
+	glfwSetScrollCallback(this->window_.OGLwindow, InputHandle::scrollDispatch);
 
 	// Скрыть курсор, поместить в центр экрана
 	//this->windowInfo_.setShowCursor(false);
@@ -130,17 +130,31 @@ OpenGLRenderer::~OpenGLRenderer()
 	glfwTerminate();
 }
 
-void OpenGLRenderer::drawModel(Model* model, Shader shader, QMaterial material)
+///<summary>Отрисовка модели.</summary>
+///<param name = 'model'>Модель.</param>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'material'>Материал.</param>
+void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 {
 	for (size_t j = 0; j < model->getMeshes().size(); j++)
 	{		
-		unsigned int diffuseNumber = 1;
-		unsigned int specularNumber = 1;
-		unsigned int normalNumber = 1;
+		unsigned int diffuseMapNumber = 0;
+		unsigned int diffuseMapsCount = 0;
 
-		std::string number, name;
+		unsigned int specularMapNumber = 0;
+		unsigned int specularMapsCount = 0;
 
-		std::vector<QTexture> pointer;
+		unsigned int normalMapNumber = 0;
+		unsigned int normalMapsCount = 0;
+
+		bool useDiffuseMaps = false;
+		bool useSpecularMaps = false;
+		bool useNormalMaps = false;
+
+		TextureKeys mapKeys;
+		std::string mapNumber;
+
+		std::vector<Texture> pointer;
 
 		// костылище
 		// проверить на жор памяти копированием
@@ -152,25 +166,67 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, QMaterial material)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 
-			name = mapTextureType.find(pointer[i].getType())->second;
+			mapKeys = mapTextureType.find(pointer[i].getType())->second;
 
 			switch (pointer[i].getType())
 			{
-				case QTextureType::diffuse:     number = std::to_string(diffuseNumber++); break;
-				case QTextureType::specular:    number = std::to_string(specularNumber++); break;
-				case QTextureType::normal:      number = std::to_string(normalNumber++); break;
+				case TextureType::diffuse:     
+					{
+						mapNumber = std::to_string(diffuseMapNumber);
+						diffuseMapNumber++;
+						diffuseMapsCount++;
+
+						if (!useDiffuseMaps)
+						{
+							useDiffuseMaps = true;
+							shader.setBool(mapKeys.mapsUse, useDiffuseMaps);
+						}
+						
+						break;
+					}
+				case TextureType::specular:    
+					{
+						mapNumber = std::to_string(specularMapNumber);
+						specularMapNumber++;
+						specularMapsCount++;
+						
+						if (!useSpecularMaps)
+						{
+							useSpecularMaps = true;
+							shader.setBool(mapKeys.mapsUse, useSpecularMaps);
+						}
+
+						break;
+					}
+				case TextureType::normal:      
+					{
+						mapNumber = std::to_string(normalMapNumber);
+						normalMapNumber++;
+						normalMapsCount++;
+						
+						if (!useNormalMaps)
+						{
+							useNormalMaps = true;
+							shader.setBool(mapKeys.mapsUse, useNormalMaps);
+						}
+						
+						break;
+					}
 				default:
 					{
-						logger.log("Mesh::drawMesh", QErrorType::error, "Unexpected texture type");
-						logger.stop("Mesh::drawMesh", true, "Unexpected texture type");
-						exit(Q_ERROR_UNEXPECTED_TEXTURE_TYPE);
+						logger.log(__FUNCTION__, ErrorType::error, "Unexpected texture type");
+						logger.stop(__FUNCTION__, true, "Unexpected texture type");
+						exit(ERROR_UNEXPECTED_TEXTURE_TYPE);
 					}
-			}
-
-			shader.setBool(std::string(name + number + "_flag"), true);
-			shader.setInt(std::string(name + number), i);
+			}			
+			
+			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), i);
 			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
 		}
+
+		shader.setInt(mapKeys.mapsCount, diffuseMapsCount);
+		shader.setInt(mapKeys.mapsCount, specularMapsCount);
+		shader.setInt(mapKeys.mapsCount, normalMapsCount);
 
 		glActiveTexture(GL_TEXTURE0);
 
@@ -200,9 +256,9 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, glm::mat4 view_ma
 	shader.setFloat("material.shininess", object->getMaterial().getShininess());
 
 	// Push texture flags
-	shader.setBool("diffuseMap1_flag", false);
-	shader.setBool("specularMap1_flag", false);
-	shader.setBool("normalMap1_flag", false);
+	shader.setBool("useDiffuseMaps", false);
+	shader.setBool("useSpecularMaps", false);
+	shader.setBool("useNormalMaps", false);
 
 	// Для каждой из моделей в объекте
 	for (size_t i = 0; i < object->getModels().size(); i++)
@@ -261,11 +317,19 @@ bool OpenGLRenderer::quit() const
 }
 
 ///<summary>Задаёт параметры вьюпорта.</summary>
+///<param name = 'x'>Координата x левого нижнего угла.</param>
+///<param name = 'y'>Координата y левого нижнего угла.</param>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-void OpenGLRenderer::setViewport(const int width, const int height)
+void OpenGLRenderer::setViewport(const int x, const int y, const int width, const int height)
 {
-	glViewport(0, 0, width, height);
+	glViewport(x, y, width, height);
+}
+
+///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
+void OpenGLRenderer::restoreViewPort()
+{
+	glViewport(0, 0, this->windowWidth_, this->windowHeight_);
 }
 
 ///<summary>Возвращает указатель на окно.</summary>

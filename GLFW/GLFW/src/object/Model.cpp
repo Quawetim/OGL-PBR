@@ -34,7 +34,7 @@ Model::Model(std::string path)
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
 		std::string msg = "Can't load model. " + std::string(importer.GetErrorString());
-        logger.log("Model::Model", QErrorType::error, msg);
+        logger.log(__FUNCTION__, ErrorType::error, msg);
         return;
     }
 
@@ -70,15 +70,17 @@ void Model::handleNode(const aiNode *node, const aiScene *scene)
 Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 {
     std::string name;
-    std::vector<QVertexData> vertices;
+    std::vector<VertexData> vertices;
     std::vector<unsigned int> indices;
-    std::vector<QTexture> textures;
+    std::vector<Texture> textures;
+
+	bool computeTB = true;
 
     name = mesh->mName.C_Str();
 
     for (size_t i = 0; i < mesh->mNumVertices; i++)
     {
-        QVertexData vertex;
+        VertexData vertex;
 
         vertex.position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
         vertex.normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
@@ -98,7 +100,7 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
         }
         else
         {
-            vertex.tangent = glm::vec3(0.0f, 0.0f, 0.0f);
+			if (!computeTB) computeTB = true;
         }
 
         if (mesh->mBitangents)
@@ -107,11 +109,13 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
         }
         else
         {
-            vertex.bitangent = glm::vec3(0.0f, 0.0f, 0.0f);
+			if (!computeTB) computeTB = true;
         }
 
         vertices.push_back(vertex);
     }
+
+	if (computeTB) computeTangentsBitangents(vertices);
 
     for (size_t i = 0; i < mesh->mNumFaces; i++)
     {
@@ -128,7 +132,7 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
         {
             std::string mesh_name = mesh->mName.C_Str();
             std::string msg = "Indices of not found. MESH:" + mesh_name;
-            logger.log("Model::handleMesh", QErrorType::error, msg);
+            logger.log(__FUNCTION__, ErrorType::error, msg);
         }
     }
 
@@ -136,13 +140,13 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        std::vector<QTexture> diffuseMap = loadMaterialTextures(material, aiTextureType_DIFFUSE, QTextureType::diffuse);
+        std::vector<Texture> diffuseMap = loadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::diffuse);
         textures.insert(textures.end(), diffuseMap.begin(), diffuseMap.end());
 
-        std::vector<QTexture> specularMap = loadMaterialTextures(material, aiTextureType_SPECULAR, QTextureType::specular);
+        std::vector<Texture> specularMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::specular);
         textures.insert(textures.end(), specularMap.begin(), specularMap.end());
 
-        std::vector<QTexture> normalMap = loadMaterialTextures(material, aiTextureType_NORMALS, QTextureType::normal);
+        std::vector<Texture> normalMap = loadMaterialTextures(material, aiTextureType_NORMALS, TextureType::normal);
         textures.insert(textures.end(), normalMap.begin(), normalMap.end());
     }
 
@@ -153,9 +157,9 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 ///<param name = 'material'>Материал assimp.</param>
 ///<param name = 'type'>Тип текстуры assimp.</param>
 ///<param name = 'texture_type'>Тип текстуры в шейдере.</param>
-std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType texture_type)
+std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const TextureType texture_type)
 {
-	std::vector<QTexture> textures;
+	std::vector<Texture> textures;
 
 	for (size_t i = 0; i < material->GetTextureCount(type); i++)
 	{
@@ -176,7 +180,7 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 
 		if (!skip_loading)
 		{
-			QTexture texture(std::string(dir_ + "/" + s.C_Str()), texture_type);
+			Texture texture(std::string(dir_ + "/" + s.C_Str()), texture_type);
 			texture.setName(s.C_Str());
 
 			textures.push_back(texture);
@@ -185,6 +189,64 @@ std::vector<QTexture> Model::loadMaterialTextures(const aiMaterial *material, co
 	}
 
 	return textures;
+}
+
+///<summary>Вычисляет касательную и бикасательную для каждой из вершин.</summary>
+///<param name = 'vertices'>Вершины.</param>
+void Model::computeTangentsBitangents(std::vector<VertexData> &vertices)
+{
+	float r;
+	glm::vec3 vertexPos1, vertexPos2, vertexPos3;
+	glm::vec3 edge1, edge2;
+
+	glm::vec2 texCoords1, texCoords2, texCoords3;
+	glm::vec2 deltaTexCoords1, deltaTexCoords2;
+
+	glm::vec3 normal, tangent, bitangent;
+
+	for (size_t i = 0; i < vertices.size(); i += 3)
+	{
+		normal = vertices[i].normal;
+
+		vertexPos1 = vertices[i].position;
+		vertexPos2 = vertices[i + 1].position;
+		vertexPos3 = vertices[i + 2].position;
+
+		texCoords1 = vertices[i].textureCoords;
+		texCoords2 = vertices[i + 1].textureCoords;
+		texCoords3 = vertices[i + 2].textureCoords;
+
+		edge1 = vertexPos2 - vertexPos1;
+		edge2 = vertexPos3 - vertexPos1;
+
+		deltaTexCoords1 = texCoords2 - texCoords1;
+		deltaTexCoords2 = texCoords3 - texCoords1;
+
+		r = 1.0f / (deltaTexCoords1.x * deltaTexCoords2.y - deltaTexCoords1.y * deltaTexCoords2.x);
+
+		tangent = r * (edge1 * deltaTexCoords2.y - edge2 * deltaTexCoords1.y);
+		tangent = glm::normalize(tangent);
+
+		bitangent = r * (edge2 * deltaTexCoords1.x - edge1 * deltaTexCoords2.x);
+		bitangent = glm::normalize(bitangent);	
+
+		vertices[i].tangent = tangent;
+		vertices[i + 1].tangent = tangent;
+		vertices[i + 2].tangent = tangent;
+
+		vertices[i].bitangent = bitangent;
+		vertices[i + 1].bitangent = bitangent;
+		vertices[i + 2].bitangent = bitangent;
+	}
+	
+	/*
+	for (unsigned int i = 0; i < vertices.size(); i++)
+	{
+		vertices[i].tangent = glm::normalize(vertices[i].tangent - vertices[i].normal * glm::dot(normal, vertices[i].tangent));
+
+		if (glm::dot(glm::cross(vertices[i].normal, vertices[i].tangent), vertices[i].bitangent) < 0) vertices[i].tangent *= -1;
+	}
+	*/
 }
 
 ///<summary>Возвращает меши, из которых состоит модель.</summary>

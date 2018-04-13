@@ -33,10 +33,10 @@ void IEntity::scale(const float velocity_xyz)
 {
 	this->scaleCoeffs_ += glm::vec3(velocity_xyz * deltaTime);
 
-	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log("IEntity::scaleObject", QErrorType::error, "Scale = 0");
+	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log(__FUNCTION__, ErrorType::error, "Scale = 0");
 	else
 	{
-		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log("IEntity::scaleObject", QErrorType::warning, "Scale < 0");
+		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log(__FUNCTION__, ErrorType::warning, "Scale < 0");
 	}
 
 	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
@@ -50,10 +50,10 @@ void IEntity::scale(const float velocity_x, const float velocity_y, const float 
 {
 	this->scaleCoeffs_ += glm::vec3(velocity_x * deltaTime, velocity_y * deltaTime, velocity_z * deltaTime);
 
-	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log("IEntity::scaleModel", QErrorType::error, "Scale = 0");
+	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log(__FUNCTION__, ErrorType::error, "Scale = 0");
 	else
 	{
-		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log("IEntity::scaleModel", QErrorType::warning, "Scale < 0");
+		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log(__FUNCTION__, ErrorType::warning, "Scale < 0");
 	}
 
 	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
@@ -90,10 +90,10 @@ void IEntity::setScale(const glm::vec3 scale)
 {
 	this->scaleCoeffs_ = scale;
 
-	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log("IEntity::setScale", QErrorType::error, "Scale = 0");
+	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log(__FUNCTION__, ErrorType::error, "Scale = 0");
 	else
 	{
-		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log("IEntity::setScale", QErrorType::warning, "Scale < 0");
+		if (this->scaleCoeffs_.x < 0 || this->scaleCoeffs_.y < 0 || this->scaleCoeffs_.z < 0) logger.log(__FUNCTION__, ErrorType::warning, "Scale < 0");
 	}
 
 	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);

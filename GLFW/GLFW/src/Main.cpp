@@ -14,7 +14,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 int main()
 #endif
 {
-    logger.start("MAIN");
+    logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
 
@@ -86,7 +86,7 @@ int main()
 
     float currentFrameTime = 0.0;
 
-    logger.log("MAIN", QErrorType::info, "Initialization complete. Entering main loop.");
+    logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop.");
        
     float fpsInitTime = static_cast<float>(glfwGetTime());
 
@@ -157,8 +157,8 @@ int main()
 	delete renderer;
 
     // Выход из программы.
-    logger.stop("MAIN", false);
-    return Q_GOOD_EXIT;
+    logger.stop(__FUNCTION__, false);
+    return GOOD_EXIT;
 
 	//double MouseX, MouseY;
 

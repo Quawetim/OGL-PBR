@@ -16,7 +16,7 @@ Logger::Logger()
 #else
         MessageBox(NULL, L"Failed to initialize Logger.", L"ERROR:Logger", MB_OK | MB_ICONERROR);
 #endif
-        exit(Q_ERROR_INIT_LOGGER);
+        exit(ERROR_INIT_LOGGER);
     }
 };
 
@@ -30,7 +30,7 @@ Logger::~Logger()
 ///<param name = 'source'>Источник.</param>
 ///<param name = 'error_type'>Тип ошибки.</param>
 ///<param name = 'message'>Сообщение.</param>
-void Logger::log(std::string source, enum QErrorType error_type, std::string message)
+void Logger::log(std::string source, enum ErrorType error_type, std::string message)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -46,9 +46,9 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 
     switch (error_type)
     {
-        case QErrorType::info:      ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
-        case QErrorType::warning:   ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
-        case QErrorType::error:     ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
+        case ErrorType::info:      ss_msg << "[" << date_time << "] " << "<INFO><" << source << "> " << message << std::endl; break;
+        case ErrorType::warning:   ss_msg << "[" << date_time << "] " << "<WARNING><" << source << "> " << message << std::endl; break;
+        case ErrorType::error:     ss_msg << "[" << date_time << "] " << "<ERROR><" << source << "> " << message << std::endl; break;
         default:                    ss_msg << "[" << date_time << "] " << "<UNKNOWN><" << source << "> " << message << std::endl; break;
     }
 
@@ -57,12 +57,12 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 #ifdef _DEBUG
     std::cout << ss_msg.str();
 
-    if (error_type == QErrorType::error)
+    if (error_type == ErrorType::error)
     {
-        logger.stop("Logger::log", true, "Error occurred.");
+        logger.stop(__FUNCTION__, true, "Error occurred.");
     }
 #else
-    if (error_type == QErrorType::error)
+    if (error_type == ErrorType::error)
     {
         std::wstring w_msg, w_src;
 
@@ -76,7 +76,7 @@ void Logger::log(std::string source, enum QErrorType error_type, std::string mes
 
         MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
 
-        logger.stop("Logger::log", true, "Error occured.");
+        logger.stop(__FUNCTION__, true, "Error occured.");
     }
 #endif
 }
@@ -127,7 +127,7 @@ void Logger::stop(std::string source, bool error, std::string message)
 #ifdef _DEBUG
         std::cout << "[" << date_time << "] " << "<INFO><" << source << "> Program stops." << std::endl;
         system("pause");
-        exit(Q_BAD_EXIT);
+        exit(BAD_EXIT);
 #else
         std::stringstream ss_src;
         std::wstring w_msg, w_src;
@@ -141,7 +141,7 @@ void Logger::stop(std::string source, bool error, std::string message)
         w_src = std::wstring(src.begin(), src.end());
 
         MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
-        exit(Q_BAD_EXIT);
+        exit(BAD_EXIT);
 #endif 
     }
 }

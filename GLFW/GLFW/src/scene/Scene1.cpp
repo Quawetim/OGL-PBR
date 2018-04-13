@@ -59,44 +59,50 @@ void Scene1::init(std::vector<Model*> models)
 		this->cylinders_.push_back(obj);
 	}
 
-	QTexture texture;
-	QMaterial material;
+	Texture texture;
+	Material material;
 
 	//  убы
-	texture = QTexture("resources/textures/batman_specular.bmp", QTextureType::specular);
+	texture = Texture("resources/textures/batman_specular.bmp", TextureType::specular);
 	material.addTexture(texture);
-	material.setDiffuseColor(230, 0, 128);
+	material.setDiffuseColor(130, 0, 72);
 	this->cubes_[0]->setScale(glm::vec3(0.5f));
 	this->cubes_[0]->setMaterial(material);
 	material.reset();
 
-	texture = QTexture("resources/textures/brick_diffuse.bmp", QTextureType::diffuse);
+	texture = Texture("resources/textures/brick1/diffuse.bmp", TextureType::diffuse);
 	material.addTexture(texture);
-	texture = QTexture("resources/textures/brick_specular.bmp", QTextureType::specular);
+	texture = Texture("resources/textures/brick1/specular.bmp", TextureType::specular);
+	material.addTexture(texture);
+	texture = Texture("resources/textures/brick1/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
 	this->cubes_[4]->setMaterial(material);
 	material.reset();
 
 	// —феры
-	material.setDiffuseColor(153, 77, 230);
+	material.setDiffuseColor(90, 22, 160);
 	this->spheres_[0]->setMaterial(material);
 	material.reset();
 
-	texture = QTexture("resources/textures/brick2_diffuse.bmp", QTextureType::diffuse);
+	texture = Texture("resources/textures/brick2/diffuse.bmp", TextureType::diffuse);
 	material.addTexture(texture);
-	texture = QTexture("resources/textures/brick2_specular.bmp", QTextureType::specular);
+	texture = Texture("resources/textures/brick2/specular.bmp", TextureType::specular);
+	material.addTexture(texture);
+	texture = Texture("resources/textures/brick2/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
 	this->spheres_[4]->setMaterial(material);
 	material.reset();
 
 	// ÷илиндры
-	material.setDiffuseColor(26, 230, 204);
+	material.setDiffuseColor(18, 158, 140);
 	this->cylinders_[0]->setMaterial(material);
 	material.reset();
 
-	texture = QTexture("resources/textures/brick3_diffuse.bmp", QTextureType::diffuse);
+	texture = Texture("resources/textures/brick3/diffuse.bmp", TextureType::diffuse);
 	material.addTexture(texture);
-	texture = QTexture("resources/textures/brick3_specular.bmp", QTextureType::specular);
+	texture = Texture("resources/textures/brick3/specular.bmp", TextureType::specular);
+	material.addTexture(texture);
+	texture = Texture("resources/textures/brick3/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
 	this->cylinders_[4]->setMaterial(material);
 	material.reset();

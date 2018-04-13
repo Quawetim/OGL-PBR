@@ -23,7 +23,7 @@ void Shader::checkCompilationErrors(const unsigned int id, const int type) const
 				case 2: msg = "Shader compilation error.\nType: Fragment.\nName: " + this->fsName_ + "\n" + std::string(log); break;
 			}
             
-            logger.log("Shader::checkCompileErrors", QErrorType::error, msg);
+            logger.log(__FUNCTION__, ErrorType::error, msg);
         }
     }
     else
@@ -33,7 +33,7 @@ void Shader::checkCompilationErrors(const unsigned int id, const int type) const
         {
             glGetProgramInfoLog(id, 1024, NULL, log);
 			std::string msg = "Program linking error.\nType: Program.\n" + std::string(log);
-            logger.log("Shader::checkCompileErrors", QErrorType::error, msg);
+            logger.log(__FUNCTION__, ErrorType::error, msg);
         }
     }
 }
@@ -81,13 +81,13 @@ Shader::Shader(std::string vs_path, std::string fs_path)
     catch (std::ifstream::failure e)
     {
 		std::string msg;
-        logger.log("Shader::Shader", QErrorType::error, "Shader file not found.");
+        logger.log(__FUNCTION__, ErrorType::error, "Shader file not found.");
 
 		msg = "VS_PATH: " + vs_path;
-        logger.log("Shader::Shader", QErrorType::info, msg);
+        logger.log(__FUNCTION__, ErrorType::info, msg);
 
 		msg = "FS_PATH: " + fs_path;
-        logger.log("Shader::Shader", QErrorType::info, msg);
+        logger.log(__FUNCTION__, ErrorType::info, msg);
     }
 
     const char* vShaderCode = vs_code.c_str();

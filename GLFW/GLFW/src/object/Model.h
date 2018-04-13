@@ -14,7 +14,7 @@ private:
     std::vector<Mesh> meshes_;
  
 	///<summary>Уже загруженные в память текстуры.</summary>
-    std::vector<QTexture> loadedTextures_;
+    std::vector<Texture> loadedTextures_;
 
     ///<summary>Обработка узла модели.</summary>
     ///<param name = 'node'>Узел assimp.</param>
@@ -30,7 +30,11 @@ private:
     ///<param name = 'material'>Материал assimp.</param>
     ///<param name = 'type'>Тип текстуры assimp.</param>
     ///<param name = 'texture_type'>Тип текстуры в шейдере.</param>
-    std::vector<QTexture> loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const QTextureType texture_type);	
+    std::vector<Texture> loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const TextureType texture_type);	
+
+	///<summary>Вычисляет касательную и бикасательную для каждой из вершин.</summary>
+	///<param name = 'vertices'>Вершины.</param>
+	void computeTangentsBitangents(std::vector<VertexData> &vertices);
 
 public:
 	///<summary>Конструктор.</summary>

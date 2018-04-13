@@ -2,7 +2,7 @@
 #include "..\includes\Includes.h"
 
 ///<summary>Default callbacks</summary>
-class InputHandler : public QInputHandle
+class InputHandler : public InputHandle
 {
 public:
 	///<summary>Обработка позиции курсора.</summary>

@@ -7,7 +7,7 @@ class Object : public IEntity
 {
 private:
 	///<summary>Материал.</summary>
-	QMaterial material_;
+	Material material_;
 
 protected:
 	///<summary>Модели, из которых состоит объект.</summary>
@@ -39,10 +39,10 @@ public:
 	Model* removeModel(const std::string name);
 
 	///<summary>Задаёт материал.</summary>
-	void setMaterial(QMaterial material);
+	void setMaterial(Material material);
 
 	///<summary>Возвращает материал.</summary>
-	QMaterial getMaterial() const;
+	Material getMaterial() const;
 
 	///<summary>Возвращает модели, из которых состоит объект.</summary>
 	const std::vector<Model*>& getModels() const;

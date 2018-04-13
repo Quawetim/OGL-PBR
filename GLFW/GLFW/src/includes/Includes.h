@@ -33,13 +33,13 @@
 #include "../texture_loader/TextureLoader.h"
 
 ///<summary>Тип ошибки для Logger.</summary>
-enum QErrorType { info, warning, error };
+enum ErrorType { info, warning, error };
 
 ///<summary>Тип текстуры.</summary>
-enum QTextureType { diffuse, specular, normal };
+enum TextureType { diffuse, specular, normal };
 
 ///<summary>Структура хранящая параметры вершин.</summary>
-struct QVertexData
+struct VertexData
 {
 	///<summary>Позиция вершины.</summary>
     glm::vec3 position;
@@ -57,10 +57,10 @@ struct QVertexData
     glm::vec3 bitangent;
 };
 
-class QInputHandle
+class InputHandle
 {
 private:
-	static QInputHandle *inputHandle_;
+	static InputHandle *inputHandle_;
 
 protected:
 	///<summary>Обработка позиции курсора.</summary>
@@ -115,14 +115,14 @@ public:
 };
 
 ///<summary>Класс, хранящий информацию о текстуре.</summary>
-class QTexture
+class Texture
 {
 private:
 	///<summary>Идентификатор.</summary>
 	unsigned int id_;
 
 	///<summary>Тип: diffuse, specular, normal etc.</summary>
-	QTextureType type_;
+	TextureType type_;
 
 	///<summary>Путь к текстуре.</summary>
 	std::string path_;
@@ -132,16 +132,16 @@ private:
 
 public:
 	///<summary>Конструктор.</summary>
-	QTexture();
+	Texture();
 
 	///<summary>Конструктор.</summary>
 	///<param name = 'path'>Путь к текстуре.</param>
 	///<param name = 'type'>Тип текстуры.</param>
-	QTexture(std::string path, QTextureType type);
+	Texture(std::string path, TextureType type);
 
 	///<summary>Задаёт тип текстуры..</summary>
 	///<param name = 'type'>Тип текстуры.</param>
-	void setType(const QTextureType type);
+	void setType(const TextureType type);
 
 	///<summary>Задаёт имя текстуры.</summary>
 	///<param name = 'name'>Имя текстуры.</param>
@@ -151,14 +151,14 @@ public:
 	unsigned int getID() const;
 
 	///<summary>Возвращает тип текстуры.</summary>
-	QTextureType getType() const;
+	TextureType getType() const;
 
 	///<summary>Возвращает имя текстуры.</summary>
 	std::string getName() const;
 };
 
 ///<summary>Класс, хранящий свойства материала.</summary>
-class QMaterial
+class Material
 {
 private:
 	///<summary>Ambient цвет.</summary>
@@ -171,17 +171,17 @@ private:
 	glm::vec3 specularColor_;
 
 	///<summary>Текстуры.</summary>
-	std::vector<QTexture> textures_;
+	std::vector<Texture> textures_;
 
 	///<summary>Сила (яркость) блика.</summary>
 	float shininess_;
 
 public:
 	///<summary>Конструктор.</summary>
-	QMaterial();
+	Material();
 
 	///<summary>Деструктор.</summary>
-	~QMaterial();
+	~Material();
 
 	///<summary>Сброс к дефолным значениям.</summary>
 	void reset();
@@ -210,7 +210,7 @@ public:
 
 	///<summary>Задаёт текстуру.</summary>
 	///<param name = 'texture'>Текстура.</param>
-	void addTexture(QTexture texture);
+	void addTexture(Texture texture);
 
 	///<summary>Возвращает ambient цвет в RGB формате.</summary>
 	glm::vec3 getAmbientColor() const;
@@ -225,18 +225,22 @@ public:
 	float getShininess() const;
 
 	///<summary>Возвращает список текстур.</summary>
-	std::vector<QTexture> getTextures() const;
+	std::vector<Texture> getTextures() const;
 
 	///<summary>Проверяет список текстур на пустоту.</summary>
 	bool isTexturesEmpty() const;
 };
 
-///<summary>Задаёт соответствие QTextureType и string.</summary>
-extern const std::map<QTextureType, std::string> mapTextureType;
- 
-///<summary>Field of view.</summary>
-extern float FOV;
- 
+struct TextureKeys
+{
+	std::string mapsName;
+	std::string mapsUse;
+	std::string mapsCount;
+};
+
+///<summary>Задаёт соответствие TextureType и её TextureKeys в шейдере.</summary>
+extern const std::map<TextureType, TextureKeys> mapTextureType;
+  
 ///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
 extern float deltaTime;
  

@@ -17,16 +17,20 @@ void InputHandler::handleCursorPosition(GLFWwindow* window, double xpos, double 
 ///<param name = 'yoffset'>Смещение по оси Y.</param>
 void InputHandler::handleScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
+	int fov = renderer->getFOV();
+
 	if (yoffset > 0)
 	{
-		if (FOV > 10.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
-		else FOV = 10.0f;
+		if (fov > 10) fov -= static_cast<int>(yoffset * 5);
+		else fov = 10;
 	}
 	else
 	{
-		if (FOV < 90.0f) FOV -= static_cast<float>(yoffset) * 10.0f;
-		else FOV = 90.0f;
+		if (fov < 90) fov -= static_cast<int>(yoffset * 5);
+		else fov = 90;
 	}
+
+	renderer->setFOV(fov);
 }
 
 ///<summary>Обработка клавиатуры.</summary>
@@ -45,7 +49,7 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
     //if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
 
     // FOV по-умолчанию
-    if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { FOV = 60.0f; }
+	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { renderer->setFOV(60); }
 
     // Отображение курсора при удерживании CTRL
     //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
@@ -62,8 +66,8 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
     //    glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
     //}
 
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "space" << std::endl;
-	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) std::cout << "tab" << std::endl;
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> space" << std::endl;
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> tab" << std::endl;
 }
 
 ///<summary>Обработка изменения размера окна.</summary>
@@ -72,7 +76,7 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
 ///<param name = 'height'>Новая высота.</param>
 void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int height)
 {
-	renderer->setViewport(width, height);
+	renderer->setViewport(0, 0, width, height);
     renderer->setWindowWidth(width);
     renderer->setWindowHeight(height);
 }

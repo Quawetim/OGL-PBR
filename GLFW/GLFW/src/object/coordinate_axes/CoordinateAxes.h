@@ -16,7 +16,7 @@ private:
 	unsigned int VBO_;
 
 	///<summary>Вершины.</summary>
-	std::vector<QVertexData> vertices_;
+	std::vector<VertexData> vertices_;
 
 	///<summary>Индексы.</summary>
 	std::vector<unsigned int> indices_;
@@ -38,4 +38,10 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	void draw(const Shader shader, const glm::mat4 view_matrix);
+
+	///<summary>Возвращает VAO.</summary>
+	unsigned int getVAO() const;
+
+	///<summary>Возвращает матрицу модели.</summary>
+	glm::mat4 getModelMatrix() const;
 };

@@ -11,11 +11,11 @@ TestScene::~TestScene()
 ///<param name = 'models'>Список моделей.</param>
 void TestScene::init(std::vector<Model*> models)
 {
-	std::vector<QVertexData> vertices;
+	std::vector<VertexData> vertices;
 	std::vector<unsigned int> indices;
-	std::vector<QTexture> textures;
+	std::vector<Texture> textures;
 
-	QVertexData v;
+	VertexData v;
 	v.position = glm::vec3(-1.0f, -1.0f, 0.0f);
 	v.normal = glm::vec3(0.0f, 0.0f, 1.0f);
 	vertices.push_back(v);
@@ -45,7 +45,7 @@ void TestScene::init(std::vector<Model*> models)
 	this->objects_[1]->setRotation(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	this->objects_[1]->setScale(glm::vec3(0.04f));
 
-	QMaterial material;
+	Material material;
 	material.setDiffuseColor(110, 16, 7);
 	material.setSpecularColor(156, 80, 73);
 

@@ -14,7 +14,7 @@ unsigned int textureLoader::loadTexture(const std::string path)
     if (data)
     {
 		std::string msg = "Texture found. PATH: " + path;
-        logger.log("TextureLoader::loadTexture", QErrorType::info, msg);
+        logger.log(__FUNCTION__, ErrorType::info, msg);
 
         GLenum format;
 
@@ -41,7 +41,7 @@ unsigned int textureLoader::loadTexture(const std::string path)
 		stbi_image_free(data);
 
 		std::string msg = "Texture not found. PATH: " + path;
-        logger.log("TextureLoader::loadTexture", QErrorType::error, msg);
+        logger.log(__FUNCTION__, ErrorType::error, msg);
     }    
 
     return ID;
@@ -92,7 +92,7 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 			stbi_image_free(data);
 
 			std::string msg = "Texture not found. PATH: " + faces[i];
-			logger.log("TextureLoader::loadCubeMap", QErrorType::error, msg);
+			logger.log(__FUNCTION__, ErrorType::error, msg);
 		}		
 	}
 

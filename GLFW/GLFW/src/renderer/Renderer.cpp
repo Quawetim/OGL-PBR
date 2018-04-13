@@ -13,10 +13,11 @@ Renderer::Renderer()
 	this->isShowCursor_ = true;
 
 	this->fps_ = 0;
+	this->fov_ = 60.0f;
 
 	readConfig();
 
-	this->projectionMatrix_ = glm::perspective(glm::radians(FOV), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);	
+	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);	
 }
 
 ///<summary>Деструктор.</summary>
@@ -33,7 +34,7 @@ void Renderer::readConfig()
 
 	if (!fin)
 	{
-		logger.log("Renderer::readConfig", QErrorType::warning, "Config file not found.");
+		logger.log(__FUNCTION__, ErrorType::warning, "Config file not found.");
 	}
 	else
 	{
@@ -159,6 +160,14 @@ void Renderer::setFPS(const int fps)
 	this->fps_ = fps;
 }
 
+///<summary>Задаёт текущее значение FOV.</summary>
+///<param name = 'fov'>FOV.</param>
+void Renderer::setFOV(const int fov)
+{
+	this->fov_ = static_cast<float>(fov);
+	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
+}
+
 ///<summary>Возвращает указатель на окно.</summary>
 QWindow Renderer::getWindow() const
 {
@@ -211,6 +220,12 @@ bool Renderer::isShowCursor() const
 int Renderer::getFPS() const
 {
 	return this->fps_;
+}
+
+///<summary>Возвращает текущее значение FOV.</summary>
+int Renderer::getFOV() const
+{
+	return static_cast<int>(this->fov_);
 }
 
 ///<summary>Возвращает матрицу проекции.</summary>
