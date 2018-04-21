@@ -46,4 +46,11 @@ public:
 
 	///<summary>Возвращает меши, из которых состоит модель.</summary>
 	const std::vector<Mesh>& getMeshes() const;
+
+	///<summary>
+	///<para>Возвращает меш по имени.</para>
+	///<para>Если не найден, возвращает первый меш.</para>
+	///</summary>
+	///<param name = 'name'>Имя меша.</param>
+	const Mesh getMeshByName(std::string name) const;
 };

@@ -243,7 +243,7 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void OpenGLRenderer::drawObject(Object* object, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
+void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
 	shader.activate();
 	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, object->getModelMatrix());
@@ -260,6 +260,30 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, glm::mat4 view_ma
 	shader.setBool("useSpecularMaps", false);
 	shader.setBool("useNormalMaps", false);
 
+	// Push lights
+
+	shader.setInt("lightsCount", lights.size());
+
+	for (size_t i = 0; i < lights.size(); i++)
+	{
+		std::string name;
+
+		name = "lights[" + std::to_string(i) + "].position";
+		shader.setVec3(name, lights[i]->getPosition());
+
+		name = "lights[" + std::to_string(i) + "].radius";
+		shader.setFloat(name, lights[i]->getRadius());
+
+		name = "lights[" + std::to_string(i) + "].diffuseColor";
+		shader.setVec3(name, lights[i]->getDiffuseColor());
+
+		name = "lights[" + std::to_string(i) + "].specularColor";
+		shader.setVec3(name, lights[i]->getSpecularColor());
+
+		name = "lights[" + std::to_string(i) + "].power";
+		shader.setFloat(name, lights[i]->getPower());
+	}
+
 	// Для каждой из моделей в объекте
 	for (size_t i = 0; i < object->getModels().size(); i++)
 	{
@@ -272,7 +296,7 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, glm::mat4 view_ma
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void OpenGLRenderer::drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
+void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
 	glDepthFunc(GL_EQUAL);
 
@@ -282,14 +306,31 @@ void OpenGLRenderer::drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_ma
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getCubeMapID());
 
-	for (size_t i = 0; i < skybox->getModels().size(); i++)
-	{
-		drawModel(skybox->getModels()[i], shader, skybox->getMaterial());
-	}
+	glBindVertexArray(skybox->getModels()[0]->getMeshByName("skybox").getVAO());
+	glDrawElements(GL_TRIANGLES, skybox->getModels()[0]->getMeshByName("skybox").getIndicesSize(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	glDepthFunc(GL_LESS);
+}
+
+void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, std::shared_ptr<Shader> shader, glm::mat4 view_Matrix, glm::vec3 camera_position)
+{
+	shader->activate();
+	shader->setProjectionViewModelMatrices(this->projectionMatrix_, view_Matrix, light->getModelMatrix());
+
+	shader->setVec3("color", light->getSpecularColor());
+
+	glBindVertexArray(light->getModel()->getMeshByName("specular").getVAO());
+	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("specular").getIndicesSize(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	shader->setVec3("color", light->getDiffuseColor());
+
+	glBindVertexArray(light->getModel()->getMeshByName("diffuse").getVAO());
+	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("diffuse").getIndicesSize(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
 }
 
 ///<summary>Очистка экрана.</summary>

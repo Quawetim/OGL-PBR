@@ -8,23 +8,18 @@ struct QMaterial
     float shininess;
 };
 
-in vec3 textureCoords;
-in vec3 fragmentNormal;
-in vec3 fragmentPosition;
+in VS_OUT
+{
+    vec3 textureCoords;
+    vec3 fragmentNormal;
+    vec3 fragmentPosition;
+} fs_in;
 
 out vec4 fragmentColor;
 
 uniform QMaterial material;
 
-uniform bool diffuseMap1_flag;
-uniform bool specularMap1_flag;
-uniform bool normalMap1_flag;
-
 uniform vec3 cameraPosition;
-
-uniform sampler2D diffuseMap1;
-uniform sampler2D specularMap1;
-uniform sampler2D normalMap1;
 
 uniform samplerCube cubeMap;
 
@@ -58,8 +53,8 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
 
     //ambientColor = material.ambientColor * material.diffuseColor;
     //diffuseColor = lightDiffuseColor * lightPower * material.diffuseColor * diff;
-    ambientColor = 0.05f * texture(cubeMap, textureCoords).rgb;
-    diffuseColor = lightDiffuseColor * lightPower * texture(cubeMap, textureCoords).rgb * diff;
+    ambientColor = 0.05f * texture(cubeMap, fs_in.textureCoords).rgb;
+    diffuseColor = lightDiffuseColor * lightPower * texture(cubeMap, fs_in.textureCoords).rgb * diff;
     specularColor = lightSpecularColor * lightPower * material.specularColor * spec;
 
     float dist = length(lightPosition - fragment_position);
@@ -83,14 +78,14 @@ void main()
 
     if (false)
     {
-        vec3 normal = normalize(fragmentNormal);
-        vec3 viewDirection = normalize(cameraPosition - fragmentPosition);
+        vec3 normal = normalize(fs_in.fragmentNormal);
+        vec3 viewDirection = normalize(cameraPosition - fs_in.fragmentPosition);
 
-        fragmentColor = vec4(computePointLight(0, normal, fragmentPosition, viewDirection), 1.0f);
+        fragmentColor = vec4(computePointLight(0, normal, fs_in.fragmentPosition, viewDirection), 1.0f);
     }
     else
     {
-        fragmentColor = texture(cubeMap, textureCoords);
+        fragmentColor = texture(cubeMap, fs_in.textureCoords);
     }
 
     fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));   

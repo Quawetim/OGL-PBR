@@ -254,3 +254,21 @@ const std::vector<Mesh>& Model::getMeshes() const
 {
 	return this->meshes_;
 }
+
+///<summary>
+///<para>Возвращает меш по имени.</para>
+///<para>Если не найден, возвращает первый меш.</para>
+///</summary>
+///<param name = 'name'>Имя меша.</param>
+const Mesh Model::getMeshByName(std::string name) const
+{
+	for (size_t i = 0; i < this->meshes_.size(); i++)
+	{
+		if (meshes_[i].name_ == name) return meshes_[i];
+	}
+
+	std::string msg = "Mesh name: " + name + " not found.";
+	logger.log(__FUNCTION__, ErrorType::warning, msg);
+
+	return meshes_[0];
+}

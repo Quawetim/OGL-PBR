@@ -12,7 +12,6 @@ Renderer::Renderer()
 	this->isVSync_ = false;
 	this->isShowCursor_ = true;
 
-	this->fps_ = 0;
 	this->fov_ = 60.0f;
 
 	readConfig();
@@ -153,13 +152,6 @@ void Renderer::setShowCursor(const bool showCursor)
 	this->isShowCursor_ = showCursor;
 }
 
-///<summary>Задаёт текущее число кадров в секунду.</summary>
-///<param name = 'fps'>FPS.</param>
-void Renderer::setFPS(const int fps)
-{
-	this->fps_ = fps;
-}
-
 ///<summary>Задаёт текущее значение FOV.</summary>
 ///<param name = 'fov'>FOV.</param>
 void Renderer::setFOV(const int fov)
@@ -214,12 +206,6 @@ bool Renderer::isVsyncEnabled() const
 bool Renderer::isShowCursor() const
 {
 	return this->isShowCursor_;
-}
-
-///<summary>Возвращает текущее число кадров в секунду.</summary>
-int Renderer::getFPS() const
-{
-	return this->fps_;
 }
 
 ///<summary>Возвращает текущее значение FOV.</summary>

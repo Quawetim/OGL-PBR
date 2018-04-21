@@ -115,6 +115,9 @@
 xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
 xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /s /q "$(OutDir)resources"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -158,6 +161,9 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
 xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
 xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /s /q "$(OutDir)resources"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -193,10 +199,12 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <FileType>Document</FileType>
       <DeploymentContent>false</DeploymentContent>
     </None>
+    <None Include="resources\shaders\axesShader.fs" />
+    <None Include="resources\shaders\axesShader.vs" />
     <None Include="resources\shaders\materialShader.fs" />
     <None Include="resources\shaders\materialShader.vs" />
-    <None Include="resources\shaders\simpleShader.fs" />
-    <None Include="resources\shaders\simpleShader.vs" />
+    <None Include="resources\shaders\lightShader.fs" />
+    <None Include="resources\shaders\lightShader.vs" />
     <None Include="resources\shaders\skyboxShader.fs" />
     <None Include="resources\shaders\skyboxShader.vs" />
     <None Include="resources\shaders\test.fs" />
@@ -211,6 +219,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\object\coordinate_axes\CoordinateAxes.cpp" />
     <ClCompile Include="src\object\IEntity.cpp" />
+    <ClCompile Include="src\object\light\Light.cpp" />
     <ClCompile Include="src\object\Mesh.cpp" />
     <ClCompile Include="src\object\Model.cpp" />
     <ClCompile Include="src\object\Object.cpp" />
@@ -232,6 +241,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\logger\Logger.h" />
     <ClInclude Include="src\object\coordinate_axes\CoordinateAxes.h" />
     <ClInclude Include="src\object\IEntity.h" />
+    <ClInclude Include="src\object\light\Light.h" />
     <ClInclude Include="src\object\Object.h" />
     <ClInclude Include="src\object\Mesh.h" />
     <ClInclude Include="src\object\Model.h" />

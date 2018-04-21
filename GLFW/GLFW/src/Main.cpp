@@ -25,21 +25,21 @@ int main()
 
 	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   
 
-	ICamera *camera_FPC = new FirstPersonCamera();
-	ICamera *camera_TPC = new ThirdPersonCamera();
-	ICamera *camera_static = new StaticCamera();
-	ICamera *camera_free = new FreeCamera();
+	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera());
+	std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
+	std::shared_ptr<ICamera> camera_static(new StaticCamera());
+	std::shared_ptr<ICamera> camera_free(new FreeCamera());
 
-	std::vector<ICamera*> cameras;
+	std::vector<std::shared_ptr<ICamera>> cameras;
 	cameras.push_back(camera_FPC);
 	cameras.push_back(camera_TPC);
 	cameras.push_back(camera_static);
 	//cameras.push_back(camera_free);
 
-	ICamera *camera = cameras[0];
+	std::shared_ptr<ICamera> camera = cameras[0];
 
 	Shader materialShader("resources/shaders/materialShader.vs", "resources/shaders/materialShader.fs");
-	Shader simpleShader("resources/shaders/simpleShader.vs", "resources/shaders/simpleShader.fs");
+	Shader axesShader("resources/shaders/axesShader.vs", "resources/shaders/axesShader.fs");
 	Shader skyboxShader("resources/shaders/skyboxShader.vs", "resources/shaders/skyboxShader.fs");
 
 	std::vector<Model*> models;
@@ -57,9 +57,9 @@ int main()
 
 	Scene1 scene1;
 	scene1.init(models);
-
-	Skybox* skybox = new Skybox(100.0f);		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
 	
+	std::shared_ptr<Skybox> skybox(new Skybox(100.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
+
 	////////////////////////////////DEBUG////////////////////////////////
 
 	bool testSceneEnabled = false;
@@ -84,30 +84,30 @@ int main()
 
 	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
-    float currentFrameTime = 0.0;
+    float currentFrameTime = 0.0f;
+	float fpsLastCheckTime = 0.0f;
+	int fps = 0;
 
-    logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop.");
-       
-    float fpsInitTime = static_cast<float>(glfwGetTime());
-
+    logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop."); 
+    
 	while (!renderer->quit())
 	{
 		currentFrameTime = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrameTime - lastFrameTime;
 		lastFrameTime = currentFrameTime;
 
-		renderer->setFPS(renderer->getFPS() + 1);
+		fps++;
 
-		if (currentFrameTime - fpsInitTime >= 0.01f)
+		// Each second
+		if (currentFrameTime - fpsLastCheckTime >= 1.0f)
 		{
-			//sprintf(text, "%d FPS, %.3f ms", nbFrames, 1000.0 / double(nbFrames));
-			//sprintf(text2, "Diploma at %d FPS", nbFrames);
-			std::stringstream title;
-			title << "Diploma at " << renderer->getFPS() << " FPS. Frame time: " << 1000.0 / static_cast<double>(renderer->getFPS()) << "ms.";
+			fpsLastCheckTime = static_cast<float>(glfwGetTime());
 
+			std::stringstream title;
+			title << "Diploma at " << fps << " FPS. " << "Frame time: " << 1000.0f / fps << "ms.";
 			renderer->setWindowTitle(title.str());
-			renderer->setFPS(0);
-			fpsInitTime += 1.0;
+
+			fps = 0;
 		}
 
 		// ќчистить экран
@@ -127,7 +127,7 @@ int main()
 
 		// GUI
 
-		coordinateAxes.draw(simpleShader, camera->getViewMatrixAxes());
+		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
 
 		// ќбработка ввода
 				
@@ -140,19 +140,12 @@ int main()
 		renderer->pollEvents();
     }
 
-	delete skybox;
-
 	delete cylinder;
 	delete sphere;
-	delete cube;
-
-	delete camera_free;
-	delete camera_static;
-	delete camera_TPC;
-	delete camera_FPC;	
+	delete cube;	
 
 	cameras.clear();
-	std::vector<ICamera*>(cameras).swap(cameras);	
+	std::vector<std::shared_ptr<ICamera>>(cameras).swap(cameras);
 
 	delete renderer;
 

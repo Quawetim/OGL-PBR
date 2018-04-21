@@ -1,12 +1,16 @@
 #pragma once
 #include "../includes/Includes.h"
 #include "IScene.h"
+#include "../object/light/Light.h"
 
 ///<summary>Тестовая сцена.</summary>
 class TestScene : public IScene
 {
 private:
 	std::vector<Object*> objects_;
+
+	bool drawLights_ = true;
+	std::vector<std::shared_ptr<PointLight>> lights_;
 
 public:
 	///<summary>Деструктор.</summary>

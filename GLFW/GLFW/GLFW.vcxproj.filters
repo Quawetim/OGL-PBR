@@ -61,6 +61,9 @@
     <Filter Include="Файлы исходного кода\renderer">
       <UniqueIdentifier>{cd38555d-c934-4ce2-b706-e3c4f2284e0c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\object\light">
+      <UniqueIdentifier>{74813ebe-2086-4cfa-b53a-817f2c8cb796}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -81,16 +84,22 @@
     <None Include="resources\shaders\materialShader.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
-    <None Include="resources\shaders\simpleShader.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\simpleShader.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
     <None Include="resources\shaders\skyboxShader.fs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
     <None Include="resources\shaders\skyboxShader.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\axesShader.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\axesShader.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\lightShader.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\lightShader.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
   </ItemGroup>
@@ -152,6 +161,9 @@
     <ClCompile Include="src\renderer\OpenGLRenderer.cpp">
       <Filter>Файлы исходного кода\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\object\light\Light.cpp">
+      <Filter>Файлы исходного кода\object\light</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\callbacks\Callbacks.h">
@@ -207,6 +219,9 @@
     </ClInclude>
     <ClInclude Include="src\renderer\Renderer.h">
       <Filter>Файлы исходного кода\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object\light\Light.h">
+      <Filter>Файлы исходного кода\object\light</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

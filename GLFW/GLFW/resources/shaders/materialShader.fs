@@ -29,7 +29,7 @@ in VS_OUT
     
     vec3 cameraPosition;
 
-    Light light;
+    vec3 lightsPositions[MAX_LIGHTS];
 } fs_in;
 
 out vec3 fragmentColor;
@@ -37,21 +37,32 @@ out vec3 fragmentColor;
 uniform Material material;
 
 uniform bool useDiffuseMaps;
-uniform bool useSpecularMaps;
-uniform bool useNormalMaps;
-
-uniform sampler2D diffuseMaps[MAX_MAPS];
 uniform int diffuseMapsCount;
+uniform sampler2D diffuseMaps[MAX_MAPS];
 
-uniform sampler2D specularMaps[MAX_MAPS];
+uniform bool useSpecularMaps;
 uniform int specularMapsCount;
+uniform sampler2D specularMaps[MAX_MAPS];
 
+uniform bool useNormalMaps;
+uniform int normalMapsCount;
 uniform sampler2D normalMaps[MAX_MAPS];
-uniform int mormalMapsCount;
 
-vec3 computePointLight(vec3 normal, vec3 fragment_position, vec3 view_direction)
+uniform int lightsCount;
+uniform Light lights[MAX_LIGHTS];
+
+vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_direction)
 {
-    vec3 lightDirection = normalize(fs_in.light.position - fragment_position);
+    vec3 lightDirection;
+
+    if (useNormalMaps)
+    {
+        lightDirection = normalize(fs_in.lightsPositions[id] - fragment_position);
+    }
+    else
+    {
+        lightDirection = normalize(lights[id].position - fragment_position);
+    }
 
     float diff = max(dot(normal, lightDirection), 0.0f);
     float spec;
@@ -85,12 +96,12 @@ vec3 computePointLight(vec3 normal, vec3 fragment_position, vec3 view_direction)
         }
         
         ambientColor *= 0.05f;
-        diffuseColor *= fs_in.light.diffuseColor * fs_in.light.power * diff;
+        diffuseColor *= lights[id].diffuseColor * lights[id].power * diff;
     }
     else
     {
         ambientColor = material.ambientColor * material.diffuseColor;
-        diffuseColor = fs_in.light.diffuseColor * fs_in.light.power * material.diffuseColor * diff;
+        diffuseColor = lights[id].diffuseColor * lights[id].power * material.diffuseColor * diff;
     }
 
     if (useSpecularMaps)
@@ -102,26 +113,55 @@ vec3 computePointLight(vec3 normal, vec3 fragment_position, vec3 view_direction)
             specularColor += texture(specularMaps[i], fs_in.textureCoords).rgb;
         }
 
-        specularColor *= fs_in.light.specularColor * fs_in.light.power * spec;
+        specularColor *= lights[id].specularColor * lights[id].power * spec;
     }
     else
     {
-        specularColor = fs_in.light.specularColor * fs_in.light.power * material.specularColor * spec;
+        specularColor = lights[id].specularColor * lights[id].power * material.specularColor * spec;
     }
 
-    float dist = length(fs_in.light.position - fragment_position);
+    float dist;
+    
+    if (useNormalMaps)
+    {
+        dist = length(fs_in.lightsPositions[id] - fragment_position);
+    }
+    else
+    {
+        dist = length(lights[id].position - fragment_position);
+    }
 
-    float constant_factor = 1.0f;
-    float linear_factor = 2.0 / fs_in.light.radius;
-    float quadratic_factor = 1.0 / (fs_in.light.radius * fs_in.light.radius);
+    float attenuation;
 
-    float attenuation = 1.0f / (constant_factor + (linear_factor * dist) + (quadratic_factor * dist * dist));
+    if (true)
+    {
+        float constant_factor = 1.64f; 
+        float linear_factor = 2.0 / lights[id].radius;
+        float quadratic_factor = 1.0 / (lights[id].radius * lights[id].radius);
+
+        attenuation = 1.0f / (constant_factor + (linear_factor * dist) + (quadratic_factor * dist * dist));
+    }
+    else
+    {
+        float d = max(dist - lights[id].radius, 0);
+        lightDirection /= dist;
+     
+        // calculate basic attenuation
+        float denom = d / lights[id].radius + 1;
+        attenuation = 1 / (denom*denom);
+     
+        // scale and bias attenuation such that:
+        //   attenuation == 0 at extent of max influence
+        //   attenuation == 1 when d == 0
+        attenuation = (attenuation - 0.001f) / (1 - 0.001f);
+        attenuation = max(attenuation, 0);
+    }
 
     ambientColor *= attenuation;
     diffuseColor *= attenuation;
     specularColor *= attenuation;
 
-    return ambientColor + diffuseColor + specularColor;
+    return ambientColor + diffuseColor + specularColor;   
 }
 
 void main()
@@ -146,7 +186,14 @@ void main()
         
         vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
 
-        fragmentColor = computePointLight(normal, fs_in.fragmentPosition, viewDirection);
+        vec3 color = vec3(0.0f, 0.0f, 0.0f);
+
+        for (int i = 0; i < lightsCount; i++)
+        {
+            color += computePointLight(i, normal, fs_in.fragmentPosition, viewDirection);
+        }
+
+        fragmentColor = color;
     }
     else
     {

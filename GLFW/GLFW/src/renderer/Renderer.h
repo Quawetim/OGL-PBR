@@ -2,6 +2,7 @@
 #include "../includes/Includes.h"
 #include "../object/Object.h"
 #include "../object/skybox/Skybox.h"
+#include "../object/light/Light.h"
 
 struct QWindow
 {
@@ -38,9 +39,6 @@ protected:
 	///<summary>Отображение курсора.</summary>
 	bool isShowCursor_;
 
-	///<summary>FPS.</summary>
-	int fps_;
-
 	///<summary>FOV.</summary>
 	float fov_;
 
@@ -68,14 +66,16 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void drawObject(Object* object, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+	virtual void drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка скайбокса.</summary>
 	///<param name = 'skybox'>Объект.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+	virtual void drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+
+	virtual void drawPointLight(std::shared_ptr<PointLight> light, std::shared_ptr<Shader> shader, glm::mat4 view_Matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>
@@ -134,10 +134,6 @@ public:
 	///<param name = 'showCursor'>Отображать курсор.</param>
 	void setShowCursor(const bool showCursor);
 
-	///<summary>Задаёт текущее число кадров в секунду.</summary>
-	///<param name = 'fps'>FPS.</param>
-	void setFPS(const int fps);
-
 	///<summary>Задаёт текущее значение FOV.</summary>
 	///<param name = 'fov'>FOV.</param>
 	void setFOV(const int fov);
@@ -162,9 +158,6 @@ public:
 
 	///<summary>Возвращает признак отображаемости курсора.</summary>
 	bool isShowCursor() const;
-
-	///<summary>Возвращает текущее число кадров в секунду.</summary>
-	int getFPS() const;
 
 	///<summary>Возвращает текущее значение FOV.</summary>
 	int getFOV() const;
@@ -198,14 +191,16 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	void drawObject(Object* object, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
+	void drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка скайбокса.</summary>
 	///<param name = 'skybox'>Объект.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	void drawSkybox(Skybox* skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
+	void drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
+
+	void drawPointLight(std::shared_ptr<PointLight> light, std::shared_ptr<Shader> shader, glm::mat4 view_Matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>

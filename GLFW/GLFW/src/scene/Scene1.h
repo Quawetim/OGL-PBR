@@ -1,6 +1,7 @@
 #pragma once
 #include "../includes/Includes.h"
 #include "IScene.h"
+#include "../object/light/Light.h"
 
 ///<summary>Сцена 1.</summary>
 class Scene1 : public IScene
@@ -10,6 +11,9 @@ private:
 	std::vector<Object*> spheres_;
 	std::vector<Object*> cylinders_;
 	bool decrease_;
+
+	bool drawLights_ = true;
+	std::vector<std::shared_ptr<PointLight>> lights_;
 
 public:
 	///<summary>Деструктор.</summary>

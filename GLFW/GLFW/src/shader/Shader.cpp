@@ -81,13 +81,13 @@ Shader::Shader(std::string vs_path, std::string fs_path)
     catch (std::ifstream::failure e)
     {
 		std::string msg;
-        logger.log(__FUNCTION__, ErrorType::error, "Shader file not found.");
+        logger.log(__FUNCTION__, ErrorType::info, "Shader file not found.");
 
 		msg = "VS_PATH: " + vs_path;
         logger.log(__FUNCTION__, ErrorType::info, msg);
 
 		msg = "FS_PATH: " + fs_path;
-        logger.log(__FUNCTION__, ErrorType::info, msg);
+        logger.log(__FUNCTION__, ErrorType::error, msg);
     }
 
     const char* vShaderCode = vs_code.c_str();

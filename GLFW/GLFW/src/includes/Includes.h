@@ -1,6 +1,7 @@
 #pragma once
 
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <stdlib.h>
 #include <vector>
 #include <list>
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <ctime>
+#include <memory>
 
 #include <GLAD\glad.h>
 

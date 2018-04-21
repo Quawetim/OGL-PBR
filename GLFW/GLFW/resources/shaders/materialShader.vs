@@ -32,9 +32,9 @@ out VS_OUT
     vec3 fragmentNormal;
     vec2 textureCoords;
 
-    vec3 cameraPosition;
+    vec3 cameraPosition;   
 
-    Light light;
+    vec3 lightsPositions[5];
 } vs_out;
 
 uniform Material material;
@@ -43,6 +43,9 @@ uniform mat4 projectionMatrix, viewMatrix, modelMatrix;
 uniform vec3 cameraPosition;
 
 uniform bool useNormalMaps;
+
+uniform int lightsCount;
+uniform Light lights[5];
 
 void main()
 {
@@ -55,13 +58,6 @@ void main()
     vs_out.textureCoords = vTextureCoords;
 
     vs_out.cameraPosition = cameraPosition;
-
-    vs_out.light.position = vec3(0.0f, 0.0f, 15.0f);
-    vs_out.light.radius = 1.0f;
-
-    vs_out.light.diffuseColor = vec3(0.8f, 0.8f, 0.92f);
-    vs_out.light.specularColor = vec3(0.7f, 0.7f, 0.7f);
-    vs_out.light.power = 460.0f;
 
     if (useNormalMaps)
     {
@@ -85,6 +81,9 @@ void main()
         vs_out.fragmentPosition = TBN * vs_out.fragmentPosition;
         vs_out.cameraPosition = TBN * cameraPosition;
 
-        vs_out.light.position = TBN * vs_out.light.position;
+        for (int i = 0; i < lightsCount; i++)
+        {
+            vs_out.lightsPositions[i] = TBN * lights[i].position;
+        }
     }
 } 

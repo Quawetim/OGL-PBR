@@ -14,9 +14,12 @@ struct QMaterial
     float shininess;
 };
 
-out vec3 textureCoords;
-out vec3 fragmentNormal;
-out vec3 fragmentPosition;
+out VS_OUT
+{
+    vec3 textureCoords;
+    vec3 fragmentNormal;
+    vec3 fragmentPosition;
+} vs_out;
 
 uniform QMaterial material;
 uniform mat4 projectionMatrix, viewMatrix, modelMatrix;
@@ -26,8 +29,8 @@ void main()
     vec4 position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0f);
     gl_Position = position.xyww;
 
-    fragmentNormal = mat3(transpose(inverse(modelMatrix))) * vNormal;
-    fragmentPosition = vec3(modelMatrix * vec4(vPosition, 1.0f));
+    vs_out.fragmentNormal = mat3(transpose(inverse(modelMatrix))) * vNormal;
+    vs_out.fragmentPosition = vec3(modelMatrix * vec4(vPosition, 1.0f));
 
-    textureCoords = vPosition;
+    vs_out.textureCoords = vPosition;
 }

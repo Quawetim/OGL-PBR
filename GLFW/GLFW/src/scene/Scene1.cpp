@@ -27,6 +27,9 @@ Scene1::~Scene1()
 
 	this->cylinders_.clear();
 	std::vector<Object*>(this->cylinders_).swap(this->cylinders_);
+
+	this->lights_.clear();
+	std::vector<std::shared_ptr<PointLight>>(this->lights_).swap(this->lights_);
 }
 
 ///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
@@ -80,7 +83,7 @@ void Scene1::init(std::vector<Model*> models)
 	material.reset();
 
 	// Сферы
-	material.setDiffuseColor(90, 22, 160);
+	material.setDiffuseColor(93, 66, 195);
 	this->spheres_[0]->setMaterial(material);
 	material.reset();
 
@@ -106,6 +109,25 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	this->cylinders_[4]->setMaterial(material);
 	material.reset();
+
+	std::shared_ptr<Model> pointLight(new Model("resources/3dmodels/pointLight.obj"));
+	std::shared_ptr<Shader> lightShader(new Shader("resources/shaders/lightShader.vs", "resources/shaders/lightShader.fs"));
+
+	std::shared_ptr<PointLight> light(new PointLight(lightShader, pointLight));
+
+	light->setPosition(glm::vec3(0.0f, 0.0f, 15.0f));
+	//light->setDiffuseColor(214, 68, 86);
+	//light->setSpecularColor(214, 180, 176);
+
+	this->lights_.push_back(light);
+
+	light = std::shared_ptr<PointLight>(new PointLight(lightShader, pointLight));
+
+	light->setPosition(glm::vec3(0.0f, 0.0f, -15.0f));
+	//light->setDiffuseColor(97, 165, 203);
+	//light->setSpecularColor(149, 192, 203);
+
+	this->lights_.push_back(light);
 }
 
 ///<summary>Отрисовка сцены.</summary>
@@ -116,7 +138,7 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 	// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
-		renderer->drawObject(this->cubes_[i], shader, view_matrix, camera_position);
+		renderer->drawObject(this->cubes_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
 	this->cubes_[0]->rotate(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -128,7 +150,7 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 	// Сферы
 	for (size_t i = 0; i < cubes_.size(); i++)
 	{
-		renderer->drawObject(this->spheres_[i], shader, view_matrix, camera_position);
+		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
 
 		if (this->decrease_)
 		{
@@ -147,7 +169,31 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 	// Цилиндры
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
-		renderer->drawObject(this->cylinders_[i], shader, view_matrix, camera_position);
+		renderer->drawObject(this->cylinders_[i], shader, this->lights_, view_matrix, camera_position);
 		this->cylinders_[i]->rotate(10.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	}
+
+	if (this->drawLights_)
+	{
+		for (size_t i = 0; i < this->lights_.size(); i++)
+		{
+			renderer->drawPointLight(this->lights_[i], this->lights_[i]->getShader(), view_matrix, camera_position);
+		}
+	}	
+	
+	glm::vec3 pos, newPos;
+	float r, angle;
+
+	for (size_t i = 0; i < this->lights_.size(); i++)
+	{
+		pos = this->lights_[i]->getPosition();
+		r = sqrt(pos.x * pos.x + pos.z * pos.z);
+		angle = glm::degrees(acos(glm::dot(pos, glm::vec3(1.0f, 0.0f, 0.0f)) / r)) * getSign(pos.z);
+		
+		angle += 60.0f * deltaTime;
+		while (abs(angle) >= 360.0f) angle -= 360.0f;
+
+		newPos = glm::vec3(r * cos(glm::radians(angle)), pos.y, r * sin(glm::radians(angle)));
+		this->lights_[i]->setPosition(newPos);
 	}
 }

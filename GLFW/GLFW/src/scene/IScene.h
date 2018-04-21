@@ -5,6 +5,9 @@
 ///<summary>Класс-контенер для объектов aka сцена, уровень.</summary>
 class IScene
 {
+protected:
+	template<typename Type> int getSign(Type value) { return (value > 0) ? 1 : -1; }
+
 public:
 	///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
 	///<param name = 'models'>Список моделей.</param>
