@@ -69,13 +69,17 @@ public:
 	virtual void drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка скайбокса.</summary>
-	///<param name = 'skybox'>Объект.</param>
+	///<param name = 'skybox'>Скайбокс.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	virtual void drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
-	virtual void drawPointLight(std::shared_ptr<PointLight> light, std::shared_ptr<Shader> shader, glm::mat4 view_Matrix, glm::vec3 camera_position) = 0;
+	///<summary>Отрисовка точечного источника освещения.</summary>
+	///<param name = 'light'>Точечный источник освещения.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	virtual void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>
@@ -194,13 +198,17 @@ public:
 	void drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка скайбокса.</summary>
-	///<param name = 'skybox'>Объект.</param>
+	///<param name = 'skybox'>Скайбокс.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	void drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
 
-	void drawPointLight(std::shared_ptr<PointLight> light, std::shared_ptr<Shader> shader, glm::mat4 view_Matrix, glm::vec3 camera_position);
+	///<summary>Отрисовка точечного источника освещения.</summary>
+	///<param name = 'light'>Точечный источник освещения.</param>
+	///<param name = 'view_matrix'>Матрица вида.</param>
+	///<param name = 'camera_position'>Позиция камеры.</param>
+	void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>

@@ -86,7 +86,7 @@ void TestScene::render(Shader shader, const glm::mat4 view_matrix, const glm::ve
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{
-			renderer->drawPointLight(this->lights_[i], this->lights_[i]->getShader(), view_matrix, camera_position);
+			renderer->drawPointLight(this->lights_[i], view_matrix, camera_position);
 		}
 	}
 

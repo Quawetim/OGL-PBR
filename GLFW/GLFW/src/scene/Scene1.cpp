@@ -38,27 +38,24 @@ void Scene1::init(std::vector<Model*> models)
 {
 	this->decrease_ = true;
 
-	glm::vec3 initialSpheresPos = glm::vec3(0.0f, 6.0f, 0.0f);
-	glm::vec3 initialCylindersPos = glm::vec3(3.0f, 6.0f, 0.0f);
-
-	for (size_t i = 0; i < 5; i++)
+	for (size_t i = 0; i < 4; i++)
 	{
 		Object *obj;
 		std::string name;
 	
 		name = "cube" + std::to_string(i + 1);
 		obj = new Object(name, models[0]);
-		obj->setPosition(glm::vec3(-3.0f, 6.0f - 3 * i, 0.0f));
+		obj->setPosition(glm::vec3(-4.0f, 6.0f - 4 * i, 0.0f));
 		this->cubes_.push_back(obj);
 
 		name = "sphere" + std::to_string(i + 1);
 		obj = new Object(name, models[1]);
-		obj->setPosition(glm::vec3(0.0f, 6.0f - 3 * i, 0.0f));
+		obj->setPosition(glm::vec3(0.0f, 6.0f - 4 * i, 0.0f));
 		this->spheres_.push_back(obj);
 
 		name = "cylinder" + std::to_string(i + 1);
 		obj = new Object(name, models[2]);
-		obj->setPosition(glm::vec3(3.0f, 6.0f - 3 * i, 0.0f));
+		obj->setPosition(glm::vec3(4.0f, 6.0f - 4 * i, 0.0f));
 		this->cylinders_.push_back(obj);
 	}
 
@@ -79,7 +76,7 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick1/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
-	this->cubes_[4]->setMaterial(material);
+	this->cubes_[3]->setMaterial(material);
 	material.reset();
 
 	// —феры
@@ -93,7 +90,7 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick2/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
-	this->spheres_[4]->setMaterial(material);
+	this->spheres_[3]->setMaterial(material);
 	material.reset();
 
 	// ÷илиндры
@@ -107,7 +104,7 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick3/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
-	this->cylinders_[4]->setMaterial(material);
+	this->cylinders_[3]->setMaterial(material);
 	material.reset();
 
 	std::shared_ptr<Model> pointLight(new Model("resources/3dmodels/pointLight.obj"));
@@ -142,10 +139,9 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 	}
 
 	this->cubes_[0]->rotate(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	this->cubes_[1]->rotate(90.0, glm::vec3(0.0f, 1.0f, 1.0f));
-	this->cubes_[2]->rotate(-90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[3]->rotate(90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[4]->rotate(-30.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->cubes_[1]->rotate(-90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	this->cubes_[2]->rotate(90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	this->cubes_[3]->rotate(-30.0, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	// —феры
 	for (size_t i = 0; i < cubes_.size(); i++)
@@ -164,7 +160,7 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 		}
 	}
 
-	this->spheres_[4]->rotate(-40.0, glm::vec3(1.0f, 1.0f, 1.0f));
+	this->spheres_[3]->rotate(-40.0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// ÷илиндры
 	for (size_t i = 0; i < this->cubes_.size(); i++)
@@ -177,7 +173,7 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{
-			renderer->drawPointLight(this->lights_[i], this->lights_[i]->getShader(), view_matrix, camera_position);
+			renderer->drawPointLight(this->lights_[i], view_matrix, camera_position);
 		}
 	}	
 	

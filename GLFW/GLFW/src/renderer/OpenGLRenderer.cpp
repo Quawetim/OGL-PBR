@@ -62,6 +62,7 @@ OpenGLRenderer::OpenGLRenderer()
 
 	// Vsync
 	if (this->isVSync_) glfwSwapInterval(1);
+	else glfwSwapInterval(0);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -292,13 +293,13 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 }
 
 ///<summary>Отрисовка скайбокса.</summary>
-///<param name = 'skybox'>Объект.</param>
+///<param name = 'skybox'>Скайбокс.</param>
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
 void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
-	glDepthFunc(GL_EQUAL);
+	glDepthFunc(GL_LEQUAL);
 
 	shader.activate();
 	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, skybox->getModelMatrix());
@@ -315,18 +316,22 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 	glDepthFunc(GL_LESS);
 }
 
-void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, std::shared_ptr<Shader> shader, glm::mat4 view_Matrix, glm::vec3 camera_position)
+///<summary>Отрисовка точечного источника освещения.</summary>
+///<param name = 'light'>Точечный источник освещения.</param>
+///<param name = 'view_matrix'>Матрица вида.</param>
+///<param name = 'camera_position'>Позиция камеры.</param>
+void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position)
 {
-	shader->activate();
-	shader->setProjectionViewModelMatrices(this->projectionMatrix_, view_Matrix, light->getModelMatrix());
+	light->getShader()->activate();
+	light->getShader()->setProjectionViewModelMatrices(this->projectionMatrix_, view_Matrix, light->getModelMatrix());
 
-	shader->setVec3("color", light->getSpecularColor());
+	light->getShader()->setVec3("color", light->getSpecularColor());
 
 	glBindVertexArray(light->getModel()->getMeshByName("specular").getVAO());
 	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("specular").getIndicesSize(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
-	shader->setVec3("color", light->getDiffuseColor());
+	light->getShader()->setVec3("color", light->getDiffuseColor());
 
 	glBindVertexArray(light->getModel()->getMeshByName("diffuse").getVAO());
 	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("diffuse").getIndicesSize(), GL_UNSIGNED_INT, 0);
