@@ -15,7 +15,7 @@ in VS_OUT
     vec3 fragmentPosition;
 } fs_in;
 
-out vec4 fragmentColor;
+out vec3 fragmentColor;
 
 uniform QMaterial material;
 
@@ -74,19 +74,15 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
 
 void main()
 {
-    float gamma = 1.0f;
-
     if (false)
     {
         vec3 normal = normalize(fs_in.fragmentNormal);
         vec3 viewDirection = normalize(cameraPosition - fs_in.fragmentPosition);
 
-        fragmentColor = vec4(computePointLight(0, normal, fs_in.fragmentPosition, viewDirection), 1.0f);
+        fragmentColor = computePointLight(0, normal, fs_in.fragmentPosition, viewDirection);
     }
     else
     {
-        fragmentColor = texture(cubeMap, fs_in.textureCoords);
-    }
-
-    fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));   
+        fragmentColor = texture(cubeMap, fs_in.textureCoords).rgb;
+    } 
 }

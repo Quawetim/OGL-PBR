@@ -166,8 +166,6 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
 
 void main()
 {
-    float gamma = 1.0f;
-
     if (true)
     {
         // With lighting
@@ -210,6 +208,4 @@ void main()
         }
         else fragmentColor = material.diffuseColor;
     }
-
-    fragmentColor = pow(fragmentColor, vec3(1.0f / gamma));
 }

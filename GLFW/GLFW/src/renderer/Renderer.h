@@ -61,6 +61,10 @@ public:
 	///<summary>Деструктор.</summary>
 	~Renderer();
 
+	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
+
+	virtual void drawFrame(Shader shader, unsigned int frame) = 0;
+
 	///<summary>Отрисовка объекта.</summary>
 	///<param name = 'object'>Объект.</param>
 	///<param name = 'shader'>Шейдер.</param>
@@ -86,6 +90,8 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	//virtual void drawCoordinateAxes(Shader shader, glm::mat4 view_matrix) = 0;
 
+	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
+
 	///<summary>Очистка экрана.</summary>
 	virtual void clearScreen() const = 0;
 
@@ -108,11 +114,36 @@ public:
 	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
 	virtual void restoreViewPort() = 0;
 
+	///<summary>Создаёт текстуру.</summary>
+	virtual unsigned int generateTexture2D() = 0;
+
+	///<summary>Задаёт активную текстуру.</summary>
+	///<param name = 'ID'>Идентификатор текстуры.</summary>
+	virtual void bindTexture2D(unsigned int ID) = 0;
+
+	///<summary>Удаляет текстуру.</summary>
+	///<param name = 'ID'>Идентификатор текстуры.</summary>
+	virtual void deleteTexture2D(unsigned int ID) = 0;
+
+	///<summary>Создаёт фреймбуффер.</summary>
+	///<param name = 'textureID'>Bдентификатор текстуры, хранящей значения фреймбуффера.</summary>
+	virtual unsigned int generateFrameBuffer(unsigned int textureID) = 0;
+
+	///<summary>Задаёт активный фреймбуффер.</summary>
+	///<param name = 'ID'>Идентификатор фреймбуффера.</summary>
+	virtual void bindFrameBuffer(unsigned int ID) = 0;
+
+	///<summary>Удаляет фреймбуффер.</summary>
+	///<param name = 'ID'>Bдентификатор фреймбуффера.</summary>
+	virtual void deleteFrameBuffer(unsigned int ID) = 0;
+
 	///<summary>Возвращает указатель на окно.</summary>
 	virtual QWindow getWindow() const = 0;
 
 	///<summary>Возвращает тип рендерера.</summary>
 	bool isOgl() const;
+
+	////////////////////////////////////////////// set-функции //////////////////////////////////////////////
 
 	///<summary>Задаёт ширину окна.</summary>
 	///<param name = 'width'>Ширина.</param>
@@ -141,6 +172,8 @@ public:
 	///<summary>Задаёт текущее значение FOV.</summary>
 	///<param name = 'fov'>FOV.</param>
 	void setFOV(const int fov);
+
+	////////////////////////////////////////////// get-функции //////////////////////////////////////////////
 
 	///<summary>Возвращает ширину окна.</summary>
 	int getWindowWidth() const;
@@ -177,6 +210,10 @@ extern Renderer* renderer;
 class OpenGLRenderer : public Renderer
 {
 private:
+	unsigned int frameVAO;
+
+	unsigned int frameVBO;
+
 	///<summary>Отрисовка модели.</summary>
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
@@ -189,6 +226,10 @@ public:
 
 	///<summary>Деструктор.</summary>
 	~OpenGLRenderer();
+
+	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
+
+	void drawFrame(Shader shader, unsigned int frame);
 
 	///<summary>Отрисовка объекта.</summary>
 	///<param name = 'object'>Объект.</param>
@@ -215,6 +256,8 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	//void drawCoordinateAxes(Shader shader, glm::mat4 view_matrix);
 
+	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
+
 	///<summary>Очистка экрана.</summary>
 	void clearScreen() const;
 
@@ -236,6 +279,29 @@ public:
 
 	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
 	void restoreViewPort();
+
+	///<summary>Создаёт текстуру.</summary>
+	unsigned int generateTexture2D();
+
+	///<summary>Задаёт активную текстуру.</summary>
+	///<param name = 'textureID'>Идентификатор текстуры.</summary>
+	void bindTexture2D(unsigned int textureID);
+
+	///<summary>Удаляет текстуру.</summary>
+	///<param name = 'textureID'>Идентификатор текстуры.</summary>
+	void deleteTexture2D(unsigned int textureID);
+
+	///<summary>Создаёт фреймбуффер.</summary>
+	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</summary>
+	unsigned int generateFrameBuffer(unsigned int textureID);
+
+	///<summary>Задаёт активный фреймбуффер.</summary>
+	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</summary>
+	void bindFrameBuffer(unsigned int frameBufferID);
+
+	///<summary>Удаляет фреймбуффер.</summary>
+	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</summary>
+	void deleteFrameBuffer(unsigned int frameBufferID);
 
 	///<summary>Возвращает указатель на окно.</summary>
 	QWindow getWindow() const;

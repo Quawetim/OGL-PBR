@@ -41,6 +41,7 @@ int main()
 	Shader materialShader("resources/shaders/materialShader.vs", "resources/shaders/materialShader.fs");
 	Shader axesShader("resources/shaders/axesShader.vs", "resources/shaders/axesShader.fs");
 	Shader skyboxShader("resources/shaders/skyboxShader.vs", "resources/shaders/skyboxShader.fs");
+	Shader postProcessingShader("resources/shaders/postProcessingShader.vs", "resources/shaders/postProcessingShader.fs");
 
 	std::vector<Model*> models;
 
@@ -59,6 +60,9 @@ int main()
 	scene1.init(models);
 	
 	std::shared_ptr<Skybox> skybox(new Skybox(100.0f));		// жрёт кучу памяти из-за огромного размера текстур (2048*2048*6*3 байт = 72 Мб)
+
+	unsigned int frame = renderer->generateTexture2D();
+	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -109,6 +113,9 @@ int main()
 			fps = 0;
 		}
 
+		renderer->bindFrameBuffer(frameBuffer);
+		glEnable(GL_DEPTH_TEST);
+
 		// Очистить экран
 		renderer->clearScreen();
 
@@ -127,6 +134,12 @@ int main()
 		// GUI
 
 		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
+
+		renderer->bindFrameBuffer(0);
+		glDisable(GL_DEPTH_TEST);
+		
+		renderer->clearScreen();
+		renderer->drawFrame(postProcessingShader, frame);
 
 		// Обработка ввода
 				

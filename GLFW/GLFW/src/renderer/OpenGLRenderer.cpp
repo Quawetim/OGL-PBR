@@ -123,6 +123,31 @@ OpenGLRenderer::OpenGLRenderer()
 
 	// Отсечение граней, у которых не видно лицевую сторону
 	glEnable(GL_CULL_FACE);
+
+	float vertices[] =
+	{
+		// positions   // textureCoords
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		-1.0f, -1.0f,  0.0f, 0.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+
+		-1.0f,  1.0f,  0.0f, 1.0f,
+		1.0f, -1.0f,  1.0f, 0.0f,
+		1.0f,  1.0f,  1.0f, 1.0f
+	};
+
+	glGenVertexArrays(1, &this->frameVAO);
+	glGenBuffers(1, &this->frameVBO);
+	
+	glBindVertexArray(this->frameVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, this->frameVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+	
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 }
 
 ///<summary>Деструктор.</summary>
@@ -130,6 +155,8 @@ OpenGLRenderer::~OpenGLRenderer()
 {
 	glfwTerminate();
 }
+
+////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
 ///<summary>Отрисовка модели.</summary>
 ///<param name = 'model'>Модель.</param>
@@ -239,6 +266,16 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 	}
 }
 
+void OpenGLRenderer::drawFrame(Shader shader, unsigned int frame)
+{
+	shader.activate();
+
+	glBindVertexArray(this->frameVAO);
+	bindTexture2D(frame);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
 ///<summary>Отрисовка объекта.</summary>
 ///<param name = 'object'>Объект.</param>
 ///<param name = 'shader'>Шейдер.</param>
@@ -338,6 +375,8 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 	glBindVertexArray(0);
 }
 
+////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
+
 ///<summary>Очистка экрана.</summary>
 void OpenGLRenderer::clearScreen() const
 {
@@ -376,6 +415,81 @@ void OpenGLRenderer::setViewport(const int x, const int y, const int width, cons
 void OpenGLRenderer::restoreViewPort()
 {
 	glViewport(0, 0, this->windowWidth_, this->windowHeight_);
+}
+
+///<summary>Создаёт текстуру.</summary>
+unsigned int OpenGLRenderer::generateTexture2D()
+{
+	unsigned int ID;
+
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->windowWidth_, this->windowHeight_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return ID;
+}
+
+///<summary>Задаёт активную текстуру.</summary>
+///<param name = 'ID'>Идентификатор текстуры.</summary>
+void OpenGLRenderer::bindTexture2D(unsigned int ID)
+{
+	glBindTexture(GL_TEXTURE_2D, ID);
+}
+
+///<summary>Удаляет текстуру.</summary>
+///<param name = 'ID'>Идентификатор текстуры.</summary>
+void OpenGLRenderer::deleteTexture2D(unsigned int ID)
+{
+	glDeleteTextures(1, &ID);
+}
+
+///<summary>Создаёт фреймбуффер.</summary>
+///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</summary>
+unsigned int OpenGLRenderer::generateFrameBuffer(unsigned int textureID)
+{
+	unsigned int frameBuffer;
+
+	glGenFramebuffers(1, &frameBuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureID, 0);
+
+	unsigned int renderBuffer;
+	glGenRenderbuffers(1, &renderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->windowWidth_, this->windowHeight_);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		std::string msg = "Can't generate framebuffer.";
+		logger.log(__FUNCTION__, ErrorType::error, msg);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return frameBuffer;
+}
+
+///<summary>Задаёт активный фреймбуффер.</summary>
+///<param name = 'ID'>Идентификатор фреймбуффера.</summary>
+void OpenGLRenderer::bindFrameBuffer(unsigned int ID)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, ID);
+}
+
+///<summary>Удаляет фреймбуффер.</summary>
+///<param name = 'ID'>Идентификатор фреймбуффера.</summary>
+void OpenGLRenderer::deleteFrameBuffer(unsigned int ID)
+{
+	glDeleteFramebuffers(1, &ID);
 }
 
 ///<summary>Возвращает указатель на окно.</summary>
