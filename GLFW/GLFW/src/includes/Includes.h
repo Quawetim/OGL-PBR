@@ -29,10 +29,9 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include "../errorcodes/ErrorCodes.h"
-#include "../logger/Logger.h"
-#include "../shader/Shader.h"
-#include "../texture_loader/TextureLoader.h"
+#include "..\errorcodes\ErrorCodes.h"
+#include "..\logger\Logger.h"
+#include "..\shader\Shader.h"
 
 ///<summary>Тип ошибки для Logger.</summary>
 enum ErrorType { info, warning, error };
@@ -178,6 +177,12 @@ private:
 	///<summary>Сила (яркость) блика.</summary>
 	float shininess_;
 
+	///<summary>Индекс преломления.</summary>
+	float refractiveIndex_;
+
+	///<summary>Индекс отражения.</summary>
+	float reflectiveIndex_;
+
 public:
 	///<summary>Конструктор.</summary>
 	Material();
@@ -186,7 +191,7 @@ public:
 	~Material();
 
 	///<summary>Сброс к дефолным значениям.</summary>
-	void reset();
+	void setDefault();
 
 	///<summary>Задаёт ambient цвет в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
@@ -210,6 +215,14 @@ public:
 	///<param name = 'shininess'>Значение.</param>
 	void setShininess(const float shininess);
 
+	///<summary>Задаёт индекс отражения.</summary>
+	///<param name = 'reflectiveIndex'>Индекс отражения.</param>
+	void setReflectiveIndex(const float reflectiveIndex);
+
+	///<summary>Задаёт индекс преломления.</summary>
+	///<param name = 'refractiveIndex'>Индекс преломления.</param>
+	void setRefractiveIndex(const float refractiveIndex);
+
 	///<summary>Задаёт текстуру.</summary>
 	///<param name = 'texture'>Текстура.</param>
 	void addTexture(Texture texture);
@@ -225,6 +238,12 @@ public:
 
 	///<summary>Возвращает силу (яркость) блика.</summary>
 	float getShininess() const;
+
+	///<summary>Возвращает индекс отражения.</summary>
+	float getReflectiveIndex() const;
+
+	///<summary>Возвращает индекс преломления.</summary>
+	float getRefractiveIndex() const;
 
 	///<summary>Возвращает список текстур.</summary>
 	std::vector<Texture> getTextures() const;
@@ -248,3 +267,6 @@ extern float deltaTime;
  
 ///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
 extern float lastFrameTime;
+
+///<summary>Значение гаммы для гамма-коррекции.</summary>
+extern float gamma;

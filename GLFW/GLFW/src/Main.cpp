@@ -7,6 +7,7 @@
 #include "object\coordinate_axes\CoordinateAxes.h"
 #include "camera\ICamera.h"
 #include "object\skybox\Skybox.h"
+#include "texture_loader\TextureLoader.h"
 
 #if defined(_WIN64) && defined(NDEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
@@ -17,13 +18,15 @@ int main()
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
+	unsigned int frame = renderer->generateTexture2D();
+	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
 
 	InputHandler inputHandler;
 	inputHandler.setEventHandling();
 
 	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////
 
-	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   
+	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   	
 
 	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera());
 	std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
@@ -38,10 +41,10 @@ int main()
 
 	std::shared_ptr<ICamera> camera = cameras[0];
 
-	Shader materialShader("resources/shaders/materialShader.vs", "resources/shaders/materialShader.fs");
-	Shader axesShader("resources/shaders/axesShader.vs", "resources/shaders/axesShader.fs");
-	Shader skyboxShader("resources/shaders/skyboxShader.vs", "resources/shaders/skyboxShader.fs");
-	Shader postProcessingShader("resources/shaders/postProcessingShader.vs", "resources/shaders/postProcessingShader.fs");
+	Shader materialShader("materialShader");
+	Shader axesShader("axesShader");
+	Shader skyboxShader("skyboxShader");
+	Shader postProcessingShader("postProcessingShader");
 
 	std::vector<Model*> models;
 
@@ -58,11 +61,11 @@ int main()
 
 	Scene1 scene1;
 	scene1.init(models);
-	
-	std::shared_ptr<Skybox> skybox(new Skybox(100.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
 
-	unsigned int frame = renderer->generateTexture2D();
-	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
+	unsigned int environmentMap = textureLoader::loadCubeMap("resources/textures/env_map");
+	renderer->setEnvMap(environmentMap);
+	
+	std::shared_ptr<Skybox> skybox(new Skybox(100.0f, environmentMap));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -114,7 +117,7 @@ int main()
 		}
 
 		renderer->bindFrameBuffer(frameBuffer);
-		glEnable(GL_DEPTH_TEST);
+		renderer->useDepthTesting(true);
 
 		// ќчистить экран
 		renderer->clearScreen();
@@ -136,7 +139,7 @@ int main()
 		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
 
 		renderer->bindFrameBuffer(0);
-		glDisable(GL_DEPTH_TEST);
+		renderer->useDepthTesting(false);
 		
 		renderer->clearScreen();
 		renderer->drawFrame(postProcessingShader, frame);

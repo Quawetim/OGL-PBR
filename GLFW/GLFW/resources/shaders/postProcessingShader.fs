@@ -7,51 +7,48 @@ in VS_OUT
 
 out vec4 fragmentColor;
 
+uniform float gamma;
+
 uniform sampler2D frame;
 
 void main()
 {
-    float gamma = 1.0f;
     int effect = 0;
 
-    vec3 color;
-    vec3 texelColor = texture(frame, fs_in.textureCoords).rgb;
+    fragmentColor = texture(frame, fs_in.textureCoords);
 
     switch (effect)
     {
         default:
             {
                 // no effects
-                color = texelColor;                
                 break;
             }
         case 1:
             {
                 // grayscale
-                float avg = (texelColor.r + texelColor.g + texelColor.b) / 3.0f;
+                float avg = (fragmentColor.r + fragmentColor.g + fragmentColor.b) / 3.0f;
                 
-                color = vec3(avg);                
+                fragmentColor.rgb = vec3(avg);                
                 break;                
             }
         case 2:
             {
                 // inverse
-                color = 1.0f - texelColor;                
+                fragmentColor.rgb = 1.0f - fragmentColor.rgb;                
                 break;
             }
         case 3:
             {
                 // sepia
-                float red = (texelColor.r * 0.393f) + (texelColor.g * 0.769f) + (texelColor.b * 0.189f);
-                float green = (texelColor.r * 0.349f) + (texelColor.g * 0.686f) + (texelColor.b * 0.168f);
-                float blue = (texelColor.r * 0.272f) + (texelColor.g * 0.534f) + (texelColor.b * 0.131f);
+                float red = (fragmentColor.r * 0.393f) + (fragmentColor.g * 0.769f) + (fragmentColor.b * 0.189f);
+                float green = (fragmentColor.r * 0.349f) + (fragmentColor.g * 0.686f) + (fragmentColor.b * 0.168f);
+                float blue = (fragmentColor.r * 0.272f) + (fragmentColor.g * 0.534f) + (fragmentColor.b * 0.131f);
                 
-                color = vec3(red, green, blue);
+                fragmentColor.rgb = vec3(red, green, blue);
                 break;
             }
     }
     
-    color = pow(color, vec3(1.0f / gamma));
-
-    fragmentColor = vec4(color, 1.0f);
+    fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));
 }

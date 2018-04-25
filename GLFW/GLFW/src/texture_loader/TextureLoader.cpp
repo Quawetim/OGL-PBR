@@ -2,7 +2,7 @@
 
 ///<summary>Загрузка текстуры из файла.</summary>
 ///<param name = 'path'>Путь к текстуре.</param>
-unsigned int textureLoader::loadTexture(const std::string path)
+unsigned int textureLoader::loadTexture(const std::string path, TextureType type)
 {
     unsigned int ID;
 
@@ -13,6 +13,17 @@ unsigned int textureLoader::loadTexture(const std::string path)
     {
 		std::string msg = "Texture found. PATH: " + path;
         logger.log(__FUNCTION__, ErrorType::info, msg);
+
+		GLint internalFormat;
+
+		if (type == TextureType::specular)
+		{
+			internalFormat = GL_RGB;
+		}
+		else
+		{
+			internalFormat = GL_SRGB;
+		}
 
         GLenum format;
 
@@ -26,7 +37,7 @@ unsigned int textureLoader::loadTexture(const std::string path)
 		glGenTextures(1, &ID);
         glBindTexture(GL_TEXTURE_2D, ID);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         
 		glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -77,6 +88,7 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 
 		if (data)
 		{
+			GLint internalFormat = GL_SRGB;
 			GLenum format;
 
 			switch (color_channels)
@@ -86,7 +98,7 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 				case 4: format = GL_RGBA; break;
 			}
 
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
 
 			stbi_image_free(data);
 		}

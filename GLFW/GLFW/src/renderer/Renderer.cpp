@@ -160,6 +160,13 @@ void Renderer::setFOV(const int fov)
 	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
 }
 
+///<summary>Задаёт environment map.</summary>
+///<param name = 'ID'>Идентификатор.</param>
+void Renderer::setEnvMap(const unsigned int ID)
+{
+	this->envMap_ = ID;
+}
+
 ///<summary>Возвращает указатель на окно.</summary>
 QWindow Renderer::getWindow() const
 {

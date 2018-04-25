@@ -42,6 +42,9 @@ protected:
 	///<summary>FOV.</summary>
 	float fov_;
 
+	///<summary>Environment map.</summary>
+	unsigned int envMap_;
+
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
 
@@ -63,6 +66,9 @@ public:
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
+	///<summary>Отрисовка кадра во весь экран.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'frame'>Кадр.</param>
 	virtual void drawFrame(Shader shader, unsigned int frame) = 0;
 
 	///<summary>Отрисовка объекта.</summary>
@@ -118,24 +124,28 @@ public:
 	virtual unsigned int generateTexture2D() = 0;
 
 	///<summary>Задаёт активную текстуру.</summary>
-	///<param name = 'ID'>Идентификатор текстуры.</summary>
-	virtual void bindTexture2D(unsigned int ID) = 0;
+	///<param name = 'ID'>Идентификатор текстуры.</param>
+	virtual void bindTexture2D(const unsigned int ID) = 0;
 
 	///<summary>Удаляет текстуру.</summary>
-	///<param name = 'ID'>Идентификатор текстуры.</summary>
-	virtual void deleteTexture2D(unsigned int ID) = 0;
+	///<param name = 'ID'>Идентификатор текстуры.</param>
+	virtual void deleteTexture2D(const unsigned int ID) = 0;
 
 	///<summary>Создаёт фреймбуффер.</summary>
-	///<param name = 'textureID'>Bдентификатор текстуры, хранящей значения фреймбуффера.</summary>
-	virtual unsigned int generateFrameBuffer(unsigned int textureID) = 0;
+	///<param name = 'textureID'>Bдентификатор текстуры, хранящей значения фреймбуффера.</param>
+	virtual unsigned int generateFrameBuffer(const unsigned int textureID) = 0;
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
-	///<param name = 'ID'>Идентификатор фреймбуффера.</summary>
-	virtual void bindFrameBuffer(unsigned int ID) = 0;
+	///<param name = 'ID'>Идентификатор фреймбуффера.</param>
+	virtual void bindFrameBuffer(const unsigned int ID) = 0;
 
 	///<summary>Удаляет фреймбуффер.</summary>
-	///<param name = 'ID'>Bдентификатор фреймбуффера.</summary>
-	virtual void deleteFrameBuffer(unsigned int ID) = 0;
+	///<param name = 'ID'>Идентификатор фреймбуффера.</param>
+	virtual void deleteFrameBuffer(const unsigned int ID) = 0;
+
+	///<summary>Включает или отключает буфер глубины.</summary>
+	///<param name = 'use'>Вкл/выкл.</param>
+	virtual void useDepthTesting(const bool use) = 0;
 
 	///<summary>Возвращает указатель на окно.</summary>
 	virtual QWindow getWindow() const = 0;
@@ -172,6 +182,10 @@ public:
 	///<summary>Задаёт текущее значение FOV.</summary>
 	///<param name = 'fov'>FOV.</param>
 	void setFOV(const int fov);
+
+	///<summary>Задаёт environment map.</summary>
+	///<param name = 'ID'>Идентификатор.</param>
+	void setEnvMap(const unsigned int ID);
 
 	////////////////////////////////////////////// get-функции //////////////////////////////////////////////
 
@@ -229,6 +243,9 @@ public:
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
+	///<summary>Отрисовка кадра во весь экран.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'frame'>Кадр.</param>
 	void drawFrame(Shader shader, unsigned int frame);
 
 	///<summary>Отрисовка объекта.</summary>
@@ -284,24 +301,28 @@ public:
 	unsigned int generateTexture2D();
 
 	///<summary>Задаёт активную текстуру.</summary>
-	///<param name = 'textureID'>Идентификатор текстуры.</summary>
-	void bindTexture2D(unsigned int textureID);
+	///<param name = 'textureID'>Идентификатор текстуры.</param>
+	void bindTexture2D(const unsigned int textureID);
 
 	///<summary>Удаляет текстуру.</summary>
-	///<param name = 'textureID'>Идентификатор текстуры.</summary>
-	void deleteTexture2D(unsigned int textureID);
+	///<param name = 'textureID'>Идентификатор текстуры.</param>
+	void deleteTexture2D(const unsigned int textureID);
 
 	///<summary>Создаёт фреймбуффер.</summary>
-	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</summary>
-	unsigned int generateFrameBuffer(unsigned int textureID);
+	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
+	unsigned int generateFrameBuffer(const unsigned int textureID);
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
-	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</summary>
-	void bindFrameBuffer(unsigned int frameBufferID);
+	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</param>
+	void bindFrameBuffer(const unsigned int frameBufferID);
 
 	///<summary>Удаляет фреймбуффер.</summary>
-	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</summary>
-	void deleteFrameBuffer(unsigned int frameBufferID);
+	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</param>
+	void deleteFrameBuffer(const unsigned int frameBufferID);
+
+	///<summary>Включает или отключает буфер глубины.</summary>
+	///<param name = 'use'>Вкл/выкл.</param>
+	void useDepthTesting(const bool use);
 
 	///<summary>Возвращает указатель на окно.</summary>
 	QWindow getWindow() const;

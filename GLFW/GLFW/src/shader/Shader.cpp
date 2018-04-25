@@ -19,8 +19,8 @@ void Shader::checkCompilationErrors(const unsigned int id, const int type) const
 
 			switch (type)
 			{
-				case 1: msg = "Shader compilation error.\nType: Vertex.\nName: " + this->vsName_ + "\n" + std::string(log); break;
-				case 2: msg = "Shader compilation error.\nType: Fragment.\nName: " + this->fsName_ + "\n" + std::string(log); break;
+				case 1: msg = "Shader compilation error.\nType: Vertex.\nName: " + this->name_ + ".vs\n" + std::string(log); break;
+				case 2: msg = "Shader compilation error.\nType: Fragment.\nName: " + this->name_ + ".fs\n" + std::string(log); break;
 			}
             
             logger.log(__FUNCTION__, ErrorType::error, msg);
@@ -39,71 +39,65 @@ void Shader::checkCompilationErrors(const unsigned int id, const int type) const
 }
 
 ///<summary>Конструктор.</summary>
-///<param name = 'vs_path'>Путь к вершинному шейдеру.</param>
-///<param name = 'fs_path'>Путь к фрагментному шейдеру.</param>
-Shader::Shader(std::string vs_path, std::string fs_path)
+///<param name = 'name'>Название файла шейдера.</param>
+Shader::Shader(std::string name)
 {
-	int dot_pos, last_slash_pos;
+	this->folder_ = "resources/shaders/";
+	this->name_ = name;
 
-	dot_pos = vs_path.find_last_of('.');
-	last_slash_pos = vs_path.find_last_of('/');
+	std::string path = this->folder_ + this->name_;
 
-	this->vsName_ = vs_path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
-
-	dot_pos = fs_path.find_last_of('.');
-	last_slash_pos = fs_path.find_last_of('/');
-
-	this->fsName_ = fs_path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+	this->vsPath_ = path + ".vs";
+	this->fsPath_ = path + ".fs";
     
 	// Reading
-    std::string vs_code, fs_code;
-    std::ifstream vs_file, fs_file;
+    std::string vsCode, fsCode;
+    std::ifstream vsFin, fsFin;
 
-    vs_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-    fs_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	vsFin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	fsFin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     
     try
     {
-        vs_file.open(vs_path);
-        fs_file.open(fs_path);
+		vsFin.open(this->vsPath_);
+		fsFin.open(this->fsPath_);
 
-        std::stringstream vs_stream, fs_stream;
+        std::stringstream vsStream, fsStream;
 
-        vs_stream << vs_file.rdbuf();
-        fs_stream << fs_file.rdbuf();
+		vsStream << vsFin.rdbuf();
+		fsStream << fsFin.rdbuf();
 
-        vs_file.close();
-        fs_file.close();
+		vsFin.close();
+		fsFin.close();
         
-        vs_code = vs_stream.str();
-        fs_code = fs_stream.str();
+		vsCode = vsStream.str();
+		fsCode = fsStream.str();
     }
     catch (std::ifstream::failure e)
     {
 		std::string msg;
         logger.log(__FUNCTION__, ErrorType::info, "Shader file not found.");
 
-		msg = "VS_PATH: " + vs_path;
+		msg = "VS_PATH: " + this->vsPath_;
         logger.log(__FUNCTION__, ErrorType::info, msg);
 
-		msg = "FS_PATH: " + fs_path;
+		msg = "FS_PATH: " + this->fsPath_;
         logger.log(__FUNCTION__, ErrorType::error, msg);
     }
 
-    const char* vShaderCode = vs_code.c_str();
-    const char * fShaderCode = fs_code.c_str();
+    const char* vShaderCode = vsCode.c_str();
+    const char* fShaderCode = fsCode.c_str();
 
     // Compilation
-    unsigned int vertex, fragment;
     
     // Vertex shader
-    vertex = glCreateShader(GL_VERTEX_SHADER);
+	unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, NULL);
     glCompileShader(vertex);
     checkCompilationErrors(vertex, 1);
     
     // Fragment Shader
-    fragment = glCreateShader(GL_FRAGMENT_SHADER);
+	unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fShaderCode, NULL);
     glCompileShader(fragment);
     checkCompilationErrors(fragment, 2);

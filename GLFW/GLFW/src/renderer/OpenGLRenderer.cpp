@@ -256,19 +256,23 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		shader.setInt(mapKeys.mapsCount, specularMapsCount);
 		shader.setInt(mapKeys.mapsCount, normalMapsCount);
 
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE0);		
 
-		glBindVertexArray(model->getMeshes()[j].getVAO());
+		glBindVertexArray(model->getMeshes()[j].getVAO());		
 		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
-
+		
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 
+///<summary>Отрисовка кадра во весь экран.</summary>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'frame'>Кадр.</param>
 void OpenGLRenderer::drawFrame(Shader shader, unsigned int frame)
 {
 	shader.activate();
+	shader.setFloat("gamma", gamma);
 
 	glBindVertexArray(this->frameVAO);
 	bindTexture2D(frame);
@@ -285,13 +289,24 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 {
 	shader.activate();
 	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, object->getModelMatrix());
-	shader.setVec3("cameraPosition", camera_position);
+	shader.setVec3("cameraPosition", camera_position);	
+
+	glActiveTexture(GL_TEXTURE20);
+	
+	shader.setInt("envMap", 20);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, this->envMap_);
 
 	// Push material params
-	shader.setVec3("material.ambientColor", object->getMaterial().getAmbientColor());
-	shader.setVec3("material.diffuseColor", object->getMaterial().getDiffuseColor());
-	shader.setVec3("material.specularColor", object->getMaterial().getSpecularColor());
-	shader.setFloat("material.shininess", object->getMaterial().getShininess());
+	glm::vec3 ambientColor = glm::pow(object->getMaterial().getAmbientColor(), glm::vec3(gamma));
+	glm::vec3 diffuseColor = glm::pow(object->getMaterial().getDiffuseColor(), glm::vec3(gamma));
+	glm::vec3 specularColor = glm::pow(object->getMaterial().getSpecularColor(), glm::vec3(gamma));
+
+	shader.setVec3("material.ambientColor", ambientColor);
+	shader.setVec3("material.diffuseColor", diffuseColor);
+	shader.setVec3("material.specularColor", specularColor);
+	shader.setFloat("material.shininess", object->getMaterial().getShininess());	
+	shader.setFloat("material.reflectiveIndex", object->getMaterial().getReflectiveIndex());
+	shader.setFloat("material.refractiveIndex", object->getMaterial().getRefractiveIndex());
 
 	// Push texture flags
 	shader.setBool("useDiffuseMaps", false);
@@ -299,7 +314,6 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	shader.setBool("useNormalMaps", false);
 
 	// Push lights
-
 	shader.setInt("lightsCount", lights.size());
 
 	for (size_t i = 0; i < lights.size(); i++)
@@ -313,10 +327,12 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 		shader.setFloat(name, lights[i]->getRadius());
 
 		name = "lights[" + std::to_string(i) + "].diffuseColor";
-		shader.setVec3(name, lights[i]->getDiffuseColor());
+		diffuseColor = glm::pow(lights[i]->getDiffuseColor(), glm::vec3(gamma));
+		shader.setVec3(name, diffuseColor);
 
 		name = "lights[" + std::to_string(i) + "].specularColor";
-		shader.setVec3(name, lights[i]->getSpecularColor());
+		specularColor = glm::pow(lights[i]->getSpecularColor(), glm::vec3(gamma));
+		shader.setVec3(name, specularColor);
 
 		name = "lights[" + std::to_string(i) + "].power";
 		shader.setFloat(name, lights[i]->getPower());
@@ -327,6 +343,8 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	{
 		drawModel(object->getModels()[i], shader, object->getMaterial());
 	}
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 ///<summary>Отрисовка скайбокса.</summary>
@@ -342,7 +360,9 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, skybox->getModelMatrix());
 	shader.setVec3("cameraPosition", camera_position);
 
-	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getCubeMapID());
+	shader.setInt("envMap", 0);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getEnvMapID());
 
 	glBindVertexArray(skybox->getModels()[0]->getMeshByName("skybox").getVAO());
 	glDrawElements(GL_TRIANGLES, skybox->getModels()[0]->getMeshByName("skybox").getIndicesSize(), GL_UNSIGNED_INT, 0);
@@ -359,16 +379,20 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 ///<param name = 'camera_position'>Позиция камеры.</param>
 void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position)
 {
+	glm::vec3 color;
+
 	light->getShader()->activate();
 	light->getShader()->setProjectionViewModelMatrices(this->projectionMatrix_, view_Matrix, light->getModelMatrix());
 
-	light->getShader()->setVec3("color", light->getSpecularColor());
+	color = glm::pow(light->getSpecularColor(), glm::vec3(gamma));
+	light->getShader()->setVec3("color", color);
 
 	glBindVertexArray(light->getModel()->getMeshByName("specular").getVAO());
 	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("specular").getIndicesSize(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
-	light->getShader()->setVec3("color", light->getDiffuseColor());
+	color = glm::pow(light->getDiffuseColor(), glm::vec3(gamma));
+	light->getShader()->setVec3("color", color);
 
 	glBindVertexArray(light->getModel()->getMeshByName("diffuse").getVAO());
 	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("diffuse").getIndicesSize(), GL_UNSIGNED_INT, 0);
@@ -435,22 +459,22 @@ unsigned int OpenGLRenderer::generateTexture2D()
 }
 
 ///<summary>Задаёт активную текстуру.</summary>
-///<param name = 'ID'>Идентификатор текстуры.</summary>
-void OpenGLRenderer::bindTexture2D(unsigned int ID)
+///<param name = 'ID'>Идентификатор текстуры.</param>
+void OpenGLRenderer::bindTexture2D(const unsigned int ID)
 {
 	glBindTexture(GL_TEXTURE_2D, ID);
 }
 
 ///<summary>Удаляет текстуру.</summary>
-///<param name = 'ID'>Идентификатор текстуры.</summary>
-void OpenGLRenderer::deleteTexture2D(unsigned int ID)
+///<param name = 'ID'>Идентификатор текстуры.</param>
+void OpenGLRenderer::deleteTexture2D(const unsigned int ID)
 {
 	glDeleteTextures(1, &ID);
 }
 
 ///<summary>Создаёт фреймбуффер.</summary>
-///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</summary>
-unsigned int OpenGLRenderer::generateFrameBuffer(unsigned int textureID)
+///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
+unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int textureID)
 {
 	unsigned int frameBuffer;
 
@@ -479,17 +503,25 @@ unsigned int OpenGLRenderer::generateFrameBuffer(unsigned int textureID)
 }
 
 ///<summary>Задаёт активный фреймбуффер.</summary>
-///<param name = 'ID'>Идентификатор фреймбуффера.</summary>
-void OpenGLRenderer::bindFrameBuffer(unsigned int ID)
+///<param name = 'ID'>Идентификатор фреймбуффера.</param>
+void OpenGLRenderer::bindFrameBuffer(const unsigned int ID)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, ID);
 }
 
 ///<summary>Удаляет фреймбуффер.</summary>
-///<param name = 'ID'>Идентификатор фреймбуффера.</summary>
-void OpenGLRenderer::deleteFrameBuffer(unsigned int ID)
+///<param name = 'ID'>Идентификатор фреймбуффера.</param>
+void OpenGLRenderer::deleteFrameBuffer(const unsigned int ID)
 {
 	glDeleteFramebuffers(1, &ID);
+}
+
+///<summary>Включает или отключает буфер глубины.</summary>
+///<param name = 'use'>Вкл/выкл.</param>
+void OpenGLRenderer::useDepthTesting(const bool use)
+{
+	if (use) glEnable(GL_DEPTH_TEST);
+	else glDisable(GL_DEPTH_TEST);
 }
 
 ///<summary>Возвращает указатель на окно.</summary>

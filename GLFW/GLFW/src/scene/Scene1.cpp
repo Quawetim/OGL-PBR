@@ -66,9 +66,22 @@ void Scene1::init(std::vector<Model*> models)
 	texture = Texture("resources/textures/batman_specular.bmp", TextureType::specular);
 	material.addTexture(texture);
 	material.setDiffuseColor(130, 0, 72);
+	material.setReflectiveIndex(0.1f);
 	this->cubes_[0]->setScale(glm::vec3(0.5f));
 	this->cubes_[0]->setMaterial(material);
-	material.reset();
+	material.setDefault();
+
+	material.setDiffuseColor(82, 196, 199);
+	material.setReflectiveIndex(1.0f);
+	this->cubes_[1]->setMaterial(material);
+	material.setDefault();
+
+	//material.setDiffuseColor(155, 97, 186);
+	material.setDiffuseColor(0, 0, 0);
+	material.setRefractiveIndex(1.52f);
+	material.setReflectiveIndex(0.5f);
+	this->cubes_[2]->setMaterial(material);
+	material.setDefault();
 
 	texture = Texture("resources/textures/brick1/diffuse.bmp", TextureType::diffuse);
 	material.addTexture(texture);
@@ -77,12 +90,25 @@ void Scene1::init(std::vector<Model*> models)
 	texture = Texture("resources/textures/brick1/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
 	this->cubes_[3]->setMaterial(material);
-	material.reset();
+	material.setDefault();
 
 	// —феры
-	material.setDiffuseColor(93, 66, 195);
+	//material.setDiffuseColor(93, 66, 195);
+	material.setDiffuseColor(99, 241, 137);
+	material.setReflectiveIndex(0.1f);
 	this->spheres_[0]->setMaterial(material);
-	material.reset();
+	material.setDefault();
+
+	material.setDiffuseColor(151, 168, 78);
+	material.setReflectiveIndex(1.0f);
+	this->spheres_[1]->setMaterial(material);
+	material.setDefault();
+
+	material.setDiffuseColor(206, 120, 96);
+	material.setRefractiveIndex(1.52f);
+	material.setReflectiveIndex(0.5f);
+	this->spheres_[2]->setMaterial(material);
+	material.setDefault();
 
 	texture = Texture("resources/textures/brick2/diffuse.bmp", TextureType::diffuse);
 	material.addTexture(texture);
@@ -91,12 +117,24 @@ void Scene1::init(std::vector<Model*> models)
 	texture = Texture("resources/textures/brick2/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
 	this->spheres_[3]->setMaterial(material);
-	material.reset();
+	material.setDefault();
 
 	// ÷илиндры
 	material.setDiffuseColor(18, 158, 140);
+	material.setReflectiveIndex(0.1f);
 	this->cylinders_[0]->setMaterial(material);
-	material.reset();
+	material.setDefault();
+
+	material.setDiffuseColor(245, 160, 209);
+	material.setReflectiveIndex(1.0f);
+	this->cylinders_[1]->setMaterial(material);
+	material.setDefault();
+
+	material.setDiffuseColor(51, 16, 173);
+	material.setRefractiveIndex(1.52f);
+	material.setReflectiveIndex(0.5f);
+	this->cylinders_[2]->setMaterial(material);
+	material.setDefault();
 
 	texture = Texture("resources/textures/brick3/diffuse.bmp", TextureType::diffuse);
 	material.addTexture(texture);
@@ -105,10 +143,10 @@ void Scene1::init(std::vector<Model*> models)
 	texture = Texture("resources/textures/brick3/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
 	this->cylinders_[3]->setMaterial(material);
-	material.reset();
+	material.setDefault();
 
 	std::shared_ptr<Model> pointLight(new Model("resources/3dmodels/pointLight.obj"));
-	std::shared_ptr<Shader> lightShader(new Shader("resources/shaders/lightShader.vs", "resources/shaders/lightShader.fs"));
+	std::shared_ptr<Shader> lightShader(new Shader("lightShader"));
 
 	std::shared_ptr<PointLight> light(new PointLight(lightShader, pointLight));
 
@@ -141,7 +179,7 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 	this->cubes_[0]->rotate(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	this->cubes_[1]->rotate(-90.0, glm::vec3(0.0f, 0.0f, 1.0f));
 	this->cubes_[2]->rotate(90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[3]->rotate(-30.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->cubes_[3]->rotate(-45.0, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	// —феры
 	for (size_t i = 0; i < cubes_.size(); i++)
@@ -177,19 +215,22 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 		}
 	}	
 	
-	glm::vec3 pos, newPos;
-	float r, angle;
-
-	for (size_t i = 0; i < this->lights_.size(); i++)
+	if (true)
 	{
-		pos = this->lights_[i]->getPosition();
-		r = sqrt(pos.x * pos.x + pos.z * pos.z);
-		angle = glm::degrees(acos(glm::dot(pos, glm::vec3(1.0f, 0.0f, 0.0f)) / r)) * getSign(pos.z);
-		
-		angle += 60.0f * deltaTime;
-		while (abs(angle) >= 360.0f) angle -= 360.0f;
+		glm::vec3 pos, newPos;
+		float r, angle;
 
-		newPos = glm::vec3(r * cos(glm::radians(angle)), pos.y, r * sin(glm::radians(angle)));
-		this->lights_[i]->setPosition(newPos);
+		for (size_t i = 0; i < this->lights_.size(); i++)
+		{
+			pos = this->lights_[i]->getPosition();
+			r = sqrt(pos.x * pos.x + pos.z * pos.z);
+			angle = glm::degrees(acos(glm::dot(pos, glm::vec3(1.0f, 0.0f, 0.0f)) / r)) * getSign(pos.z);
+
+			angle += 60.0f * deltaTime;
+			while (abs(angle) >= 360.0f) angle -= 360.0f;
+
+			newPos = glm::vec3(r * cos(glm::radians(angle)), pos.y, r * sin(glm::radians(angle)));
+			this->lights_[i]->setPosition(newPos);
+		}
 	}
 }

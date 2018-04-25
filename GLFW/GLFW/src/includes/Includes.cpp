@@ -1,4 +1,5 @@
 #include "Includes.h"
+#include "..\texture_loader\TextureLoader.h"
 #include "..\renderer\Renderer.h"
 
 ///<summary>Логгер. Логирует ошибки на экран и в файл "log.txt".</summary>
@@ -25,6 +26,9 @@ float deltaTime = 0.0;
 ///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
 float lastFrameTime = 0.0;
 
+///<summary>Значение гаммы для гамма-коррекции.</summary>
+float gamma = 2.2f;
+
 ////////////////////////////////////////////////////////////QTexture////////////////////////////////////////////////////////////
 
 ///<summary>Конструктор.</summary>
@@ -42,7 +46,7 @@ Texture::Texture(std::string path, TextureType type)
 {
 	this->path_ = path;
 	this->type_ = type;
-	this->id_ = textureLoader::loadTexture(this->path_);
+	this->id_ = textureLoader::loadTexture(path, type);
 }
 
 ///<summary>Задаёт тип текстуры.</summary>
@@ -79,14 +83,16 @@ std::string Texture::getName() const
 
 ////////////////////////////////////////////////////////////QMaterial////////////////////////////////////////////////////////////
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор.
+///<para>Значения по-умолчанию:</para>
+///<para>ambient = (0.05, 0.05, 0.05)</para>
+///<para>diffuse = (0.5, 0.5, 0.5)</para>
+///<para>specular = (0.7, 0.7, 0.7)</para>
+///<para>shininess = 8</para>
+///</summary>
 Material::Material()
 {
-	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
-	this->diffuseColor_ = glm::vec3(0.3f, 0.3f, 0.3f);
-	this->specularColor_ = glm::vec3(0.4f, 0.4f, 0.4f);
-
-	this->shininess_ = 8.0f;
+	this->setDefault();
 }
 
 ///<summary>Деструктор.</summary>
@@ -98,16 +104,28 @@ Material::~Material()
 	}
 }
 
-///<summary>Сброс к дефолным значениям.</summary>
-void Material::reset()
+///<summary>Сброс к дефолным значениям:
+///<para>ambient = (0.05, 0.05, 0.05)</para>
+///<para>diffuse = (0.5, 0.5, 0.5)</para>
+///<para>specular = (0.7, 0.7, 0.7)</para>
+///<para>shininess = 8</para>
+///</summary>
+void Material::setDefault()
 {
 	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
 	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
 	this->specularColor_ = glm::vec3(0.7f, 0.7f, 0.7f);
+
 	this->shininess_ = 8.0f;
+
+	this->reflectiveIndex_ = 0.0f;
+	this->refractiveIndex_ = 0.0f;	
 	
-	this->textures_.clear();
-	std::vector<Texture>(this->textures_).swap(this->textures_);	
+	if (this->textures_.size() > 0)
+	{
+		this->textures_.clear();
+		std::vector<Texture>(this->textures_).swap(this->textures_);
+	}
 }
 
 ///<summary>Задаёт ambient цвет в RGB формате.</summary>
@@ -144,6 +162,54 @@ void Material::setShininess(const float shininess)
 	this->shininess_ = shininess;
 }
 
+///<summary>Задаёт индекс отражения.</summary>
+///<param name = 'reflectiveIndex'>Индекс отражения.</param>
+void Material::setReflectiveIndex(const float reflectiveIndex)
+{
+	if (reflectiveIndex < 0.0f)
+	{
+		std::string msg = "Reflective index < 0.0 (" + std::to_string(reflectiveIndex) + "). Set to 0.0.";
+		logger.log(__FUNCTION__, ErrorType::warning, msg);
+
+		this->reflectiveIndex_ = 0.0f;
+	}
+	else
+	{
+		if (reflectiveIndex > 1.0f)
+		{
+			std::string msg = "Reflective index > 1.0 (" + std::to_string(reflectiveIndex) + "). Set to 1.0.";
+			logger.log(__FUNCTION__, ErrorType::warning, msg);
+
+			this->reflectiveIndex_ = 1.0f;
+		}
+		else this->reflectiveIndex_ = reflectiveIndex;
+	}
+}
+
+///<summary>Задаёт индекс преломления.</summary>
+///<param name = 'refractiveIndex'>Индекс преломления.</param>
+void Material::setRefractiveIndex(const float refractiveIndex)
+{
+	if (refractiveIndex < 0.0f)
+	{
+		std::string msg = "Refractive index < 0.0 (" + std::to_string(refractiveIndex) + "). Set to 0.0.";
+		logger.log(__FUNCTION__, ErrorType::warning, msg);
+
+		this->refractiveIndex_ = 0.0f;
+	}
+	else
+	{
+		if (refractiveIndex > 4.05f)
+		{
+			std::string msg = "Refractive index > 4.05 (" + std::to_string(refractiveIndex) + "). Set to 4.05.";
+			logger.log(__FUNCTION__, ErrorType::warning, msg);
+
+			this->refractiveIndex_ = 4.05f;
+		}
+		else this->refractiveIndex_ = refractiveIndex;
+	}
+}
+
 ///<summary>Задаёт диффузную текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
 void Material::addTexture(Texture texture)
@@ -173,6 +239,18 @@ glm::vec3 Material::getSpecularColor() const
 float Material::getShininess() const
 {
 	return this->shininess_;
+}
+
+///<summary>Возвращает индекс отражения.</summary>
+float Material::getReflectiveIndex() const
+{
+	return this->reflectiveIndex_;
+}
+
+///<summary>Возвращает индекс преломления.</summary>
+float Material::getRefractiveIndex() const
+{
+	return this->refractiveIndex_;
 }
 
 ///<summary>Возвращает список текстур.</summary>

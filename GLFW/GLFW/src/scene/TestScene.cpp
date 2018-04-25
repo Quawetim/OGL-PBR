@@ -52,7 +52,7 @@ void TestScene::init(std::vector<Model*> models)
 	this->objects_[1]->setMaterial(material);
 
 	std::shared_ptr<Model> pointLight(new Model("resources/3dmodels/pointLight.obj"));
-	std::shared_ptr<Shader> lightShader(new Shader("resources/shaders/lightShader.vs", "resources/shaders/lightShader.fs"));
+	std::shared_ptr<Shader> lightShader(new Shader("lightShader"));
 
 	std::shared_ptr<PointLight> light(new PointLight(lightShader, pointLight));
 

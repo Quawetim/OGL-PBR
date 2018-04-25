@@ -14,6 +14,8 @@ struct Material
     vec3 diffuseColor;
     vec3 specularColor;
     float shininess;
+    float refractiveIndex;
+    float reflectiveIndex;
 };
 
 struct Light
@@ -49,8 +51,6 @@ uniform Light lights[5];
 
 void main()
 {
-    bool useGramSchmidt = true;
-
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0f);
     
     vs_out.fragmentPosition = vec3(modelMatrix * vec4(vPosition, 1.0f));
@@ -60,14 +60,17 @@ void main()
     vs_out.cameraPosition = cameraPosition;
 
     if (useNormalMaps)
+    //if (false)
     {
         vec3 normal = normalize(vec3(modelMatrix * vec4(vNormal, 0.0f)));
         vec3 tangent = normalize(vec3(modelMatrix * vec4(vTangent, 0.0f)));
         
         vec3 bitangent;
 
-        if (useGramSchmidt)
+        if (true)
         {
+            // Gram–Schmidt process
+
             tangent = normalize(tangent - dot(tangent, normal) * normal);
             bitangent = cross(normal, tangent);
         }

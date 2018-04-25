@@ -1,4 +1,5 @@
 #include "Light.h"
+
 ///<summary>Задаёт diffuse цвет света.</summary>
 ///<param name = 'diffuseColor'>Цвет.</param>
 void Light::setDiffuseColor(const glm::vec3 diffuseColor)
@@ -66,7 +67,7 @@ PointLight::PointLight(std::shared_ptr<Shader> shader, std::shared_ptr<Model> mo
 
 	this->diffuseColor_ = glm::vec3(0.9f);
 	this->specularColor_ = glm::vec3(0.95f);
-	this->power_ = 360.0f;
+	this->power_ = 300.0f;
 
 	this->translationMatrix_ = glm::mat4(1.0f);
 	this->scaleMatrix_ = glm::mat4(1.0f);

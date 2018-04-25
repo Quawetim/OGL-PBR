@@ -21,7 +21,7 @@ uniform QMaterial material;
 
 uniform vec3 cameraPosition;
 
-uniform samplerCube cubeMap;
+uniform samplerCube envMap;
 
 vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_direction)
 {
@@ -53,8 +53,8 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
 
     //ambientColor = material.ambientColor * material.diffuseColor;
     //diffuseColor = lightDiffuseColor * lightPower * material.diffuseColor * diff;
-    ambientColor = 0.05f * texture(cubeMap, fs_in.textureCoords).rgb;
-    diffuseColor = lightDiffuseColor * lightPower * texture(cubeMap, fs_in.textureCoords).rgb * diff;
+    ambientColor = 0.05f * texture(envMap, fs_in.textureCoords).rgb;
+    diffuseColor = lightDiffuseColor * lightPower * texture(envMap, fs_in.textureCoords).rgb * diff;
     specularColor = lightSpecularColor * lightPower * material.specularColor * spec;
 
     float dist = length(lightPosition - fragment_position);
@@ -83,6 +83,6 @@ void main()
     }
     else
     {
-        fragmentColor = texture(cubeMap, fs_in.textureCoords).rgb;
+        fragmentColor = texture(envMap, fs_in.textureCoords).rgb;
     } 
 }

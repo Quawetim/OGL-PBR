@@ -8,11 +8,17 @@ private:
 	///<summary>Идентификатор шейдера.</summary>
     unsigned int id_;
 
-	///<summary>Имя вершинного шейдера.</summary>
-	std::string vsName_;
+	///<summary>Путь к папке с шейдерами.</summary>
+	std::string folder_;
 
-	///<summary>Имя фрагментного шейдера.</summary>
-	std::string fsName_;
+	///<summary>Имя шейдера.</summary>
+	std::string name_;
+
+	///<summary>Путь к вершинному шейдеру.</summary>
+	std::string vsPath_;
+
+	///<summary>Путь к фрагментному шейдеру.</summary>
+	std::string fsPath_;
 
     ///<summary>Проверка на ошибки компиляции шейдера.</summary>
     ///<param name = 'id'>Идентификатор шейдера.</param>
@@ -21,9 +27,8 @@ private:
 
 public:
     ///<summary>Конструктор.</summary>
-    ///<param name = 'vs_path'>Путь к вершинному шейдеру.</param>
-    ///<param name = 'fs_path'>Путь к фрагментному шейдеру.</param>
-    Shader(std::string vs_path, std::string fs_path);
+    ///<param name = 'name'>Название файла шейдера.</param>
+    Shader(std::string name);
 
     ///<summary>Возвращает идентификатор шейдера.</summary>
     unsigned int getID() const;

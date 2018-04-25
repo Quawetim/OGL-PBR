@@ -9,6 +9,8 @@ struct Material
     vec3 diffuseColor;
     vec3 specularColor;
     float shininess;
+    float refractiveIndex;
+    float reflectiveIndex;
 };
 
 struct Light
@@ -32,7 +34,7 @@ in VS_OUT
     vec3 lightsPositions[MAX_LIGHTS];
 } fs_in;
 
-out vec3 fragmentColor;
+out vec4 fragmentColor;
 
 uniform Material material;
 
@@ -51,17 +53,23 @@ uniform sampler2D normalMaps[MAX_MAPS];
 uniform int lightsCount;
 uniform Light lights[MAX_LIGHTS];
 
+uniform samplerCube envMap;
+
 vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_direction)
 {
     vec3 lightDirection;
+    float dist;
 
     if (useNormalMaps)
+    //if (false)
     {
         lightDirection = normalize(fs_in.lightsPositions[id] - fragment_position);
+        dist = length(fs_in.lightsPositions[id] - fragment_position);
     }
     else
     {
         lightDirection = normalize(lights[id].position - fragment_position);
+        dist = length(lights[id].position - fragment_position);
     }
 
     float diff = max(dot(normal, lightDirection), 0.0f);
@@ -85,6 +93,7 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
     vec3 ambientColor, diffuseColor, specularColor;
 
     if (useDiffuseMaps)
+    //if (false)
     {
         ambientColor = texture(diffuseMaps[0], fs_in.textureCoords).rgb;
         diffuseColor = texture(diffuseMaps[0], fs_in.textureCoords).rgb;
@@ -105,6 +114,7 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
     }
 
     if (useSpecularMaps)
+    //if (false)
     {
         specularColor = texture(specularMaps[0], fs_in.textureCoords).rgb;
 
@@ -120,22 +130,11 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
         specularColor = lights[id].specularColor * lights[id].power * material.specularColor * spec;
     }
 
-    float dist;
-    
-    if (useNormalMaps)
-    {
-        dist = length(fs_in.lightsPositions[id] - fragment_position);
-    }
-    else
-    {
-        dist = length(lights[id].position - fragment_position);
-    }
-
     float attenuation;
 
     if (true)
     {
-        float constant_factor = 1.64f; 
+        float constant_factor = 1.0f; 
         float linear_factor = 2.0 / lights[id].radius;
         float quadratic_factor = 1.0 / (lights[id].radius * lights[id].radius);
 
@@ -151,8 +150,8 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
         attenuation = 1 / (denom*denom);
      
         // scale and bias attenuation such that:
-        //   attenuation == 0 at extent of max influence
-        //   attenuation == 1 when d == 0
+        // attenuation == 0 at extent of max influence
+        // attenuation == 1 when d == 0
         attenuation = (attenuation - 0.001f) / (1 - 0.001f);
         attenuation = max(attenuation, 0);
     }
@@ -164,15 +163,37 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
     return ambientColor + diffuseColor + specularColor;   
 }
 
+vec3 computeReflection(vec3 normal, vec3 view_direction)
+{
+    vec3 R = reflect(-view_direction, normal);
+    vec3 env = texture(envMap, R).rgb;
+
+    return env;
+}
+
+vec3 computeRefraction(vec3 normal, vec3 view_direction)
+{
+    vec3 R = refract(-view_direction, normal, 1.0f / material.refractiveIndex);
+    vec3 env = texture(envMap, R).rgb;
+    
+    return env;
+}
+
 void main()
 {
-    if (true)
-    {
-        // With lighting
+    const bool useLighting = true;
 
-        vec3 normal;
+    fragmentColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+    vec3 normal;
+    vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
+
+    if ((useLighting) && (material.refractiveIndex == 0))
+    {
+        // With lighting       
 
         if (useNormalMaps)
+        //if (false)
         {
             normal = texture(normalMaps[0], fs_in.textureCoords).rgb;
             normal = normalize(normal * 2.0f - 1.0f);            
@@ -180,18 +201,12 @@ void main()
         else
         {
             normal = normalize(fs_in.fragmentNormal);
-        }       
-        
-        vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
-
-        vec3 color = vec3(0.0f, 0.0f, 0.0f);
+        }           
 
         for (int i = 0; i < lightsCount; i++)
         {
-            color += computePointLight(i, normal, fs_in.fragmentPosition, viewDirection);
+            fragmentColor.rgb += computePointLight(i, normal, fs_in.fragmentPosition, viewDirection);
         }
-
-        fragmentColor = color;
     }
     else
     {
@@ -199,13 +214,49 @@ void main()
 
         if (useDiffuseMaps) 
         {            
-            fragmentColor = texture(diffuseMaps[0], fs_in.textureCoords).rgb;
+            fragmentColor = texture(diffuseMaps[0], fs_in.textureCoords);
 
             for (int i = 1; i < diffuseMapsCount && i < MAX_MAPS; i++)
             {
-                fragmentColor += texture(diffuseMaps[i], fs_in.textureCoords).rgb;
+                fragmentColor += texture(diffuseMaps[i], fs_in.textureCoords);
             }
         }
-        else fragmentColor = material.diffuseColor;
+        else
+        {
+            fragmentColor.rgb = material.diffuseColor;
+        }
+
+        normal = fs_in.fragmentNormal;
     }
+
+    // Calculate refraction and reflection
+    if (material.refractiveIndex > 0 && material.reflectiveIndex > 0)
+    {
+        vec3 reflection = computeReflection(normal, viewDirection);
+        reflection = mix(fragmentColor.rgb, reflection, material.reflectiveIndex);
+
+        vec3 refraction = computeRefraction(normal, viewDirection);
+        refraction = mix(fragmentColor.rgb, refraction, material.refractiveIndex);	    
+        
+        vec3 fresnel = vec3(dot(viewDirection, normal));
+        fragmentColor.rgb = mix(reflection, refraction, fresnel);
+    }
+    else
+    {
+        if (material.refractiveIndex > 0)
+        {
+            vec3 refraction = computeRefraction(normal, viewDirection);
+
+            fragmentColor.rgb = mix(fragmentColor.rgb, refraction, material.refractiveIndex);
+        }
+        else
+        {
+            if (material.reflectiveIndex > 0)
+            {
+                vec3 reflection = computeReflection(normal, viewDirection);
+
+                fragmentColor.rgb = mix(fragmentColor.rgb, reflection, material.reflectiveIndex);
+            }
+        }
+    }  
 }
