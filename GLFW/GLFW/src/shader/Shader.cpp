@@ -131,7 +131,7 @@ void Shader::activate() const
 void Shader::setBool(const std::string &name, const bool value) const
 {
 	this->activate();
-    glUniform1i(glGetUniformLocation(this->id_, name.c_str()), (int)value);
+	glUniform1i(glGetUniformLocation(this->id_, name.c_str()), static_cast<int>(value));
 }
 
 ///<summary>Задаёт (передаёт) значение переменной типа int в шейдере по имени.</summary>

@@ -1,10 +1,10 @@
 #version 430 core
 
-out vec3 fragmentColor;
+out vec4 fragmentColor;
 
 uniform vec3 color;
 
 void main()
 {	
-    fragmentColor = color;
+    fragmentColor = vec4(color, 1.0f);
 }

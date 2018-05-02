@@ -66,7 +66,7 @@ void Scene1::init(std::vector<Model*> models)
 	texture = Texture("resources/textures/batman_specular.bmp", TextureType::specular);
 	material.addTexture(texture);
 	material.setDiffuseColor(130, 0, 72);
-	material.setReflectiveIndex(0.1f);
+	material.setReflectiveIndex(1.0f);
 	this->cubes_[0]->setScale(glm::vec3(0.5f));
 	this->cubes_[0]->setMaterial(material);
 	material.setDefault();
@@ -76,8 +76,7 @@ void Scene1::init(std::vector<Model*> models)
 	this->cubes_[1]->setMaterial(material);
 	material.setDefault();
 
-	//material.setDiffuseColor(155, 97, 186);
-	material.setDiffuseColor(0, 0, 0);
+	material.setDiffuseColor(155, 97, 186);
 	material.setRefractiveIndex(1.52f);
 	material.setReflectiveIndex(0.5f);
 	this->cubes_[2]->setMaterial(material);
@@ -93,7 +92,6 @@ void Scene1::init(std::vector<Model*> models)
 	material.setDefault();
 
 	// —феры
-	//material.setDiffuseColor(93, 66, 195);
 	material.setDiffuseColor(99, 241, 137);
 	material.setReflectiveIndex(0.1f);
 	this->spheres_[0]->setMaterial(material);
@@ -193,7 +191,7 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 		}
 		else
 		{
-			if (this->spheres_[i]->getScale().x < 1.0f) this->spheres_[i]->scale(0.2f);
+			if (this->spheres_[i]->getScale().x < 1.2f) this->spheres_[i]->scale(0.2f);
 			else this->decrease_ = true;
 		}
 	}

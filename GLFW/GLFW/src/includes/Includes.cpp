@@ -116,7 +116,7 @@ void Material::setDefault()
 	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
 	this->specularColor_ = glm::vec3(0.7f, 0.7f, 0.7f);
 
-	this->shininess_ = 8.0f;
+	this->shininess_ = 128.0f;
 
 	this->reflectiveIndex_ = 0.0f;
 	this->refractiveIndex_ = 0.0f;	

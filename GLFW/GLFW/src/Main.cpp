@@ -18,8 +18,12 @@ int main()
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
-	unsigned int frame = renderer->generateTexture2D();
+	unsigned int frame = renderer->generateTexture2D16F();
 	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
+
+	GLint ttt;
+
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &ttt);
 
 	InputHandler inputHandler;
 	inputHandler.setEventHandling();
@@ -96,7 +100,9 @@ int main()
 
     logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop."); 
     
+	int frames = 0;
 	while (!renderer->quit())
+	//while (frames < 1)
 	{
 		currentFrameTime = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrameTime - lastFrameTime;
@@ -153,7 +159,10 @@ int main()
 
 		renderer->swapBuffers();
 		renderer->pollEvents();
+		frames++;
     }
+
+	//system("pause");
 
 	delete cylinder;
 	delete sphere;

@@ -201,10 +201,18 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </None>
     <None Include="resources\shaders\axesShader.fs" />
     <None Include="resources\shaders\axesShader.vs" />
-    <None Include="resources\shaders\materialShader.fs" />
+    <None Include="resources\shaders\materialShader.fs">
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </DeploymentContent>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </DeploymentContent>
+    </None>
     <None Include="resources\shaders\materialShader.vs" />
     <None Include="resources\shaders\lightShader.fs" />
     <None Include="resources\shaders\lightShader.vs" />
+    <None Include="resources\shaders\PBRShader.fs" />
+    <None Include="resources\shaders\PBRShader.vs" />
     <None Include="resources\shaders\postProcessingShader.fs" />
     <None Include="resources\shaders\postProcessingShader.vs" />
     <None Include="resources\shaders\skyboxShader.fs" />

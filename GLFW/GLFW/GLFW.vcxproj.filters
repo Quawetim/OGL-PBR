@@ -78,9 +78,6 @@
     <None Include="resources\shaders\test.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
-    <None Include="resources\shaders\materialShader.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
     <None Include="resources\shaders\materialShader.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
@@ -106,6 +103,15 @@
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
     <None Include="resources\shaders\postProcessingShader.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\materialShader.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\PBRShader.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\PBRShader.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
   </ItemGroup>

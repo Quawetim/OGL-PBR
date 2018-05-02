@@ -123,6 +123,9 @@ public:
 	///<summary>Создаёт текстуру.</summary>
 	virtual unsigned int generateTexture2D() = 0;
 
+	///<summary>Создаёт float текстуру.</summary>
+	virtual unsigned int generateTexture2D16F() = 0;
+
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'ID'>Идентификатор текстуры.</param>
 	virtual void bindTexture2D(const unsigned int ID) = 0;
@@ -132,7 +135,7 @@ public:
 	virtual void deleteTexture2D(const unsigned int ID) = 0;
 
 	///<summary>Создаёт фреймбуффер.</summary>
-	///<param name = 'textureID'>Bдентификатор текстуры, хранящей значения фреймбуффера.</param>
+	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
 	virtual unsigned int generateFrameBuffer(const unsigned int textureID) = 0;
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
@@ -299,6 +302,9 @@ public:
 
 	///<summary>Создаёт текстуру.</summary>
 	unsigned int generateTexture2D();
+
+	///<summary>Создаёт float текстуру.</summary>
+	unsigned int generateTexture2D16F();
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры.</param>

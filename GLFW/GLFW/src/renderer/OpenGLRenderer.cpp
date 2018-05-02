@@ -124,6 +124,9 @@ OpenGLRenderer::OpenGLRenderer()
 	// Отсечение граней, у которых не видно лицевую сторону
 	glEnable(GL_CULL_FACE);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	float vertices[] =
 	{
 		// positions   // textureCoords
@@ -166,13 +169,8 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 {
 	for (size_t j = 0; j < model->getMeshes().size(); j++)
 	{		
-		unsigned int diffuseMapNumber = 0;
 		unsigned int diffuseMapsCount = 0;
-
-		unsigned int specularMapNumber = 0;
 		unsigned int specularMapsCount = 0;
-
-		unsigned int normalMapNumber = 0;
 		unsigned int normalMapsCount = 0;
 
 		bool useDiffuseMaps = false;
@@ -180,8 +178,11 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		bool useNormalMaps = false;
 
 		TextureKeys mapKeys;
+		TextureKeys diffuseKeys = mapTextureType.find(TextureType::diffuse)->second;
+		TextureKeys	specularKeys = mapTextureType.find(TextureType::specular)->second;;
+		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;;
+		
 		std::string mapNumber;
-
 		std::vector<Texture> pointer;
 
 		// костылище
@@ -194,14 +195,13 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 
-			mapKeys = mapTextureType.find(pointer[i].getType())->second;
-
 			switch (pointer[i].getType())
 			{
 				case TextureType::diffuse:     
 					{
-						mapNumber = std::to_string(diffuseMapNumber);
-						diffuseMapNumber++;
+						mapKeys = diffuseKeys;
+
+						mapNumber = std::to_string(diffuseMapsCount);
 						diffuseMapsCount++;
 
 						if (!useDiffuseMaps)
@@ -214,8 +214,9 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 					}
 				case TextureType::specular:    
 					{
-						mapNumber = std::to_string(specularMapNumber);
-						specularMapNumber++;
+						mapKeys = specularKeys;
+
+						mapNumber = std::to_string(specularMapsCount);
 						specularMapsCount++;
 						
 						if (!useSpecularMaps)
@@ -228,8 +229,9 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 					}
 				case TextureType::normal:      
 					{
-						mapNumber = std::to_string(normalMapNumber);
-						normalMapNumber++;
+						mapKeys = normalKeys;
+
+						mapNumber = std::to_string(normalMapsCount);
 						normalMapsCount++;
 						
 						if (!useNormalMaps)
@@ -246,23 +248,34 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 						logger.stop(__FUNCTION__, true, "Unexpected texture type");
 						exit(ERROR_UNEXPECTED_TEXTURE_TYPE);
 					}
-			}			
-			
+			}
+
 			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), i);
 			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
 		}
 
-		shader.setInt(mapKeys.mapsCount, diffuseMapsCount);
-		shader.setInt(mapKeys.mapsCount, specularMapsCount);
-		shader.setInt(mapKeys.mapsCount, normalMapsCount);
+		shader.setInt(diffuseKeys.mapsCount, diffuseMapsCount);
+		shader.setInt(specularKeys.mapsCount, specularMapsCount);
+		shader.setInt(normalKeys.mapsCount, normalMapsCount);
 
-		glActiveTexture(GL_TEXTURE0);		
+		glActiveTexture(GL_TEXTURE0 + pointer.size());
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->envMap_);
+		shader.setInt("envMap", pointer.size());
 
 		glBindVertexArray(model->getMeshes()[j].getVAO());		
 		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
-		
-		glBindTexture(GL_TEXTURE_2D, 0);
+
+		for (size_t i = 0; i < pointer.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		glActiveTexture(GL_TEXTURE0 + pointer.size());
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		glActiveTexture(GL_TEXTURE0);
 	}
 }
 
@@ -290,11 +303,6 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	shader.activate();
 	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, object->getModelMatrix());
 	shader.setVec3("cameraPosition", camera_position);	
-
-	glActiveTexture(GL_TEXTURE20);
-	
-	shader.setInt("envMap", 20);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, this->envMap_);
 
 	// Push material params
 	glm::vec3 ambientColor = glm::pow(object->getMaterial().getAmbientColor(), glm::vec3(gamma));
@@ -336,15 +344,13 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 
 		name = "lights[" + std::to_string(i) + "].power";
 		shader.setFloat(name, lights[i]->getPower());
-	}
+	}	
 
 	// Для каждой из моделей в объекте
 	for (size_t i = 0; i < object->getModels().size(); i++)
 	{
 		drawModel(object->getModels()[i], shader, object->getMaterial());
 	}
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 ///<summary>Отрисовка скайбокса.</summary>
@@ -450,6 +456,23 @@ unsigned int OpenGLRenderer::generateTexture2D()
 	glBindTexture(GL_TEXTURE_2D, ID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->windowWidth_, this->windowHeight_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return ID;
+}
+
+///<summary>Создаёт float текстуру.</summary>
+unsigned int OpenGLRenderer::generateTexture2D16F()
+{
+	unsigned int ID;
+
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, this->windowWidth_, this->windowHeight_, 0, GL_RGB, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

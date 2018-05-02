@@ -16,13 +16,13 @@ unsigned int textureLoader::loadTexture(const std::string path, TextureType type
 
 		GLint internalFormat;
 
-		if (type == TextureType::specular)
+		if (type == TextureType::diffuse)
 		{
-			internalFormat = GL_RGB;
+			internalFormat = GL_SRGB;
 		}
 		else
 		{
-			internalFormat = GL_SRGB;
+			internalFormat = GL_RGB;
 		}
 
         GLenum format;
@@ -67,7 +67,7 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 {
 	unsigned int ID;
 
-	int width, height, color_channels;
+	int width, height, colorChannels;
 	unsigned char *data;
 
 	std::string faces[6];
@@ -84,14 +84,14 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 
 	for (size_t i = 0; i < 6; i++)
 	{
-		data = stbi_load(faces[i].c_str(), &width, &height, &color_channels, 0);
+		data = stbi_load(faces[i].c_str(), &width, &height, &colorChannels, 0);
 
 		if (data)
 		{
 			GLint internalFormat = GL_SRGB;
 			GLenum format;
 
-			switch (color_channels)
+			switch (colorChannels)
 			{
 				case 1: format = GL_RED; break;
 				case 3: format = GL_RGB; break;
@@ -116,6 +116,8 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 

@@ -14,6 +14,7 @@ uniform sampler2D frame;
 void main()
 {
     int effect = 0;
+    bool vignette = true;
 
     fragmentColor = texture(frame, fs_in.textureCoords);
 
@@ -47,8 +48,28 @@ void main()
                 
                 fragmentColor.rgb = vec3(red, green, blue);
                 break;
-            }
+            }           
     }
+
+    if (vignette)
+    {	
+        vec2 resolution = vec2(1280.0f, 720.0f);
+	    vec2 position = (gl_FragCoord.xy / resolution.xy) - vec2(0.5f);
+
+	    float len = length(position);
+	            
+        float radius = 0.8f;
+        float softness = 0.5f;
+
+        float vignette = smoothstep(radius, radius - softness, len);
+
+        fragmentColor.rgb *= vignette;
+    }
+
+    //fragmentColor.rgb = fragmentColor.rgb / (fragmentColor.rgb + vec3(1.0));
+
+    float exposure = 2.0f;
+    fragmentColor.rgb = vec3(1.0f) - exp(-fragmentColor.rgb * exposure);
     
     fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));
 }
