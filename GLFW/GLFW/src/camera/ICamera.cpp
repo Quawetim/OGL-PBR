@@ -69,7 +69,7 @@ void FirstPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-void FirstPersonCamera::handleInput()
+void FirstPersonCamera::handleInput(float deltaTime)
 {
 	double cursorX, cursorY;
 	float offsetX, offsetY;
@@ -144,7 +144,7 @@ void ThirdPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-void ThirdPersonCamera::handleInput()
+void ThirdPersonCamera::handleInput(float deltaTime)
 {
 	double cursorX, cursorY;
 	float offsetX, offsetY;
@@ -207,7 +207,7 @@ void StaticCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-void StaticCamera::handleInput()
+void StaticCamera::handleInput(float deltaTime)
 {
 
 }
@@ -240,7 +240,7 @@ void FreeCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int a
 }
 
 ///<summary>Обработка клавиатуры.</summary>
-void FreeCamera::handleInput()
+void FreeCamera::handleInput(float deltaTime)
 {
 
 }

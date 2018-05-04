@@ -26,6 +26,9 @@ private:
     void checkCompilationErrors(const unsigned int id, const int type) const;
 
 public:
+	///<summary>Конструктор.</summary>
+	Shader() {};
+
     ///<summary>Конструктор.</summary>
     ///<param name = 'name'>Название файла шейдера.</param>
     Shader(std::string name);

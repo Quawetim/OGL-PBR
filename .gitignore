@@ -265,3 +265,4 @@ __pycache__/
 !GLFW/GLFW/lib/**
 
 /GLFW/GLFW/_old/resources
+/res/Milkyway

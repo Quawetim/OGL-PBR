@@ -16,6 +16,13 @@ Skybox::Skybox(const float size, const unsigned int envMap)
 ///<summary>Деструктор.</summary>
 Skybox::~Skybox() {}
 
+///<summary>Задаёт environment map.</summary>
+///<param name = 'envMap'>Идентификатор environment map.</param>
+void Skybox::setEnvMap(const unsigned int envMap)
+{
+	this->envMapID_ = envMap;
+}
+
 ///<summary>Возвращает идентификатор CubeMap.</summary>
 unsigned int Skybox::getEnvMapID() const
 {

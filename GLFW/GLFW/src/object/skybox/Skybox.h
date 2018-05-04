@@ -16,6 +16,10 @@ public:
 	///<summary>Деструктор.</summary>
 	~Skybox();
 
+	///<summary>Задаёт environment map.</summary>
+	///<param name = 'envMap'>Идентификатор environment map.</param>
+	void setEnvMap(const unsigned int envMap);
+
 	///<summary>Возвращает идентификатор CubeMap.</summary>
 	unsigned int getEnvMapID() const;
 };

@@ -261,12 +261,6 @@ struct TextureKeys
 
 ///<summary>Задаёт соответствие TextureType и её TextureKeys в шейдере.</summary>
 extern const std::map<TextureType, TextureKeys> mapTextureType;
-  
-///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
-extern float deltaTime;
- 
-///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
-extern float lastFrameTime;
 
 ///<summary>Значение гаммы для гамма-коррекции.</summary>
 extern float gamma;

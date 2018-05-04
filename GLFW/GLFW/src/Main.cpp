@@ -18,11 +18,10 @@ int main()
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
-	unsigned int frame = renderer->generateTexture2D16F();
+	unsigned int frame = renderer->generateTexture2D16F(renderer->getWindowWidth(), renderer->getWindowHeight());
 	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
 
 	GLint ttt;
-
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &ttt);
 
 	InputHandler inputHandler;
@@ -45,10 +44,11 @@ int main()
 
 	std::shared_ptr<ICamera> camera = cameras[0];
 
-	Shader materialShader("materialShader");
-	Shader axesShader("axesShader");
-	Shader skyboxShader("skyboxShader");
-	Shader postProcessingShader("postProcessingShader");
+	Shader materialShader("material");
+	Shader pbrShader("PBR");
+	Shader axesShader("axes");
+	Shader skyboxShader("skybox");
+	Shader postProcessingShader("postProcessing");
 
 	std::vector<Model*> models;
 
@@ -66,11 +66,13 @@ int main()
 	Scene1 scene1;
 	scene1.init(models);
 
-	unsigned int environmentMap = textureLoader::loadCubeMap("resources/textures/env_map");
-	renderer->setEnvMap(environmentMap);
+	//unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
+	unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
+	renderer->setEnvironmentMap(environmentMap);
 	
-	std::shared_ptr<Skybox> skybox(new Skybox(100.0f, environmentMap));		// жрёт кучу памяти из-за огромного размера текстур (2048*2048*6*3 байт = 72 Мб)
-
+	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f, environmentMap));		// жрёт кучу памяти из-за огромного размера текстур (2048*2048*6*3 байт = 72 Мб)
+	skybox->setRotation(-90, glm::vec3(0.0f, 1.0f, 0.0f));
+	
 	////////////////////////////////DEBUG////////////////////////////////
 
 	bool testSceneEnabled = false;
@@ -91,16 +93,23 @@ int main()
 
 	////////////////////////////////DEBUG////////////////////////////////
 
+	renderer->setVsync(false);
+
+	float end = static_cast<float>(glfwGetTime()) + 0.1f;
+	while (glfwGetTime() < end);
 
 	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
     float currentFrameTime = 0.0f;
 	float fpsLastCheckTime = 0.0f;
+	float deltaTime = 0.0f;
+	float lastFrameTime = 0.0f;
+	
 	int fps = 0;
-
-    logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop."); 
-    
 	int frames = 0;
+
+    logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop.");
+
 	while (!renderer->quit())
 	//while (frames < 1)
 	{
@@ -130,12 +139,13 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
+
 		////////////////////////////////DEBUG////////////////////////////////
 
-		if (testSceneEnabled) testScene.render(materialShader, camera->getViewMatrix(), camera->getPosition());
+		if (testSceneEnabled) testScene.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 		else
-		{
-			scene1.render(materialShader, camera->getViewMatrix(), camera->getPosition());			
+		{			
+			scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());			
 		}
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
@@ -152,7 +162,7 @@ int main()
 
 		// Обработка ввода
 				
-		camera->handleInput();
+		camera->handleInput(deltaTime);
 		//skybox->setPosition(camera->getPosition());
 
         // Меняем кадр
@@ -161,8 +171,6 @@ int main()
 		renderer->pollEvents();
 		frames++;
     }
-
-	//system("pause");
 
 	delete cylinder;
 	delete sphere;
@@ -176,10 +184,6 @@ int main()
     // Выход из программы.
     logger.stop(__FUNCTION__, false);
     return GOOD_EXIT;
-
-	//double MouseX, MouseY;
-
-	//	SCENE Scene = SCENE(WindowInfo, SkyBoxSize, Blinn);
 
 	//	TEXT Text = TEXT("resources//textures//gui//Text.DDS");
 

@@ -166,7 +166,7 @@ void Scene1::init(std::vector<Model*> models)
 ///<summary>Отрисовка сцены.</summary>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
+void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
 	// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
@@ -174,10 +174,10 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 		renderer->drawObject(this->cubes_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
-	this->cubes_[0]->rotate(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	this->cubes_[1]->rotate(-90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[2]->rotate(90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[3]->rotate(-45.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->cubes_[0]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->cubes_[1]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	this->cubes_[2]->rotate(deltaTime, 90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+	this->cubes_[3]->rotate(deltaTime, -45.0, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	// Сферы
 	for (size_t i = 0; i < cubes_.size(); i++)
@@ -186,23 +186,23 @@ void Scene1::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 
 
 		if (this->decrease_)
 		{
-			if (this->spheres_[i]->getScale().x > 0.8f) this->spheres_[i]->scale(-0.2f);
+			if (this->spheres_[i]->getScale().x > 0.5f) this->spheres_[i]->scale(deltaTime, -0.2f);
 			else this->decrease_ = false;
 		}
 		else
 		{
-			if (this->spheres_[i]->getScale().x < 1.2f) this->spheres_[i]->scale(0.2f);
+			if (this->spheres_[i]->getScale().x < 1.0f) this->spheres_[i]->scale(deltaTime, 0.2f);
 			else this->decrease_ = true;
 		}
 	}
 
-	this->spheres_[3]->rotate(-40.0, glm::vec3(1.0f, 1.0f, 1.0f));
+	this->spheres_[3]->rotate(deltaTime, -40.0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// Цилиндры
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
 		renderer->drawObject(this->cylinders_[i], shader, this->lights_, view_matrix, camera_position);
-		this->cylinders_[i]->rotate(10.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		this->cylinders_[i]->rotate(deltaTime, 10.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
 	if (this->drawLights_)

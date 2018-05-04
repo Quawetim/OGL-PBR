@@ -35,22 +35,22 @@ public:
 	///<param name = 'velocity_x'>Скорость по оси x.</param>
 	///<param name = 'velocity_y'>Скорость по оси y.</param>
 	///<param name = 'velocity_z'>Скорость по оси z.</param>
-	void move(const float velocity_x, const float velocity_y, const float velocity_z);
+	void move(float deltaTime, const float velocity_x, const float velocity_y, const float velocity_z);
 
 	///<summary>Вращает объект с заданной скоростью.</summary>
 	///<param name = 'angle'>Скорость поворота в градусах.</param>
 	///<param name = 'axis'>Ось вращения.</param>
-	void rotate(const double angle, const glm::vec3 axis);
+	void rotate(float deltaTime, const double angle, const glm::vec3 axis);
 
 	///<summary>Изменяет размер объекта с заданной скоростью.</summary>
 	///<param name = 'velocity_xyz'>Скорость изменения размера по всем осям.</param>
-	void scale(const float velocity_xyz);
+	void scale(float deltaTime, const float velocity_xyz);
 
 	///<summary>Изменяет размер объекта с заданной скоростью.</summary>
 	///<param name = 'velocity_x'>Скорость изменения размера по X.</param>
 	///<param name = 'velocity_y'>Скорость изменения размера по Y.</param>
 	///<param name = 'velocity_z'>Скорость изменения размера по Z.</param>
-	void scale(const float velocity_x, const float velocity_y, const float velocity_z);
+	void scale(float deltaTime, const float velocity_x, const float velocity_y, const float velocity_z);
 
 	///<summary>Задаёт позицию.</summary>
 	///<param name = 'position'>Позиция.</param>

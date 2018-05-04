@@ -16,7 +16,9 @@ Renderer::Renderer()
 
 	readConfig();
 
-	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);	
+	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
+
+	this->irradianceMap_ = 0;
 }
 
 ///<summary>Деструктор.</summary>
@@ -117,54 +119,12 @@ bool Renderer::isOgl() const
 	return this->ogl_;
 }
 
-///<summary>Задаёт ширину окна.</summary>
-///<param name = 'width'>Ширина.</param>
-void Renderer::setWindowWidth(const int width)
-{
-	this->windowWidth_ = width;
-}
-
-///<summary>Задаёт высоту окна.</summary>
-///<param name = 'height'>Высота.</param>
-void Renderer::setWindowHeight(const int height)
-{
-	this->windowHeight_ = height;
-}
-
-///<summary>Задаёт полноэкранный режим.</summary>
-///<param name = 'fullScreen'>Полноэкранный режим.</param>
-void Renderer::setFullScreen(const bool fullScreen)
-{
-	this->isFullScreen_ = fullScreen;
-}
-
-///<summary>Включает/отключает вертикальную синхронизацию.</summary>
-///<param name = 'vsync'>Вертикальная инхронизация.</param>
-void Renderer::setVsync(const bool vsync)
-{
-	this->isVSync_ = vsync;
-}
-
-///<summary>Задаёт отображение курсора.</summary>
-///<param name = 'showCursor'>Отображать курсор.</param>
-void Renderer::setShowCursor(const bool showCursor)
-{
-	this->isShowCursor_ = showCursor;
-}
-
 ///<summary>Задаёт текущее значение FOV.</summary>
 ///<param name = 'fov'>FOV.</param>
 void Renderer::setFOV(const int fov)
 {
 	this->fov_ = static_cast<float>(fov);
 	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
-}
-
-///<summary>Задаёт environment map.</summary>
-///<param name = 'ID'>Идентификатор.</param>
-void Renderer::setEnvMap(const unsigned int ID)
-{
-	this->envMap_ = ID;
 }
 
 ///<summary>Возвращает указатель на окно.</summary>
@@ -225,4 +185,10 @@ int Renderer::getFOV() const
 glm::mat4 Renderer::getProjectionMatrix() const
 {
 	return this->projectionMatrix_;
+}
+
+///<summary>Возвращает идентификатор irradiance map.</summary>
+unsigned int Renderer::getIrradianceMap() const
+{
+	return this->irradianceMap_;
 }

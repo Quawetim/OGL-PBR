@@ -43,19 +43,31 @@ protected:
 	float fov_;
 
 	///<summary>Environment map.</summary>
-	unsigned int envMap_;
+	unsigned int environmentMap_;
+
+	///<summary>Irradiance map.</summary>
+	unsigned int irradianceMap_;
+
+	///<summary>Irradiance framebuffer.</summary>
+	unsigned int irradianceFrameBuffer_;
 
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
 
 	///<summary>Матрица проекции.</summary>
-	glm::mat4 projectionMatrix_;
+	glm::mat4 projectionMatrix_;	
 
 	///<summary>Отрисовка модели.</summary>
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
 	virtual void drawModel(Model* model, Shader shader, Material material) = 0;
+
+	virtual void renderCube() = 0;
+
+	///<summary>Создаёт irradiance map.</summary>
+	///<param name = 'size'>Размер.</param>
+	virtual void drawIrradianceMap(const int size) = 0;
 
 public:
 	///<summary>Конструктор.</summary>
@@ -121,10 +133,18 @@ public:
 	virtual void restoreViewPort() = 0;
 
 	///<summary>Создаёт текстуру.</summary>
-	virtual unsigned int generateTexture2D() = 0;
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	virtual unsigned int generateTexture2D(const int width, const int height) = 0;
 
 	///<summary>Создаёт float текстуру.</summary>
-	virtual unsigned int generateTexture2D16F() = 0;
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	virtual unsigned int generateTexture2D16F(const int width, const int height) = 0;
+
+	///<summary>Создаёт float CubeMap.</summary>
+	///<param name = 'size'>Размер.</param>
+	virtual unsigned int generateCubeMap16F(const int size) = 0;
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'ID'>Идентификатор текстуры.</param>
@@ -137,6 +157,10 @@ public:
 	///<summary>Создаёт фреймбуффер.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
 	virtual unsigned int generateFrameBuffer(const unsigned int textureID) = 0;
+
+	///<summary>Создаёт кубический фреймбуффер.</summary>
+	///<param name = 'size'>Размер.</param>
+	virtual unsigned int generateFrameBufferCube(const int size) = 0;
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
 	///<param name = 'ID'>Идентификатор фреймбуффера.</param>
@@ -160,11 +184,11 @@ public:
 
 	///<summary>Задаёт ширину окна.</summary>
 	///<param name = 'width'>Ширина.</param>
-	void setWindowWidth(const int width);
+	virtual void setWindowWidth(const int width) = 0;
 
 	///<summary>Задаёт высоту окна.</summary>
 	///<param name = 'height'>Высота.</param>
-	void setWindowHeight(const int height);
+	virtual void setWindowHeight(const int height) = 0;
 
 	///<summary>Задаёт имя окна.</summary>
 	///<param name = 'title'>Имя.</param>
@@ -172,15 +196,15 @@ public:
 
 	///<summary>Задаёт полноэкранный режим.</summary>
 	///<param name = 'fullScreen'>Полноэкранный режим.</param>
-	void setFullScreen(const bool fullScreen);
+	virtual void setFullScreen(const bool fullScreen) = 0;
 
 	///<summary>Включает/отключает вертикальную синхронизацию.</summary>
 	///<param name = 'vsync'>Вертикальная инхронизация.</param>
-	void setVsync(const bool vsync);
+	virtual void setVsync(const bool vsync) = 0;
 
 	///<summary>Задаёт отображение курсора.</summary>
 	///<param name = 'showCursor'>Отображать курсор.</param>
-	void setShowCursor(const bool showCursor);
+	virtual void setShowCursor(const bool showCursor) = 0;
 
 	///<summary>Задаёт текущее значение FOV.</summary>
 	///<param name = 'fov'>FOV.</param>
@@ -188,7 +212,7 @@ public:
 
 	///<summary>Задаёт environment map.</summary>
 	///<param name = 'ID'>Идентификатор.</param>
-	void setEnvMap(const unsigned int ID);
+	virtual void setEnvironmentMap(const unsigned int ID) = 0;
 
 	////////////////////////////////////////////// get-функции //////////////////////////////////////////////
 
@@ -218,6 +242,9 @@ public:
 
 	///<summary>Возвращает матрицу проекции.</summary>
 	glm::mat4 getProjectionMatrix() const;
+
+	///<summary>Возвращает идентификатор irradiance map.</summary>
+	unsigned int getIrradianceMap() const;
 };
 
 ///<summary>Рендерер.</summary>
@@ -228,14 +255,24 @@ class OpenGLRenderer : public Renderer
 {
 private:
 	unsigned int frameVAO;
-
 	unsigned int frameVBO;
+
+	unsigned int cubeVAO;
+	unsigned int cubeVBO;
+
+	Shader irradianceShader_;
 
 	///<summary>Отрисовка модели.</summary>
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
 	void drawModel(Model* model, Shader shader, Material material);
+
+	void renderCube();
+
+	///<summary>Создаёт irradiance map.</summary>
+	///<param name = 'size'>Размер.</param>
+	void drawIrradianceMap(const int size);
 
 public:
 	///<summary>Конструктор.</summary>
@@ -301,10 +338,18 @@ public:
 	void restoreViewPort();
 
 	///<summary>Создаёт текстуру.</summary>
-	unsigned int generateTexture2D();
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	unsigned int generateTexture2D(const int width, const int height);
 
 	///<summary>Создаёт float текстуру.</summary>
-	unsigned int generateTexture2D16F();
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	unsigned int generateTexture2D16F(const int width, const int height);
+
+	///<summary>Создаёт float CubeMap.</summary>
+	///<param name = 'size'>Размер.</param>
+	unsigned int generateCubeMap16F(const int size);
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры.</param>
@@ -317,6 +362,10 @@ public:
 	///<summary>Создаёт фреймбуффер.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
 	unsigned int generateFrameBuffer(const unsigned int textureID);
+
+	///<summary>Создаёт кубический фреймбуффер.</summary>
+	///<param name = 'size'>Размер.</param>
+	unsigned int generateFrameBufferCube(const int size);
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
 	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</param>
@@ -333,7 +382,31 @@ public:
 	///<summary>Возвращает указатель на окно.</summary>
 	QWindow getWindow() const;
 
+	///<summary>Задаёт ширину окна.</summary>
+	///<param name = 'width'>Ширина.</param>
+	void setWindowWidth(const int width);
+
+	///<summary>Задаёт высоту окна.</summary>
+	///<param name = 'height'>Высота.</param>
+	void setWindowHeight(const int height);
+
+	///<summary>Задаёт полноэкранный режим.</summary>
+	///<param name = 'fullScreen'>Полноэкранный режим.</param>
+	void setFullScreen(const bool fullScreen);
+
+	///<summary>Включает/отключает вертикальную синхронизацию.</summary>
+	///<param name = 'vsync'>Вертикальная инхронизация.</param>
+	void setVsync(const bool vsync);
+
+	///<summary>Задаёт отображение курсора.</summary>
+	///<param name = 'showCursor'>Отображать курсор.</param>
+	void setShowCursor(const bool showCursor);
+
 	///<summary>Задаёт имя окна.</summary>
 	///<param name = 'title'>Имя.</param>
 	void setWindowTitle(const std::string title);
+
+	///<summary>Задаёт environment map.</summary>
+	///<param name = 'ID'>Идентификатор.</param>
+	void setEnvironmentMap(const unsigned int ID);
 };

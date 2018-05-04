@@ -122,10 +122,10 @@ OpenGLRenderer::OpenGLRenderer()
 	glDepthFunc(GL_LESS);
 
 	// Отсечение граней, у которых не видно лицевую сторону
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	float vertices[] =
 	{
@@ -151,6 +151,9 @@ OpenGLRenderer::OpenGLRenderer()
 	
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	this->cubeVAO = 0;
+	this->cubeVBO = 0;
 }
 
 ///<summary>Деструктор.</summary>
@@ -159,7 +162,7 @@ OpenGLRenderer::~OpenGLRenderer()
 	glfwTerminate();
 }
 
-////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
+////////////////////////////////////////////// private-функции //////////////////////////////////////////////
 
 ///<summary>Отрисовка модели.</summary>
 ///<param name = 'model'>Модель.</param>
@@ -258,9 +261,18 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		shader.setInt(specularKeys.mapsCount, specularMapsCount);
 		shader.setInt(normalKeys.mapsCount, normalMapsCount);
 
-		glActiveTexture(GL_TEXTURE0 + pointer.size());
-		glBindTexture(GL_TEXTURE_CUBE_MAP, this->envMap_);
-		shader.setInt("envMap", pointer.size());
+		int textureFreeNumber = pointer.size();
+
+		
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
+		shader.setInt("environmentMap", textureFreeNumber);
+		textureFreeNumber++;
+		
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->irradianceMap_);
+		shader.setInt("irradianceMap", textureFreeNumber);
+		textureFreeNumber++;
 
 		glBindVertexArray(model->getMeshes()[j].getVAO());		
 		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
@@ -278,6 +290,122 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		glActiveTexture(GL_TEXTURE0);
 	}
 }
+
+void OpenGLRenderer::renderCube()
+{
+    if (this->cubeVAO == 0)
+    {
+        float vertices[] = {
+            // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+            // bottom face
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+        };
+
+        glGenVertexArrays(1, &this->cubeVAO);
+        glGenBuffers(1, &this->cubeVBO);
+
+        glBindBuffer(GL_ARRAY_BUFFER, this->cubeVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+        glBindVertexArray(cubeVAO);
+        
+		glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+        
+		glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+        
+		glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+        
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
+
+    glBindVertexArray(this->cubeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
+}
+
+///<summary>Создаёт irradiance map.</summary>
+///<param name = 'size'>Размер.</param>
+void OpenGLRenderer::drawIrradianceMap(const int size)
+{
+	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+	glm::mat4 view[] =
+	{
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	this->irradianceShader_.activate();
+	this->irradianceShader_.setMat4("projectionMatrix", projection);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
+	this->irradianceShader_.setInt("envMap", 0);
+
+	this->setViewport(0, 0, size, size);
+	this->bindFrameBuffer(this->irradianceFrameBuffer_);
+
+	for (int i = 0; i < 6; i++)
+	{
+		this->irradianceShader_.setMat4("viewMatrix", view[i]);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->irradianceMap_, 0);
+		this->clearScreen();
+
+		this->renderCube();
+	}
+
+	this->bindFrameBuffer(0);
+	this->restoreViewPort();
+}
+
+////////////////////////////////////////////// public-функции //////////////////////////////////////////////
 
 ///<summary>Отрисовка кадра во весь экран.</summary>
 ///<param name = 'shader'>Шейдер.</param>
@@ -328,21 +456,21 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	{
 		std::string name;
 
-		name = "lights[" + std::to_string(i) + "].position";
+		name = "light[" + std::to_string(i) + "].position";
 		shader.setVec3(name, lights[i]->getPosition());
 
-		name = "lights[" + std::to_string(i) + "].radius";
+		name = "light[" + std::to_string(i) + "].radius";
 		shader.setFloat(name, lights[i]->getRadius());
 
-		name = "lights[" + std::to_string(i) + "].diffuseColor";
+		name = "light[" + std::to_string(i) + "].diffuseColor";
 		diffuseColor = glm::pow(lights[i]->getDiffuseColor(), glm::vec3(gamma));
 		shader.setVec3(name, diffuseColor);
 
-		name = "lights[" + std::to_string(i) + "].specularColor";
+		name = "light[" + std::to_string(i) + "].specularColor";
 		specularColor = glm::pow(lights[i]->getSpecularColor(), glm::vec3(gamma));
 		shader.setVec3(name, specularColor);
 
-		name = "lights[" + std::to_string(i) + "].power";
+		name = "light[" + std::to_string(i) + "].power";
 		shader.setFloat(name, lights[i]->getPower());
 	}	
 
@@ -448,14 +576,16 @@ void OpenGLRenderer::restoreViewPort()
 }
 
 ///<summary>Создаёт текстуру.</summary>
-unsigned int OpenGLRenderer::generateTexture2D()
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
+unsigned int OpenGLRenderer::generateTexture2D(const int width, const int height)
 {
 	unsigned int ID;
 
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this->windowWidth_, this->windowHeight_, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -465,18 +595,43 @@ unsigned int OpenGLRenderer::generateTexture2D()
 }
 
 ///<summary>Создаёт float текстуру.</summary>
-unsigned int OpenGLRenderer::generateTexture2D16F()
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
+unsigned int OpenGLRenderer::generateTexture2D16F(const int width, const int height)
 {
 	unsigned int ID;
 
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, this->windowWidth_, this->windowHeight_, 0, GL_RGB, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return ID;
+}
+
+///<summary>Создаёт float CubeMap.</summary>
+///<param name = 'size'>Размер.</param>
+unsigned int OpenGLRenderer::generateCubeMap16F(const int size)
+{
+	unsigned int ID;
+
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, ID);
+
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, size, size, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	return ID;
 }
@@ -525,6 +680,25 @@ unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int textureID)
 	return frameBuffer;
 }
 
+///<summary>Создаёт кубический фреймбуффер.</summary>
+///<param name = 'size'>Размер.</param>
+unsigned int OpenGLRenderer::generateFrameBufferCube(const int size)
+{
+	unsigned int frameBuffer;
+	unsigned int renderBuffer;
+
+	glGenFramebuffers(1, &frameBuffer);
+	glGenRenderbuffers(1, &renderBuffer);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, size, size);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+
+	return frameBuffer;
+}
+
 ///<summary>Задаёт активный фреймбуффер.</summary>
 ///<param name = 'ID'>Идентификатор фреймбуффера.</param>
 void OpenGLRenderer::bindFrameBuffer(const unsigned int ID)
@@ -553,9 +727,63 @@ QWindow OpenGLRenderer::getWindow() const
 	return this->window_;
 }
 
+///<summary>Задаёт ширину окна.</summary>
+///<param name = 'width'>Ширина.</param>
+void OpenGLRenderer::setWindowWidth(const int width)
+{
+	//this->windowWidth_ = width;
+}
+
+///<summary>Задаёт высоту окна.</summary>
+///<param name = 'height'>Высота.</param>
+void OpenGLRenderer::setWindowHeight(const int height)
+{
+	//this->windowHeight_ = height;
+}
+
+///<summary>Задаёт полноэкранный режим.</summary>
+///<param name = 'fullScreen'>Полноэкранный режим.</param>
+void OpenGLRenderer::setFullScreen(const bool fullScreen)
+{
+	//this->isFullScreen_ = fullScreen;
+}
+
+///<summary>Включает/отключает вертикальную синхронизацию.</summary>
+///<param name = 'vsync'>Вертикальная инхронизация.</param>
+void OpenGLRenderer::setVsync(const bool vsync)
+{
+	this->isVSync_ = vsync;
+	
+	if (this->isVSync_) glfwSwapInterval(1);
+	else glfwSwapInterval(0);
+}
+
+///<summary>Задаёт отображение курсора.</summary>
+///<param name = 'showCursor'>Отображать курсор.</param>
+void OpenGLRenderer::setShowCursor(const bool showCursor)
+{
+	//this->isShowCursor_ = showCursor;
+}
+
 ///<summary>Задаёт имя окна.</summary>
 ///<param name = 'title'>Имя.</param>
 void OpenGLRenderer::setWindowTitle(const std::string title)
 {
 	glfwSetWindowTitle(this->window_.OGLwindow, title.c_str());
+}
+
+///<summary>Задаёт environment map.</summary>
+///<param name = 'ID'>Идентификатор.</param>
+void OpenGLRenderer::setEnvironmentMap(const unsigned int ID)
+{
+	this->environmentMap_ = ID;
+
+	int irradianceMapSize = 512;
+
+	this->irradianceMap_ = this->generateCubeMap16F(irradianceMapSize);
+	this->irradianceFrameBuffer_ = this->generateFrameBufferCube(irradianceMapSize);
+
+	this->irradianceShader_ = Shader("irradiance");
+
+	this->drawIrradianceMap(irradianceMapSize);
 }

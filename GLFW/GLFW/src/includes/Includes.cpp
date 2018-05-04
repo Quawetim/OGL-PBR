@@ -20,12 +20,6 @@ const std::map<TextureType, TextureKeys> mapTextureType =
 ///<summary>Размер генерируемой карты отражений.</summary>
 int reflectionsResolution = 128;
 
-///<summary>Время, прошедшее между текущим кадром и предыдущим.</summary>
-float deltaTime = 0.0;
-
-///<summary>Время, затраченное на отрисовку предыдущего кадра.</summary>
-float lastFrameTime = 0.0;
-
 ///<summary>Значение гаммы для гамма-коррекции.</summary>
 float gamma = 2.2f;
 

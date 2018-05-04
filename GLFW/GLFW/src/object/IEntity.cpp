@@ -4,7 +4,7 @@
 ///<param name = 'velocity_x'>Скорость по оси x.</param>
 ///<param name = 'velocity_y'>Скорость по оси y.</param>
 ///<param name = 'velocity_z'>Скорость по оси z.</param>
-void IEntity::move(const float velocity_x, const float velocity_y, const float velocity_z)
+void IEntity::move(float deltaTime, const float velocity_x, const float velocity_y, const float velocity_z)
 {
 	this->position_ += glm::vec3(velocity_x * deltaTime, velocity_y * deltaTime, velocity_z * deltaTime);
 	this->translationMatrix_ = glm::translate(this->position_);
@@ -13,7 +13,7 @@ void IEntity::move(const float velocity_x, const float velocity_y, const float v
 ///<summary>Вращает объект с заданной скоростью.</summary>
 ///<param name = 'angle'>Скорость поворота в градусах.</param>
 ///<param name = 'axis'>Ось вращения.</param>
-void IEntity::rotate(const double angle, const glm::vec3 axis)
+void IEntity::rotate(float deltaTime, const double angle, const glm::vec3 axis)
 {
 	this->rotationAngle_ += angle * deltaTime;
 	this->rotationAxis_ = axis;
@@ -29,7 +29,7 @@ void IEntity::rotate(const double angle, const glm::vec3 axis)
 
 ///<summary>Изменяет размер объекта с заданной скоростью.</summary>
 ///<param name = 'velocity_xyz'>Скорость изменения размера по всем осям.</param>
-void IEntity::scale(const float velocity_xyz)
+void IEntity::scale(float deltaTime, const float velocity_xyz)
 {
 	this->scaleCoeffs_ += glm::vec3(velocity_xyz * deltaTime);
 
@@ -46,7 +46,7 @@ void IEntity::scale(const float velocity_xyz)
 ///<param name = 'velocity_x'>Скорость изменения размера по X.</param>
 ///<param name = 'velocity_y'>Скорость изменения размера по Y.</param>
 ///<param name = 'velocity_z'>Скорость изменения размера по Z.</param>
-void IEntity::scale(const float velocity_x, const float velocity_y, const float velocity_z)
+void IEntity::scale(float deltaTime, const float velocity_x, const float velocity_y, const float velocity_z)
 {
 	this->scaleCoeffs_ += glm::vec3(velocity_x * deltaTime, velocity_y * deltaTime, velocity_z * deltaTime);
 

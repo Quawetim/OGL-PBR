@@ -59,6 +59,7 @@ void TestScene::init(std::vector<Model*> models)
 	light->setPosition(glm::vec3(0.0f, 0.0f, 15.0f));
 	//light->setDiffuseColor(214, 68, 86);
 	//light->setSpecularColor(214, 180, 176);
+	light->setPower(500);
 
 	this->lights_.push_back(light);
 
@@ -67,6 +68,7 @@ void TestScene::init(std::vector<Model*> models)
 	light->setPosition(glm::vec3(0.0f, 0.0f, -15.0f));
 	//light->setDiffuseColor(97, 165, 203);
 	//light->setSpecularColor(149, 192, 203);
+	light->setPower(500);
 
 	this->lights_.push_back(light);
 }
@@ -74,12 +76,15 @@ void TestScene::init(std::vector<Model*> models)
 ///<summary>Отрисовка сцены.</summary>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void TestScene::render(Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
+void TestScene::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
+	shader.setFloat("material.metallic", 0.2f);
+	shader.setFloat("material.roughness", 0.2f);
+
 	for (size_t i = 0; i < this->objects_.size(); i++)
 	{
 		renderer->drawObject(this->objects_[i], shader, this->lights_, view_matrix, camera_position);
-		this->objects_[i]->rotate(90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		this->objects_[i]->rotate(deltaTime, 90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}	
 
 	if (this->drawLights_)

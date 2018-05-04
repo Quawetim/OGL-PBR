@@ -75,7 +75,7 @@ public:
 	ICamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	virtual void handleInput() = 0;
+	virtual void handleInput(float deltaTime) = 0;
 
 	///<summary>Вычисляет и возвращает матрицу вида камеры.</summary>
     glm::mat4 getViewMatrix();
@@ -104,7 +104,7 @@ public:
 	FirstPersonCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput();
+	void handleInput(float deltaTime);
 };
  
 ///<summary>Third person camera.</summary>
@@ -127,7 +127,7 @@ public:
 	ThirdPersonCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput();
+	void handleInput(float deltaTime);
 };
 
 ///<summary>Статичная камера.</summary>
@@ -156,7 +156,7 @@ public:
 	StaticCamera(glm::vec3 position, glm::vec3 direction, glm::vec3 up);
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput();
+	void handleInput(float deltaTime);
 };
 
 ///<summary>Свободная камера.</summary>
@@ -176,5 +176,5 @@ public:
 	FreeCamera();
 
 	///<summary>Обработка клавиатуры.</summary>
-	void handleInput();
+	void handleInput(float deltaTime);
 };
