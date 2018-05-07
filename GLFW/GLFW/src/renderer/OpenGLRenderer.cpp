@@ -161,12 +161,12 @@ OpenGLRenderer::OpenGLRenderer()
 	this->debugQuadVAO = 0;
 	this->debugQuadVBO = 0;
 
-	//this->tempRenderBuffer_ = this->generateRenderBuffer(this->reflectionsResolution_, this->reflectionsResolution_);
-	//this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
+	this->tempRenderBuffer_ = this->generateRenderBuffer(256, 256);
+	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
 
-	//this->irradianceMap_ = this->generateCubeMap16F(this->reflectionsResolution_, false);
-	//this->prefilteringMap_ = this->generateCubeMap16F(this->reflectionsResolution_, true);
-	//this->brdfLutMap_ = this->generateTexture2D_RG16F(this->reflectionsResolution_, this->reflectionsResolution_);
+	this->irradianceMap_ = this->generateCubeMap16F(256, false);
+	this->prefilteringMap_ = this->generateCubeMap16F(256, true);
+	this->brdfLutMap_ = this->generateTexture2D_RG16F(256, 256);
 }
 
 ///<summary>Деструктор.</summary>
@@ -431,7 +431,7 @@ void OpenGLRenderer::generateIrradianceMap()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
 	this->irradianceShader_.setInt("envMap", 0);
 
-	this->setViewport(0, 0, this->reflectionsResolution_, this->reflectionsResolution_);
+	this->setViewport(0, 0, 256, 256);
 	this->bindFrameBuffer(this->tempFrameBuffer_);
 
 	for (int i = 0; i < 6; i++)
@@ -476,7 +476,7 @@ void OpenGLRenderer::generatePrefilteringMap()
 		float roughness = static_cast<float>(mip) / static_cast<float>(levels - 1);
 		this->prefilteringShader_.setFloat("roughness", roughness);
 
-		int mipSize = this->reflectionsResolution_ * std::pow(0.5f, mip);
+		int mipSize = 256 * std::pow(0.5f, mip);
 
 		glBindRenderbuffer(GL_RENDERBUFFER, this->tempRenderBuffer_);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipSize, mipSize);
@@ -500,7 +500,7 @@ void OpenGLRenderer::generatePrefilteringMap()
 
 void OpenGLRenderer::generateBrdfLutMap()
 {
-	int size = this->reflectionsResolution_;
+	int size = 256;
 
 	this->brdfLutShader_.activate();
 
@@ -806,8 +806,8 @@ unsigned int OpenGLRenderer::generateTexture2D_RG16F(const int width, const int 
 	glBindTexture(GL_TEXTURE_2D, ID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, 0);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

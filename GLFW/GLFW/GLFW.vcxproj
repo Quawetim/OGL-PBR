@@ -111,12 +111,14 @@
       <AdditionalDependencies>opengl32.lib;glfw3.lib;freetype271.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
-xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
-xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>rd /s /q "$(OutDir)resources"</Command>
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -157,12 +159,14 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
-xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
-xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>rd /s /q "$(OutDir)resources"</Command>
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

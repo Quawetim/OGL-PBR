@@ -5,7 +5,7 @@ out vec3 fragmentColor;
 in vec3 textureCoords;
 
 const float PI = 22.0f / 7.0f;
-const int MAX_SAMPLES = 1024;
+//const int MAX_SAMPLES = 1024;
 
 uniform samplerCube envMap;
 uniform float roughness;
@@ -48,7 +48,17 @@ vec3 ImportanceSamplingGGX(vec2 Xi, vec3 normal, float roughness)
     H.y = sin(phi) * sinTheta;
     H.z = cosTheta;
 
-    vec3 up = abs(normal.z) < 0.999f ? vec3(0.0f, 0.0f, 1.0f) : vec3(1.0f, 0.0f, 0.0f);
+    vec3 up;
+
+    if (abs(normal.z) < 0.999f)
+    {
+        up = vec3(0.0f, 0.0f, 1.0f);
+    }
+    else
+    {
+        up = vec3(1.0f, 0.0f, 0.0f);
+    }
+
     vec3 tangent = normalize(cross(up, normal));
     vec3 bitangent = cross(normal, tangent);
 
@@ -66,9 +76,9 @@ void main()
     float weight = 0.0f;
     vec3 color = vec3(0.0f);
 
-    for (int i = 0; i < MAX_SAMPLES; i++)
+    for (int i = 0; i < 512; i++)
     {
-        vec2 Xi = HammersleySequence(i, MAX_SAMPLES);
+        vec2 Xi = HammersleySequence(i, 512);
         vec3 H = ImportanceSamplingGGX(Xi, N, roughness);
         vec3 L = normalize(2.0f * dot(V, H) * H - V);
 
@@ -82,4 +92,6 @@ void main()
     }
 
     fragmentColor = color / weight;
+
+    //fragmentColor = vec3(1.0f, 0.0f, 0.0f);
 }
