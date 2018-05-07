@@ -114,8 +114,8 @@ void main()
         //vec3 albedo = vec3(1.0f, 0.71f, 0.29f);
         //vec3 albedo = vec3(0.5f, 0.0f, 0.0f);
         vec3 albedo = material.diffuseColor;
-        float metallic = 0.8f;
-        float roughness = 0.1f;
+        float metallic = 0.4f;
+        float roughness = 0.6f;
         //float metallic = material.metallic;
         //float roughness = material.roughness;
         float ambientOcclusion = 1.0f;

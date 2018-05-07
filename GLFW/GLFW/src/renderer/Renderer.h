@@ -48,8 +48,12 @@ protected:
 	///<summary>Irradiance map.</summary>
 	unsigned int irradianceMap_;
 
-	///<summary>Irradiance framebuffer.</summary>
-	unsigned int irradianceFrameBuffer_;
+	///<summary>Pre-filtering map.</summary>
+	unsigned int prefilteringMap_;
+
+	
+
+	
 
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
@@ -62,12 +66,10 @@ protected:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
 	virtual void drawModel(Model* model, Shader shader, Material material) = 0;
-
+	
 	virtual void renderCube() = 0;
 
-	///<summary>Создаёт irradiance map.</summary>
-	///<param name = 'size'>Размер.</param>
-	virtual void drawIrradianceMap(const int size) = 0;
+	
 
 public:
 	///<summary>Конструктор.</summary>
@@ -75,6 +77,21 @@ public:
 
 	///<summary>Деструктор.</summary>
 	~Renderer();
+
+	///<summary>Генерирует irradiance map.</summary>
+	virtual void generateIrradianceMap() = 0;
+
+	///<summary>Генерирует pre-filtering map.</summary>
+	virtual void generatePrefilteringMap() = 0;
+
+	virtual void generateBrdfLutMap() = 0;
+
+	unsigned int brdfLutMap_;
+
+	unsigned int tempRenderBuffer_;
+	unsigned int tempFrameBuffer_;
+
+	virtual void renderQuad() = 0;
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
@@ -102,6 +119,8 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	virtual void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position) = 0;
+
+	virtual void drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader) = 0;
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>
@@ -132,19 +151,24 @@ public:
 	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
 	virtual void restoreViewPort() = 0;
 
-	///<summary>Создаёт текстуру.</summary>
+	///<summary>Создаёт текстуру RGB.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	virtual unsigned int generateTexture2D(const int width, const int height) = 0;
+	virtual unsigned int generateTexture2D_RGB(const int width, const int height) = 0;
 
-	///<summary>Создаёт float текстуру.</summary>
+	///<summary>Создаёт текстуру RGB16F.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	virtual unsigned int generateTexture2D16F(const int width, const int height) = 0;
+	virtual unsigned int generateTexture2D_RGB16F(const int width, const int height) = 0;
+
+	///<summary>Создаёт текстуру RG16F.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	virtual unsigned int generateTexture2D_RG16F(const int width, const int height) = 0;
 
 	///<summary>Создаёт float CubeMap.</summary>
 	///<param name = 'size'>Размер.</param>
-	virtual unsigned int generateCubeMap16F(const int size) = 0;
+	virtual unsigned int generateCubeMap16F(const int size, bool generate_mipmap) = 0;
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'ID'>Идентификатор текстуры.</param>
@@ -154,13 +178,14 @@ public:
 	///<param name = 'ID'>Идентификатор текстуры.</param>
 	virtual void deleteTexture2D(const unsigned int ID) = 0;
 
+	virtual unsigned int generateRenderBuffer(const int width, const int height) = 0;
+
 	///<summary>Создаёт фреймбуффер.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
 	virtual unsigned int generateFrameBuffer(const unsigned int textureID) = 0;
 
 	///<summary>Создаёт кубический фреймбуффер.</summary>
-	///<param name = 'size'>Размер.</param>
-	virtual unsigned int generateFrameBufferCube(const int size) = 0;
+	virtual unsigned int generateFrameBufferCube(const unsigned int renderBuffer) = 0;
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
 	///<param name = 'ID'>Идентификатор фреймбуффера.</param>
@@ -260,7 +285,15 @@ private:
 	unsigned int cubeVAO;
 	unsigned int cubeVBO;
 
+	unsigned int quadVAO;
+	unsigned int quadVBO;
+
+	unsigned int debugQuadVAO;
+	unsigned int debugQuadVBO;
+
 	Shader irradianceShader_;
+	Shader prefilteringShader_;
+	Shader brdfLutShader_;
 
 	///<summary>Отрисовка модели.</summary>
 	///<param name = 'model'>Модель.</param>
@@ -270,16 +303,24 @@ private:
 
 	void renderCube();
 
-	///<summary>Создаёт irradiance map.</summary>
-	///<param name = 'size'>Размер.</param>
-	void drawIrradianceMap(const int size);
+	
 
 public:
 	///<summary>Конструктор.</summary>
 	OpenGLRenderer();
 
 	///<summary>Деструктор.</summary>
-	~OpenGLRenderer();
+	~OpenGLRenderer();	
+
+	///<summary>Генерирует irradiance map.</summary>
+	void generateIrradianceMap();
+
+	///<summary>Генерирует pre-filtering map.</summary>
+	void generatePrefilteringMap();
+
+	void generateBrdfLutMap();
+
+	void renderQuad();
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
@@ -307,6 +348,8 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position);
+
+	void drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader);
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>
@@ -337,19 +380,24 @@ public:
 	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
 	void restoreViewPort();
 
-	///<summary>Создаёт текстуру.</summary>
+	///<summary>Создаёт текстуру RGB.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	unsigned int generateTexture2D(const int width, const int height);
+	unsigned int generateTexture2D_RGB(const int width, const int height);
 
-	///<summary>Создаёт float текстуру.</summary>
+	///<summary>Создаёт текстуру RGB16F.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	unsigned int generateTexture2D16F(const int width, const int height);
+	unsigned int generateTexture2D_RGB16F(const int width, const int height);
+
+	///<summary>Создаёт текстуру RG16F.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	unsigned int generateTexture2D_RG16F(const int width, const int height);
 
 	///<summary>Создаёт float CubeMap.</summary>
 	///<param name = 'size'>Размер.</param>
-	unsigned int generateCubeMap16F(const int size);
+	unsigned int generateCubeMap16F(const int size, bool generate_mipmap);
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры.</param>
@@ -359,13 +407,14 @@ public:
 	///<param name = 'textureID'>Идентификатор текстуры.</param>
 	void deleteTexture2D(const unsigned int textureID);
 
+	unsigned int generateRenderBuffer(const int width, const int height);
+
 	///<summary>Создаёт фреймбуффер.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
 	unsigned int generateFrameBuffer(const unsigned int textureID);
 
 	///<summary>Создаёт кубический фреймбуффер.</summary>
-	///<param name = 'size'>Размер.</param>
-	unsigned int generateFrameBufferCube(const int size);
+	unsigned int generateFrameBufferCube(const unsigned int renderBuffer);
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
 	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</param>

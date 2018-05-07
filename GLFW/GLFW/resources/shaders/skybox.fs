@@ -12,7 +12,4 @@ uniform samplerCube envMap;
 void main()
 {
     fragmentColor = texture(envMap, fs_in.textureCoords).rgb;
-
-    float exposure = 2.0f;
-    //fragmentColor = vec3(1.0f) - exp(-fragmentColor * exposure);
 }

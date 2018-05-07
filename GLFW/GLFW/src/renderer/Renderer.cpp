@@ -18,7 +18,9 @@ Renderer::Renderer()
 
 	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
 
+	this->environmentMap_ = 0;
 	this->irradianceMap_ = 0;
+	this->prefilteringMap_ = 0;
 }
 
 ///<summary>Деструктор.</summary>

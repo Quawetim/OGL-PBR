@@ -127,16 +127,15 @@ OpenGLRenderer::OpenGLRenderer()
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
 	float vertices[] =
 	{
 		// positions   // textureCoords
 		-1.0f,  1.0f,  0.0f, 1.0f,
 		-1.0f, -1.0f,  0.0f, 0.0f,
-		1.0f, -1.0f,  1.0f, 0.0f,
-
-		-1.0f,  1.0f,  0.0f, 1.0f,
-		1.0f, -1.0f,  1.0f, 0.0f,
-		1.0f,  1.0f,  1.0f, 1.0f
+		1.0f,  1.0f,  1.0f, 1.0f,
+		1.0f, -1.0f,  1.0f, 0.0f
 	};
 
 	glGenVertexArrays(1, &this->frameVAO);
@@ -152,8 +151,22 @@ OpenGLRenderer::OpenGLRenderer()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
+	this->irradianceShader_ = Shader("irradiance");
+	this->prefilteringShader_ = Shader("prefiltering");
+	this->brdfLutShader_ = Shader("brdf");
+
 	this->cubeVAO = 0;
 	this->cubeVBO = 0;
+
+	this->debugQuadVAO = 0;
+	this->debugQuadVBO = 0;
+
+	//this->tempRenderBuffer_ = this->generateRenderBuffer(this->reflectionsResolution_, this->reflectionsResolution_);
+	//this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
+
+	//this->irradianceMap_ = this->generateCubeMap16F(this->reflectionsResolution_, false);
+	//this->prefilteringMap_ = this->generateCubeMap16F(this->reflectionsResolution_, true);
+	//this->brdfLutMap_ = this->generateTexture2D_RG16F(this->reflectionsResolution_, this->reflectionsResolution_);
 }
 
 ///<summary>Деструктор.</summary>
@@ -366,9 +379,39 @@ void OpenGLRenderer::renderCube()
     glBindVertexArray(0);
 }
 
-///<summary>Создаёт irradiance map.</summary>
-///<param name = 'size'>Размер.</param>
-void OpenGLRenderer::drawIrradianceMap(const int size)
+void OpenGLRenderer::renderQuad()
+{
+	if (this->quadVAO == 0)
+	{
+		float vertices[] = {
+			// positions        // texture Coords
+			-1.0f,  1.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f,
+			1.0f,  1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 0.0f,
+		};
+		// setup plane VAO
+		glGenVertexArrays(1, &this->quadVAO);
+		glGenBuffers(1, &this->quadVBO);
+		
+		glBindVertexArray(this->quadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	}
+
+	glBindVertexArray(this->quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+///<summary>Генерирует irradiance map.</summary>
+void OpenGLRenderer::generateIrradianceMap()
 {
 	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 	glm::mat4 view[] =
@@ -382,24 +425,95 @@ void OpenGLRenderer::drawIrradianceMap(const int size)
 	};
 
 	this->irradianceShader_.activate();
-	this->irradianceShader_.setMat4("projectionMatrix", projection);
+	this->irradianceShader_.setProjectionMatrix(projection);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
 	this->irradianceShader_.setInt("envMap", 0);
 
-	this->setViewport(0, 0, size, size);
-	this->bindFrameBuffer(this->irradianceFrameBuffer_);
+	this->setViewport(0, 0, this->reflectionsResolution_, this->reflectionsResolution_);
+	this->bindFrameBuffer(this->tempFrameBuffer_);
 
 	for (int i = 0; i < 6; i++)
 	{
 		this->irradianceShader_.setMat4("viewMatrix", view[i]);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->irradianceMap_, 0);
+		
 		this->clearScreen();
-
 		this->renderCube();
 	}
+
+	this->bindFrameBuffer(0);
+	this->restoreViewPort();
+}
+
+///<summary>Генерирует pre-filtering map.</summary>
+void OpenGLRenderer::generatePrefilteringMap()
+{
+	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+	glm::mat4 view[] =
+	{
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+	};
+
+	this->prefilteringShader_.activate();
+	this->prefilteringShader_.setProjectionMatrix(projection);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
+	this->prefilteringShader_.setInt("envMap", 0);
+
+	int levels = 5;
+	this->bindFrameBuffer(this->tempFrameBuffer_);
+	for (int mip = 0; mip < levels; mip++)
+	{
+		float roughness = static_cast<float>(mip) / static_cast<float>(levels - 1);
+		this->prefilteringShader_.setFloat("roughness", roughness);
+
+		int mipSize = this->reflectionsResolution_ * std::pow(0.5f, mip);
+
+		glBindRenderbuffer(GL_RENDERBUFFER, this->tempRenderBuffer_);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipSize, mipSize);
+
+		this->setViewport(0, 0, mipSize, mipSize);	
+
+		for (int i = 0; i < 6; i++)
+		{
+			this->prefilteringShader_.setMat4("viewMatrix", view[i]);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->prefilteringMap_, mip);
+			
+			this->clearScreen();
+			this->renderCube();
+		}
+	}
+
+	this->bindFrameBuffer(0);
+	this->restoreViewPort();
+}
+
+void OpenGLRenderer::generateBrdfLutMap()
+{
+	int size = this->reflectionsResolution_;
+
+	this->brdfLutShader_.activate();
+
+	this->bindFrameBuffer(this->tempFrameBuffer_);
+	glBindRenderbuffer(GL_RENDERBUFFER, this->tempRenderBuffer_);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, size, size);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->brdfLutMap_, 0);
+
+	this->setViewport(0, 0, size, size);
+	
+	this->clearScreen();
+	this->renderQuad();
 
 	this->bindFrameBuffer(0);
 	this->restoreViewPort();
@@ -414,11 +528,12 @@ void OpenGLRenderer::drawFrame(Shader shader, unsigned int frame)
 {
 	shader.activate();
 	shader.setFloat("gamma", gamma);
-
+	
+	this->bindTexture2D(frame);
 	glBindVertexArray(this->frameVAO);
-	bindTexture2D(frame);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	this->bindTexture2D(0);
 }
 
 ///<summary>Отрисовка объекта.</summary>
@@ -496,7 +611,7 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 
 	shader.setInt("envMap", 0);
 
-	glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->getEnvMapID());
+	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
 
 	glBindVertexArray(skybox->getModels()[0]->getMeshByName("skybox").getVAO());
 	glDrawElements(GL_TRIANGLES, skybox->getModels()[0]->getMeshByName("skybox").getIndicesSize(), GL_UNSIGNED_INT, 0);
@@ -531,6 +646,68 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 	glBindVertexArray(light->getModel()->getMeshByName("diffuse").getVAO());
 	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("diffuse").getIndicesSize(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+}
+
+void OpenGLRenderer::drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader)
+{
+	if (this->debugQuadVAO == 0)
+	{
+		float vertices[] =
+		{
+			// positions   // textureCoords
+			-1.0f,  1.0f,  0.0f, 1.0f,
+			-1.0f, -1.0f,  0.0f, 0.0f,			
+			1.0f,  1.0f,  1.0f, 1.0f,
+			1.0f, -1.0f,  1.0f, 0.0f
+		};
+
+		glGenVertexArrays(1, &this->debugQuadVAO);
+		glGenBuffers(1, &this->debugQuadVBO);
+
+		glBindVertexArray(this->debugQuadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, this->debugQuadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	}
+
+	glm::mat4 modelMatrix;
+	modelMatrix = glm::scale(glm::vec3(0.3f));
+	modelMatrix *= glm::translate(glm::vec3(5.0f, 2.0f, 0.0f));
+
+	float ratio = static_cast<float>(this->windowHeight_) / static_cast<float>(this->windowWidth_);
+	glm::mat4 projectionMatrix;
+
+	if (this->windowWidth_ >= this->windowHeight_) projectionMatrix = glm::ortho(-1.0f / ratio, 1.0f / ratio, -1.0f, 1.0f, -1.0f, 1.0f);
+	else projectionMatrix = glm::ortho(-1.0f, 1.0f, -1.0f * ratio, 1.0f * ratio, -1.0f, 1.0f);
+
+	glDisable(GL_DEPTH_TEST);
+
+	shader.activate();
+
+	shader.setProjectionMatrix(projectionMatrix);
+	shader.setModelMatrix(modelMatrix);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	shader.setInt("bgTexture", 0);
+
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glDisable(GL_BLEND);
+
+	glBindVertexArray(this->debugQuadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 ////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
@@ -575,10 +752,10 @@ void OpenGLRenderer::restoreViewPort()
 	glViewport(0, 0, this->windowWidth_, this->windowHeight_);
 }
 
-///<summary>Создаёт текстуру.</summary>
+///<summary>Создаёт текстуру RGB.</summary>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-unsigned int OpenGLRenderer::generateTexture2D(const int width, const int height)
+unsigned int OpenGLRenderer::generateTexture2D_RGB(const int width, const int height)
 {
 	unsigned int ID;
 
@@ -586,6 +763,9 @@ unsigned int OpenGLRenderer::generateTexture2D(const int width, const int height
 	glBindTexture(GL_TEXTURE_2D, ID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -594,10 +774,10 @@ unsigned int OpenGLRenderer::generateTexture2D(const int width, const int height
 	return ID;
 }
 
-///<summary>Создаёт float текстуру.</summary>
+///<summary>Создаёт текстуру RGB16F.</summary>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-unsigned int OpenGLRenderer::generateTexture2D16F(const int width, const int height)
+unsigned int OpenGLRenderer::generateTexture2D_RGB16F(const int width, const int height)
 {
 	unsigned int ID;
 
@@ -605,6 +785,29 @@ unsigned int OpenGLRenderer::generateTexture2D16F(const int width, const int hei
 	glBindTexture(GL_TEXTURE_2D, ID);
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return ID;
+}
+
+///<summary>Создаёт текстуру RG16F.</summary>
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
+unsigned int OpenGLRenderer::generateTexture2D_RG16F(const int width, const int height)
+{
+	unsigned int ID;
+
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, 0);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -615,7 +818,7 @@ unsigned int OpenGLRenderer::generateTexture2D16F(const int width, const int hei
 
 ///<summary>Создаёт float CubeMap.</summary>
 ///<param name = 'size'>Размер.</param>
-unsigned int OpenGLRenderer::generateCubeMap16F(const int size)
+unsigned int OpenGLRenderer::generateCubeMap16F(const int size, bool generate_mipmap)
 {
 	unsigned int ID;
 
@@ -630,7 +833,17 @@ unsigned int OpenGLRenderer::generateCubeMap16F(const int size)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	
+	if (generate_mipmap)
+	{
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	}
+	else
+	{
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);		
+	}
+
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	return ID;
@@ -648,6 +861,18 @@ void OpenGLRenderer::bindTexture2D(const unsigned int ID)
 void OpenGLRenderer::deleteTexture2D(const unsigned int ID)
 {
 	glDeleteTextures(1, &ID);
+}
+
+unsigned int OpenGLRenderer::generateRenderBuffer(const int width, const int height)
+{
+	unsigned int renderBuffer;
+
+	glGenRenderbuffers(1, &renderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
+
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+
+	return renderBuffer;
 }
 
 ///<summary>Создаёт фреймбуффер.</summary>
@@ -681,19 +906,14 @@ unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int textureID)
 }
 
 ///<summary>Создаёт кубический фреймбуффер.</summary>
-///<param name = 'size'>Размер.</param>
-unsigned int OpenGLRenderer::generateFrameBufferCube(const int size)
+unsigned int OpenGLRenderer::generateFrameBufferCube(const unsigned int renderBuffer)
 {
 	unsigned int frameBuffer;
-	unsigned int renderBuffer;
 
 	glGenFramebuffers(1, &frameBuffer);
-	glGenRenderbuffers(1, &renderBuffer);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
-
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, size, size);
+	
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
 	return frameBuffer;
@@ -776,14 +996,5 @@ void OpenGLRenderer::setWindowTitle(const std::string title)
 ///<param name = 'ID'>Идентификатор.</param>
 void OpenGLRenderer::setEnvironmentMap(const unsigned int ID)
 {
-	this->environmentMap_ = ID;
-
-	int irradianceMapSize = 512;
-
-	this->irradianceMap_ = this->generateCubeMap16F(irradianceMapSize);
-	this->irradianceFrameBuffer_ = this->generateFrameBufferCube(irradianceMapSize);
-
-	this->irradianceShader_ = Shader("irradiance");
-
-	this->drawIrradianceMap(irradianceMapSize);
+	this->environmentMap_ = ID;	
 }

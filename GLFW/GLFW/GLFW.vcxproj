@@ -201,6 +201,10 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </None>
     <None Include="resources\shaders\axes.fs" />
     <None Include="resources\shaders\axes.vs" />
+    <None Include="resources\shaders\brdf.fs" />
+    <None Include="resources\shaders\brdf.vs" />
+    <None Include="resources\shaders\gui.fs" />
+    <None Include="resources\shaders\gui.vs" />
     <None Include="resources\shaders\irradiance.fs" />
     <None Include="resources\shaders\irradiance.vs" />
     <None Include="resources\shaders\lightShader.fs" />
@@ -211,6 +215,8 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <None Include="resources\shaders\PBR.vs" />
     <None Include="resources\shaders\postProcessing.fs" />
     <None Include="resources\shaders\postProcessing.vs" />
+    <None Include="resources\shaders\prefiltering.fs" />
+    <None Include="resources\shaders\prefiltering.vs" />
     <None Include="resources\shaders\skybox.fs" />
     <None Include="resources\shaders\skybox.vs" />
   </ItemGroup>

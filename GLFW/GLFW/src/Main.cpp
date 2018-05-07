@@ -9,6 +9,12 @@
 #include "object\skybox\Skybox.h"
 #include "texture_loader\TextureLoader.h"
 
+void sleep(float seconds)
+{
+	float end = static_cast<float>(glfwGetTime()) + seconds;
+	while (glfwGetTime() < end) {};
+}
+
 #if defined(_WIN64) && defined(NDEBUG)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 #else
@@ -18,7 +24,7 @@ int main()
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
-	unsigned int frame = renderer->generateTexture2D16F(renderer->getWindowWidth(), renderer->getWindowHeight());
+	unsigned int frame = renderer->generateTexture2D_RGB16F(renderer->getWindowWidth(), renderer->getWindowHeight());
 	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
 
 	GLint ttt;
@@ -27,7 +33,7 @@ int main()
 	InputHandler inputHandler;
 	inputHandler.setEventHandling();
 
-	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////	
 
 	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   	
 
@@ -49,6 +55,7 @@ int main()
 	Shader axesShader("axes");
 	Shader skyboxShader("skybox");
 	Shader postProcessingShader("postProcessing");
+	Shader guiShader("gui");
 
 	std::vector<Model*> models;
 
@@ -66,11 +73,20 @@ int main()
 	Scene1 scene1;
 	scene1.init(models);
 
-	//unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
-	unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
+	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
+	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
 	renderer->setEnvironmentMap(environmentMap);
 	
-	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f, environmentMap));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
+	/*renderer->generateIrradianceMap();
+	sleep(0.5f);
+
+	renderer->generatePrefilteringMap();
+	sleep(0.5f);
+
+	renderer->generateBrdfLutMap();
+	sleep(0.5f);*/
+	
+	std::shared_ptr<Skybox> skybox(new Skybox(100.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
 	skybox->setRotation(-90, glm::vec3(0.0f, 1.0f, 0.0f));
 	
 	////////////////////////////////DEBUG////////////////////////////////
@@ -91,12 +107,13 @@ int main()
 		testScene.init(testModels);
 	}
 
+	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::specular);
+
 	////////////////////////////////DEBUG////////////////////////////////
 
 	renderer->setVsync(false);
 
-	float end = static_cast<float>(glfwGetTime()) + 0.1f;
-	while (glfwGetTime() < end);
+	sleep(0.5f);
 
 	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
@@ -153,6 +170,10 @@ int main()
 		// GUI
 
 		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
+
+		renderer->drawDebugQuad(renderer->brdfLutMap_, camera->getViewMatrix(), guiShader);
+
+		// Frame
 
 		renderer->bindFrameBuffer(0);
 		renderer->useDepthTesting(false);

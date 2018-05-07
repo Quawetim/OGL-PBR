@@ -168,31 +168,39 @@ void Scene1::init(std::vector<Model*> models)
 ///<param name = 'camera_position'>Позиция камеры.</param>
 void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
+	bool move = false;
+	
 	// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
 		renderer->drawObject(this->cubes_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
-	this->cubes_[0]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 1.0f, 0.0f));
-	this->cubes_[1]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[2]->rotate(deltaTime, 90.0, glm::vec3(0.0f, 0.0f, 1.0f));
-	this->cubes_[3]->rotate(deltaTime, -45.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	if (move)
+	{
+		this->cubes_[0]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		this->cubes_[1]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+		this->cubes_[2]->rotate(deltaTime, 90.0, glm::vec3(0.0f, 0.0f, 1.0f));
+		this->cubes_[3]->rotate(deltaTime, -45.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	}
 
 	// Сферы
 	for (size_t i = 0; i < cubes_.size(); i++)
 	{
 		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
 
-		if (this->decrease_)
+		if (move)
 		{
-			if (this->spheres_[i]->getScale().x > 0.5f) this->spheres_[i]->scale(deltaTime, -0.2f);
-			else this->decrease_ = false;
-		}
-		else
-		{
-			if (this->spheres_[i]->getScale().x < 1.0f) this->spheres_[i]->scale(deltaTime, 0.2f);
-			else this->decrease_ = true;
+			if (this->decrease_)
+			{
+				if (this->spheres_[i]->getScale().x > 0.8f) this->spheres_[i]->scale(deltaTime, -0.2f);
+				else this->decrease_ = false;
+			}
+			else
+			{
+				if (this->spheres_[i]->getScale().x < 1.0f) this->spheres_[i]->scale(deltaTime, 0.2f);
+				else this->decrease_ = true;
+			}
 		}
 	}
 
@@ -202,7 +210,8 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
 		renderer->drawObject(this->cylinders_[i], shader, this->lights_, view_matrix, camera_position);
-		this->cylinders_[i]->rotate(deltaTime, 10.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		
+		if (move) this->cylinders_[i]->rotate(deltaTime, 10.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
 	if (this->drawLights_)
