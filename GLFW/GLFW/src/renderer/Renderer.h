@@ -302,7 +302,6 @@ private:
 	void drawModel(Model* model, Shader shader, Material material);
 
 	void renderCube();
-
 	
 
 public:

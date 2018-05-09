@@ -73,17 +73,14 @@ int main()
 	Scene1 scene1;
 	scene1.init(models);
 
-	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
-	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
+	//unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
+	unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
 	renderer->setEnvironmentMap(environmentMap);
 	
-	renderer->generateIrradianceMap();
+	//renderer->generateIrradianceMap();
 	//sleep(0.5f);
 
-	renderer->generatePrefilteringMap();
-	//sleep(0.5f);
-
-	renderer->generateBrdfLutMap();
+	//renderer->generatePrefilteringMap();
 	//sleep(0.5f);
 	
 	std::shared_ptr<Skybox> skybox(new Skybox(100.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
@@ -126,13 +123,13 @@ int main()
 	int frames = 0;
 
     logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop.");
-
+	
 	while (!renderer->quit())
 	//while (frames < 1)
 	{
 		currentFrameTime = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrameTime - lastFrameTime;
-		lastFrameTime = currentFrameTime;
+		lastFrameTime = currentFrameTime;		
 
 		fps++;
 
@@ -171,7 +168,7 @@ int main()
 
 		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
 
-		//renderer->drawDebugQuad(renderer->brdfLutMap_, camera->getViewMatrix(), guiShader);
+		renderer->drawDebugQuad(renderer->brdfLutMap_, camera->getViewMatrix(), guiShader);
 
 		// Frame
 

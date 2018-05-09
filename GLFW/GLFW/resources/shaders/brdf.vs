@@ -1,6 +1,6 @@
 #version 430 core
 
-layout (location = 0) in vec2 vPosition;
+layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec2 vTextureCoords;
 
 out VS_OUT
@@ -10,6 +10,6 @@ out VS_OUT
 
 void main()
 {	    
-	gl_Position = vec4(vPosition, 0.0f, 1.0f);
+	gl_Position = vec4(vPosition, 1.0f);
     vs_out.textureCoords = vTextureCoords;
 }

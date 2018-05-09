@@ -167,6 +167,8 @@ OpenGLRenderer::OpenGLRenderer()
 	this->irradianceMap_ = this->generateCubeMap16F(256, false);
 	this->prefilteringMap_ = this->generateCubeMap16F(256, true);
 	this->brdfLutMap_ = this->generateTexture2D_RG16F(256, 256);
+
+	this->generateBrdfLutMap();
 }
 
 ///<summary>Деструктор.</summary>
@@ -385,10 +387,10 @@ void OpenGLRenderer::renderQuad()
 	{
 		float vertices[] = {
 			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f,
-			1.0f,  1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 		};
 		// setup plane VAO
 		glGenVertexArrays(1, &this->quadVAO);
@@ -396,13 +398,13 @@ void OpenGLRenderer::renderQuad()
 		
 		glBindVertexArray(this->quadVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 		
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 		
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	}
 
 	glBindVertexArray(this->quadVAO);

@@ -7,8 +7,8 @@ in VS_OUT
 
 out vec2 fragmentColor;
 
-const float PI = 22.0f / 7.0f;
-const int MAX_SAMPLES = 1024;
+const float PI = 3.14159265359f;
+//const int MAX_SAMPLES = 1024;
 
 float computeSchlickBeckmannApproximation(vec3 normal, vec3 view_direction, float roughness)
 {
@@ -72,9 +72,9 @@ vec3 ImportanceSamplingGGX(vec2 Xi, vec3 normal, float roughness)
     vec3 tangent = normalize(cross(up, normal));
     vec3 bitangent = cross(normal, tangent);
 
-    vec3 sampledVector = normalize(tangent * H.x + bitangent * H.y + normal * H.z);
+    vec3 sampledVector = tangent * H.x + bitangent * H.y + normal * H.z;
     
-    return sampledVector;
+    return normalize(sampledVector);
 }
 
 vec2 computeBRDF(float NV, float roughness)
@@ -87,11 +87,11 @@ vec2 computeBRDF(float NV, float roughness)
     float A = 0.0f;
     float B = 0.0f;
 
-    vec3 N = vec3(0.0f,0.0f, 1.0f);
+    vec3 N = vec3(0.0f, 0.0f, 1.0f);
 
-    for (int i = 0; i < MAX_SAMPLES; i++)
+    for (int i = 0; i < 1024; i++)
     {
-        vec2 Xi = HammersleySequence(i, MAX_SAMPLES);
+        vec2 Xi = HammersleySequence(i, 1024);
         vec3 H = ImportanceSamplingGGX(Xi, N, roughness);
         vec3 L = normalize(2.0f * dot(V, H) * H - V);
 
@@ -118,5 +118,8 @@ vec2 computeBRDF(float NV, float roughness)
 
 void main()
 {	
-    fragmentColor = computeBRDF(fs_in.textureCoords.x, fs_in.textureCoords.y);
+    //fragmentColor = computeBRDF(fs_in.textureCoords.x, fs_in.textureCoords.y);
+    vec2 color = computeBRDF(fs_in.textureCoords.x, fs_in.textureCoords.y);
+    fragmentColor.r = color.r;
+    fragmentColor.g = color.g;
 }
