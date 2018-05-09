@@ -48,8 +48,7 @@ protected:
 	///<summary>Irradiance map.</summary>
 	unsigned int irradianceMap_;
 
-	///<summary>Pre-filtering map.</summary>
-	unsigned int prefilteredMap_;
+	
 
 	
 
@@ -92,6 +91,9 @@ public:
 	unsigned int tempFrameBuffer_;
 
 	virtual void renderQuad() = 0;
+
+	///<summary>Pre-filtering map.</summary>
+	unsigned int prefilteredMap_;
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 

@@ -7,7 +7,7 @@ in VS_OUT
 
 out vec2 fragmentColor;
 
-const float PI = 3.14159265359f;
+const float PI = 22.0f / 7.0f;
 const int MAX_SAMPLES = 1024;
 
 float computeSchlickBeckmannApproximation(vec3 normal, vec3 view_direction, float roughness)

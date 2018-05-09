@@ -165,7 +165,7 @@ OpenGLRenderer::OpenGLRenderer()
 	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
 
 	this->irradianceMap_ = this->generateCubeMap16F(256, false);
-	this->prefilteredMap_ = this->generateCubeMap16F(256, true);
+	this->prefilteredMap_ = this->generateCubeMap16F(512, true);
 	this->brdfLutMap_ = this->generateTexture2D_RG16F(256, 256);
 
 	this->generateBrdfLutMap();
@@ -277,12 +277,6 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		shader.setInt(normalKeys.mapsCount, normalMapsCount);
 
 		int textureFreeNumber = pointer.size();
-
-		
-		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
-		shader.setInt("environmentMap", textureFreeNumber);
-		textureFreeNumber++;
 		
 		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this->irradianceMap_);
@@ -425,6 +419,8 @@ void OpenGLRenderer::renderQuad()
 ///<summary>Генерирует irradiance map.</summary>
 void OpenGLRenderer::generateIrradianceMap()
 {
+	int size = 256;
+
 	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 	glm::mat4 view[] =
 	{
@@ -443,7 +439,7 @@ void OpenGLRenderer::generateIrradianceMap()
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
 	this->irradianceShader_.setInt("envMap", 0);
 
-	this->setViewport(0, 0, 256, 256);
+	this->setViewport(0, 0, size, size);
 	this->bindFrameBuffer(this->tempFrameBuffer_);
 
 	for (int i = 0; i < 6; i++)
@@ -463,6 +459,8 @@ void OpenGLRenderer::generateIrradianceMap()
 ///<summary>Генерирует pre-filtered map.</summary>
 void OpenGLRenderer::generatePrefilteredMap()
 {
+	int size = 512;
+
 	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 	glm::mat4 view[] =
 	{
@@ -488,7 +486,7 @@ void OpenGLRenderer::generatePrefilteredMap()
 		float roughness = static_cast<float>(mip) / static_cast<float>(levels - 1);
 		this->prefilteringShader_.setFloat("roughness", roughness);
 
-		int mipSize = 256 * std::pow(0.5f, mip);
+		int mipSize = static_cast<int>(size * std::pow(0.5f, mip));
 
 		glBindRenderbuffer(GL_RENDERBUFFER, this->tempRenderBuffer_);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipSize, mipSize);
@@ -560,16 +558,11 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	shader.setVec3("cameraPosition", camera_position);	
 
 	// Push material params
-	glm::vec3 ambientColor = glm::pow(object->getMaterial().getAmbientColor(), glm::vec3(gamma));
-	glm::vec3 diffuseColor = glm::pow(object->getMaterial().getDiffuseColor(), glm::vec3(gamma));
-	glm::vec3 specularColor = glm::pow(object->getMaterial().getSpecularColor(), glm::vec3(gamma));
+	glm::vec3 albedo = glm::pow(object->getMaterial().getAlbedo(), glm::vec3(gamma));
 
-	shader.setVec3("material.ambientColor", ambientColor);
-	shader.setVec3("material.diffuseColor", diffuseColor);
-	shader.setVec3("material.specularColor", specularColor);
-	shader.setFloat("material.shininess", object->getMaterial().getShininess());	
-	shader.setFloat("material.reflectiveIndex", object->getMaterial().getReflectiveIndex());
-	shader.setFloat("material.refractiveIndex", object->getMaterial().getRefractiveIndex());
+	shader.setVec3("material.albedo", albedo);
+	shader.setFloat("material.metallic", object->getMaterial().getMetallic());	
+	shader.setFloat("material.smoothness", object->getMaterial().getSmoothness());
 
 	// Push texture flags
 	shader.setBool("useDiffuseMaps", false);
@@ -590,11 +583,11 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 		shader.setFloat(name, lights[i]->getRadius());
 
 		name = "light[" + std::to_string(i) + "].diffuseColor";
-		diffuseColor = glm::pow(lights[i]->getDiffuseColor(), glm::vec3(gamma));
+		glm::vec3 diffuseColor = glm::pow(lights[i]->getDiffuseColor(), glm::vec3(gamma));
 		shader.setVec3(name, diffuseColor);
 
 		name = "light[" + std::to_string(i) + "].specularColor";
-		specularColor = glm::pow(lights[i]->getSpecularColor(), glm::vec3(gamma));
+		glm::vec3 specularColor = glm::pow(lights[i]->getSpecularColor(), glm::vec3(gamma));
 		shader.setVec3(name, specularColor);
 
 		name = "light[" + std::to_string(i) + "].power";

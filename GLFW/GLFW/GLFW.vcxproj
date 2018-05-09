@@ -241,6 +241,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\renderer\OpenGLRenderer.cpp" />
     <ClCompile Include="src\renderer\Renderer.cpp" />
     <ClCompile Include="src\scene\Scene1.cpp" />
+    <ClCompile Include="src\scene\Scene2.cpp" />
     <ClCompile Include="src\scene\TestScene.cpp" />
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\stb_image\stb_image.cpp" />
@@ -263,6 +264,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\renderer\Renderer.h" />
     <ClInclude Include="src\scene\IScene.h" />
     <ClInclude Include="src\scene\Scene1.h" />
+    <ClInclude Include="src\scene\Scene2.h" />
     <ClInclude Include="src\scene\TestScene.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\texture_loader\TextureLoader.h" />

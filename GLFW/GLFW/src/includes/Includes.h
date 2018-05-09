@@ -162,26 +162,17 @@ public:
 class Material
 {
 private:
-	///<summary>Ambient цвет.</summary>
-	glm::vec3 ambientColor_;
-
-	///<summary>Diffuse цвет.</summary>
-	glm::vec3 diffuseColor_;
-
-	///<summary>Specular цвет.</summary>
-	glm::vec3 specularColor_;
+	///<summary>Albedo.</summary>
+	glm::vec3 albedo_;
 
 	///<summary>Текстуры.</summary>
 	std::vector<Texture> textures_;
 
-	///<summary>Сила (яркость) блика.</summary>
-	float shininess_;
+	///<summary>Металличность поверхности.</summary>
+	float metallic_;
 
-	///<summary>Индекс преломления.</summary>
-	float refractiveIndex_;
-
-	///<summary>Индекс отражения.</summary>
-	float reflectiveIndex_;
+	///<summary>Гладкость поверхности.</summary>
+	float smoothness_;
 
 public:
 	///<summary>Конструктор.</summary>
@@ -193,57 +184,36 @@ public:
 	///<summary>Сброс к дефолным значениям.</summary>
 	void setDefault();
 
-	///<summary>Задаёт ambient цвет в RGB формате.</summary>
+	///<summary>Задаёт альбедо в RGB формате.</summary>
 	///<param name = 'red'>Красная компонента цвета.</param>
 	///<param name = 'green'>Зелёная компонента цвета.</param>
 	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+	void setAlbedo(const unsigned char red, const unsigned char green, const unsigned char blue);
 
-	///<summary>Задаёт diffuse цвет в RGB формате.</summary>
-	///<param name = 'red'>Красная компонента цвета.</param>
-	///<param name = 'green'>Зелёная компонента цвета.</param>
-	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+	///<summary>Задаёт альбедо через вектор.</summary>
+	///<param name = 'color'>Цвет.</param>
+	void setAlbedo(const glm::vec3 color);
 
-	///<summary>Задаёт specular цвет в RGB формате.</summary>
-	///<param name = 'red'>Красная компонента цвета.</param>
-	///<param name = 'green'>Зелёная компонента цвета.</param>
-	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue);
+	///<summary>Задаёт металличность поверхности.</summary>
+	///<param name = 'metallic'>Металличность.</param>
+	void setMetallic(const float metallic);
 
-	///<summary>Задаёт силу (яркость) блика.</summary>
-	///<param name = 'shininess'>Значение.</param>
-	void setShininess(const float shininess);
-
-	///<summary>Задаёт индекс отражения.</summary>
-	///<param name = 'reflectiveIndex'>Индекс отражения.</param>
-	void setReflectiveIndex(const float reflectiveIndex);
-
-	///<summary>Задаёт индекс преломления.</summary>
-	///<param name = 'refractiveIndex'>Индекс преломления.</param>
-	void setRefractiveIndex(const float refractiveIndex);
+	///<summary>Задаёт гладкость поверхности.</summary>
+	///<param name = 'smoothness'>Гладкость.</param>
+	void setSmoothness(const float smoothness);
 
 	///<summary>Задаёт текстуру.</summary>
 	///<param name = 'texture'>Текстура.</param>
 	void addTexture(Texture texture);
 
-	///<summary>Возвращает ambient цвет в RGB формате.</summary>
-	glm::vec3 getAmbientColor() const;
+	///<summary>Возвращает альбедо в RGB формате.</summary>
+	glm::vec3 getAlbedo() const;
 
-	///<summary>Возвращает diffuse цвет в RGB формате.</summary>
-	glm::vec3 getDiffuseColor() const;
+	///<summary>Возвращает металличность поверхности.</summary>
+	float getMetallic() const;
 
-	///<summary>Возвращает specular цвет в RGB формате.</summary>
-	glm::vec3 getSpecularColor() const;
-
-	///<summary>Возвращает силу (яркость) блика.</summary>
-	float getShininess() const;
-
-	///<summary>Возвращает индекс отражения.</summary>
-	float getReflectiveIndex() const;
-
-	///<summary>Возвращает индекс преломления.</summary>
-	float getRefractiveIndex() const;
+	///<summary>Возвращает гладкость поверхности.</summary>
+	float getSmoothness() const;
 
 	///<summary>Возвращает список текстур.</summary>
 	std::vector<Texture> getTextures() const;

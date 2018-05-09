@@ -5,15 +5,9 @@
 
 struct Material
 {
-    vec3 ambientColor;
-    vec3 diffuseColor;
-    vec3 specularColor;
-    float shininess;
-    float refractiveIndex;
-    float reflectiveIndex;
-
+    vec3 albedo;
     float metallic;
-    float roughness;    
+    float smoothness;    
 };
 
 struct Light
@@ -43,6 +37,7 @@ in VS_OUT
 out vec4 fragmentColor;
 
 const float PI = 22.0f / 7.0f;
+const float MAX_REFLECTION_LOD = 4.0f;
 
 uniform Material material;
 
@@ -61,7 +56,6 @@ uniform sampler2D normalMaps[MAX_MAPS];
 uniform int lightsCount;
 uniform Light light[MAX_LIGHTS];
 
-uniform samplerCube environmentMap;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilteredMap;
 uniform sampler2D brdfLutMap;
@@ -110,6 +104,27 @@ float computeSmithGS(vec3 normal, vec3 view_direction, vec3 light_direction, flo
     return G1 * G2;
 }
 
+float computeAmbientOcclusion(vec3 fragment_position, vec3 normal, vec3 view_direction)
+{   
+    float total = 0.0f;
+    float ao = 0.0f;
+ 
+    for (int i = 0; i < 16; i ++)
+    {
+        float cosTheta = dot(normalize(view_direction), normal);
+ 
+        if (cosTheta > 0.01f && dot(view_direction, view_direction) < 100.0f)
+        {
+            ao += sin(2.0f * acos(cosTheta));
+            total += 1.0f;
+        }
+    }
+ 
+    ao = 1.0f - ao / (2.0f * total + 0.01f);
+
+    return ao;
+}
+
 void main()
 {
     const bool useLighting = true;
@@ -118,19 +133,16 @@ void main()
 
     if (useLighting)
     {
-        //vec3 albedo = vec3(1.0f, 0.71f, 0.29f);
-        //vec3 albedo = vec3(0.5f, 0.0f, 0.0f);
-        vec3 albedo = material.diffuseColor;
-        //float metallic = 0.9f;
-        //float roughness = 0.1f;
+        vec3 albedo = material.albedo;
         float metallic = material.metallic;
-        float roughness = material.roughness;
-        float ambientOcclusion = 1.0f;
-
+        float roughness = max(1.0f - material.smoothness, 0.01f);
+               
         vec3 normal = normalize(fs_in.fragmentNormal);
         vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
         vec3 reflectionDirection = reflect(-viewDirection, normal);
         float w0 = max(dot(normal, viewDirection), 0.0f);
+
+        float ambientOcclusion = computeAmbientOcclusion(fs_in.fragmentPosition, normal, viewDirection);
 
         vec3 R0 = vec3(0.04f);
         R0 = mix(R0, albedo, metallic);
@@ -143,9 +155,16 @@ void main()
             vec3 lightDirection = normalize(light[i].position - fs_in.fragmentPosition);
             vec3 halfWay = normalize(viewDirection + lightDirection);
 
-            float dist = length(light[i].position - fs_in.fragmentPosition);
-            float attenuation = 1.0f / (dist * dist);
-            vec3 radiance = light[i].diffuseColor * light[i].power * attenuation;          
+            float distanceFromLight = length(light[i].position - fs_in.fragmentPosition);
+            
+            // Atenuation
+            float constant_factor = 1.0f; 
+            float linear_factor = 2.0 / light[i].radius;
+            float quadratic_factor = 1.0 / (light[i].radius * light[i].radius);
+
+            float attenuation = 1.0f / (constant_factor + (linear_factor * distanceFromLight) + (quadratic_factor * distanceFromLight * distanceFromLight));            
+
+            vec3 radiance = light[i].diffuseColor * light[i].power * attenuation;    
 
             // Cook-Torrance BRDF
 
@@ -165,8 +184,7 @@ void main()
             vec3 specular = num / max(denom, 0.01f);
 
             vec3 ks = R;
-            vec3 kd = vec3(1.0f) - ks;
-            kd *= 1.0f - metallic;
+            vec3 kd = (1.0f - ks) * (1.0f - metallic);
 
             L0 += (kd * albedo / PI + specular) * radiance * wi;
         }
@@ -178,8 +196,7 @@ void main()
 
         vec3 irradiance = texture(irradianceMap, normal).rgb;
         vec3 diffuseColor = irradiance * albedo;
-
-        const float MAX_REFLECTION_LOD = 4.0f;
+        
         vec3 prefilteredColor = textureLod(prefilteredMap, reflectionDirection, roughness * MAX_REFLECTION_LOD).rgb;
         vec2 BRDF = texture(brdfLutMap, vec2(cosTheta, roughness)).rg;
         
@@ -188,16 +205,6 @@ void main()
         vec3 ambientColor = (kd * diffuseColor + specularColor) * ambientOcclusion;
 
         fragmentColor.rgb = ambientColor + L0;
-
-        //vec3 ks = computeSchlickApproximation(viewDirection, normal, R0);
-        //vec3 kd = 1.0f - ks;
-        //kd *= 1.0f - metallic;
-
-        //vec3 irradiance = texture(irradianceMap, normal).rgb;
-        //vec3 diffuseColor = irradiance * albedo;
-        //vec3 ambientColor = kd * diffuseColor * ambientOcclusion;
-
-        //fragmentColor.rgb = ambientColor + L0;
     }
     else
     {
@@ -212,7 +219,7 @@ void main()
         }
         else
         {
-            fragmentColor.rgb = material.diffuseColor;
+            fragmentColor.rgb = material.albedo;
         }       
     }
 }

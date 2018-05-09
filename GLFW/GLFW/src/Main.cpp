@@ -4,6 +4,7 @@
 #include "object\Object.h"
 #include "scene\TestScene.h"
 #include "scene\Scene1.h"
+#include "scene\Scene2.h"
 #include "object\coordinate_axes\CoordinateAxes.h"
 #include "camera\ICamera.h"
 #include "object\skybox\Skybox.h"
@@ -73,6 +74,9 @@ int main()
 	Scene1 scene1;
 	scene1.init(models);
 
+	Scene2 scene2;
+	scene2.init(models);
+
 	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
 	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
 	renderer->setEnvironmentMap(environmentMap);
@@ -80,7 +84,7 @@ int main()
 	renderer->generateIrradianceMap();
 	renderer->generatePrefilteredMap();
 	
-	std::shared_ptr<Skybox> skybox(new Skybox(100.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
+	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
 	skybox->setRotation(-90, glm::vec3(0.0f, 1.0f, 0.0f));
 	
 	////////////////////////////////DEBUG////////////////////////////////
@@ -153,11 +157,9 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		if (testSceneEnabled) testScene.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		else
-		{			
-			scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());			
-		}
+		//testScene.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		//scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 

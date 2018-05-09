@@ -79,10 +79,9 @@ std::string Texture::getName() const
 
 ///<summary>Конструктор.
 ///<para>Значения по-умолчанию:</para>
-///<para>ambient = (0.05, 0.05, 0.05)</para>
-///<para>diffuse = (0.5, 0.5, 0.5)</para>
-///<para>specular = (0.7, 0.7, 0.7)</para>
-///<para>shininess = 8</para>
+///<para>albedo = (0.5, 0.5, 0.5)</para>
+///<para>metallic = 0</para>
+///<para>smoothness = 0</para>
 ///</summary>
 Material::Material()
 {
@@ -99,21 +98,16 @@ Material::~Material()
 }
 
 ///<summary>Сброс к дефолным значениям:
-///<para>ambient = (0.05, 0.05, 0.05)</para>
-///<para>diffuse = (0.5, 0.5, 0.5)</para>
-///<para>specular = (0.7, 0.7, 0.7)</para>
-///<para>shininess = 8</para>
+///<para>albedo = (0.5, 0.5, 0.5)</para>
+///<para>metallic = 0</para>
+///<para>smoothness = 0</para>
 ///</summary>
 void Material::setDefault()
 {
-	this->ambientColor_ = glm::vec3(0.05f, 0.05f, 0.05f);
-	this->diffuseColor_ = glm::vec3(0.5f, 0.5f, 0.5f);
-	this->specularColor_ = glm::vec3(0.7f, 0.7f, 0.7f);
+	this->albedo_ = glm::vec3(0.5f, 0.5f, 0.5f);
 
-	this->shininess_ = 128.0f;
-
-	this->reflectiveIndex_ = 0.0f;
-	this->refractiveIndex_ = 0.0f;	
+	this->metallic_ = 0.0f;
+	this->smoothness_ = 0.0f;
 	
 	if (this->textures_.size() > 0)
 	{
@@ -122,85 +116,43 @@ void Material::setDefault()
 	}
 }
 
-///<summary>Задаёт ambient цвет в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Material::setAmbientColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+///<summary>Задаёт альбедо в RGB формате.</summary>
+///<param name = 'red'>Красная компонента цвета (0 - 255).</param>
+///<param name = 'green'>Зелёная компонента цвета (0 - 255).</param>
+///<param name = 'blue'>Синяя компонента цвета (0 - 255).</param>
+void Material::setAlbedo(const unsigned char red, const unsigned char green, const unsigned char blue)
 {
-	this->ambientColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->albedo_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
 }
 
-///<summary>Задаёт diffuse цвет в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Material::setDiffuseColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+///<summary>Задаёт альбедо через вектор.</summary>
+///<param name = 'color'>Цвет (0 - 1).</param>
+void Material::setAlbedo(const glm::vec3 color)
 {
-	this->diffuseColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->albedo_ = color;
 }
 
-///<summary>Задаёт specular цвет в RGB формате.</summary>
-///<param name = 'red'>Красная компонента цвета.</param>
-///<param name = 'green'>Зелёная компонента цвета.</param>
-///<param name = 'blue'>Синяя компонента цвета.</param>
-void Material::setSpecularColor(const unsigned char red, const unsigned char green, const unsigned char blue)
+///<summary>Задаёт металличность поверхности.</summary>
+///<param name = 'metallic'>Металличность.</param>
+void Material::setMetallic(const float metallic)
 {
-	this->specularColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
-}
-
-///<summary>Задаёт силу (яркость) блика.</summary>
-///<param name = 'shininess'>Значение.</param>
-void Material::setShininess(const float shininess)
-{
-	this->shininess_ = shininess;
-}
-
-///<summary>Задаёт индекс отражения.</summary>
-///<param name = 'reflectiveIndex'>Индекс отражения.</param>
-void Material::setReflectiveIndex(const float reflectiveIndex)
-{
-	if (reflectiveIndex < 0.0f)
-	{
-		std::string msg = "Reflective index < 0.0 (" + std::to_string(reflectiveIndex) + "). Set to 0.0.";
-		logger.log(__FUNCTION__, ErrorType::warning, msg);
-
-		this->reflectiveIndex_ = 0.0f;
-	}
+	if (metallic > 1.0f) this->metallic_ = 1.0f;
 	else
 	{
-		if (reflectiveIndex > 1.0f)
-		{
-			std::string msg = "Reflective index > 1.0 (" + std::to_string(reflectiveIndex) + "). Set to 1.0.";
-			logger.log(__FUNCTION__, ErrorType::warning, msg);
-
-			this->reflectiveIndex_ = 1.0f;
-		}
-		else this->reflectiveIndex_ = reflectiveIndex;
-	}
+		if (metallic < 0.0f) this->metallic_ = 0.0f;
+		else this->metallic_ = metallic;
+	}	
 }
 
-///<summary>Задаёт индекс преломления.</summary>
-///<param name = 'refractiveIndex'>Индекс преломления.</param>
-void Material::setRefractiveIndex(const float refractiveIndex)
+///<summary>Задаёт гладкость поверхности.</summary>
+///<param name = 'smoothness'>Гладкость.</param>
+void Material::setSmoothness(const float smoothness)
 {
-	if (refractiveIndex < 0.0f)
-	{
-		std::string msg = "Refractive index < 0.0 (" + std::to_string(refractiveIndex) + "). Set to 0.0.";
-		logger.log(__FUNCTION__, ErrorType::warning, msg);
-
-		this->refractiveIndex_ = 0.0f;
-	}
+	if (smoothness > 1.0f) this->smoothness_ = 1.0f;
 	else
 	{
-		if (refractiveIndex > 4.05f)
-		{
-			std::string msg = "Refractive index > 4.05 (" + std::to_string(refractiveIndex) + "). Set to 4.05.";
-			logger.log(__FUNCTION__, ErrorType::warning, msg);
-
-			this->refractiveIndex_ = 4.05f;
-		}
-		else this->refractiveIndex_ = refractiveIndex;
+		if (smoothness < 0.0f) this->smoothness_ = 0.0f;
+		else this->smoothness_ = smoothness;
 	}
 }
 
@@ -211,40 +163,22 @@ void Material::addTexture(Texture texture)
 	this->textures_.push_back(texture);
 }
 
-///<summary>Возвращает ambient цвет в RGB формате.</summary>
-glm::vec3 Material::getAmbientColor() const
+///<summary>Возвращает альбедо в RGB формате.</summary>
+glm::vec3 Material::getAlbedo() const
 {
-	return this->ambientColor_;
+	return this->albedo_;
 }
 
-///<summary>Возвращает diffuse цвет в RGB формате.</summary>
-glm::vec3 Material::getDiffuseColor() const
+///<summary>Возвращает металличность поверхности.</summary>
+float Material::getMetallic() const
 {
-	return this->diffuseColor_;
+	return this->metallic_;
 }
 
-///<summary>Возвращает specular цвет в RGB формате.</summary>
-glm::vec3 Material::getSpecularColor() const
+///<summary>Возвращает гладкость поверхности.</summary>
+float Material::getSmoothness() const
 {
-	return this->specularColor_;
-}
-
-///<summary>Возвращает силу (яркость) блика.</summary>
-float Material::getShininess() const
-{
-	return this->shininess_;
-}
-
-///<summary>Возвращает индекс отражения.</summary>
-float Material::getReflectiveIndex() const
-{
-	return this->reflectiveIndex_;
-}
-
-///<summary>Возвращает индекс преломления.</summary>
-float Material::getRefractiveIndex() const
-{
-	return this->refractiveIndex_;
+	return this->smoothness_;
 }
 
 ///<summary>Возвращает список текстур.</summary>

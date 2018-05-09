@@ -46,8 +46,7 @@ void TestScene::init(std::vector<Model*> models)
 	this->objects_[1]->setScale(glm::vec3(0.04f));
 
 	Material material;
-	material.setDiffuseColor(110, 16, 7);
-	material.setSpecularColor(156, 80, 73);
+	material.setAlbedo(110, 16, 7);
 
 	this->objects_[1]->setMaterial(material);
 

@@ -65,20 +65,22 @@ void Scene1::init(std::vector<Model*> models)
 	//  убы
 	texture = Texture("resources/textures/batman_specular.bmp", TextureType::specular);
 	material.addTexture(texture);
-	material.setDiffuseColor(130, 0, 72);
-	material.setReflectiveIndex(1.0f);
+	material.setAlbedo(255, 226, 155);
+	material.setMetallic(1.0f);
+	material.setSmoothness(1.0f);
 	this->cubes_[0]->setScale(glm::vec3(0.5f));
 	this->cubes_[0]->setMaterial(material);
 	material.setDefault();
 
-	material.setDiffuseColor(82, 196, 199);
-	material.setReflectiveIndex(1.0f);
+	material.setAlbedo(255, 255, 255);
+	material.setMetallic(1.0f);
+	material.setSmoothness(1.0f);
 	this->cubes_[1]->setMaterial(material);
 	material.setDefault();
 
-	material.setDiffuseColor(155, 97, 186);
-	material.setRefractiveIndex(1.52f);
-	material.setReflectiveIndex(0.5f);
+	material.setAlbedo(155, 97, 186);
+	material.setMetallic(0.3f);
+	material.setSmoothness(0.3f);
 	this->cubes_[2]->setMaterial(material);
 	material.setDefault();
 
@@ -88,23 +90,27 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick1/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
+	material.setMetallic(0.0f);
+	material.setSmoothness(0.0f);
 	this->cubes_[3]->setMaterial(material);
 	material.setDefault();
 
 	// —феры
-	material.setDiffuseColor(99, 241, 137);
-	material.setReflectiveIndex(0.1f);
+	material.setAlbedo(255, 226, 155);
+	material.setMetallic(1.0f);
+	material.setSmoothness(1.0f);
 	this->spheres_[0]->setMaterial(material);
 	material.setDefault();
 
-	material.setDiffuseColor(151, 168, 78);
-	material.setReflectiveIndex(1.0f);
+	material.setAlbedo(255, 255, 255);
+	material.setMetallic(1.0f);
+	material.setSmoothness(1.0f);
 	this->spheres_[1]->setMaterial(material);
 	material.setDefault();
 
-	material.setDiffuseColor(206, 120, 96);
-	material.setRefractiveIndex(1.52f);
-	material.setReflectiveIndex(0.5f);
+	material.setAlbedo(206, 120, 96);
+	material.setMetallic(0.6f);
+	material.setSmoothness(0.6f);
 	this->spheres_[2]->setMaterial(material);
 	material.setDefault();
 
@@ -114,23 +120,27 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick2/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
+	material.setMetallic(0.0f);
+	material.setSmoothness(0.0f);
 	this->spheres_[3]->setMaterial(material);
 	material.setDefault();
 
 	// ÷илиндры
-	material.setDiffuseColor(18, 158, 140);
-	material.setReflectiveIndex(0.1f);
+	material.setAlbedo(255, 226, 155);
+	material.setMetallic(1.0f);
+	material.setSmoothness(1.0f);
 	this->cylinders_[0]->setMaterial(material);
 	material.setDefault();
 
-	material.setDiffuseColor(245, 160, 209);
-	material.setReflectiveIndex(1.0f);
+	material.setAlbedo(255, 255, 255);
+	material.setMetallic(1.0f);
+	material.setSmoothness(1.0f);
 	this->cylinders_[1]->setMaterial(material);
 	material.setDefault();
 
-	material.setDiffuseColor(51, 16, 173);
-	material.setRefractiveIndex(1.52f);
-	material.setReflectiveIndex(0.5f);
+	material.setAlbedo(51, 16, 173);
+	material.setMetallic(0.9f);
+	material.setSmoothness(0.9f);
 	this->cylinders_[2]->setMaterial(material);
 	material.setDefault();
 
@@ -140,6 +150,8 @@ void Scene1::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick3/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
+	material.setMetallic(0.0f);
+	material.setSmoothness(0.0f);
 	this->cylinders_[3]->setMaterial(material);
 	material.setDefault();
 
@@ -185,7 +197,7 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	}
 
 	// —феры
-	for (size_t i = 0; i < cubes_.size(); i++)
+	for (size_t i = 0; i < spheres_.size(); i++)
 	{
 		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
 
@@ -207,7 +219,7 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	this->spheres_[3]->rotate(deltaTime, -40.0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// ÷илиндры
-	for (size_t i = 0; i < this->cubes_.size(); i++)
+	for (size_t i = 0; i < this->cylinders_.size(); i++)
 	{
 		renderer->drawObject(this->cylinders_[i], shader, this->lights_, view_matrix, camera_position);
 		
