@@ -165,7 +165,7 @@ OpenGLRenderer::OpenGLRenderer()
 	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
 
 	this->irradianceMap_ = this->generateCubeMap16F(256, false);
-	this->prefilteringMap_ = this->generateCubeMap16F(256, true);
+	this->prefilteredMap_ = this->generateCubeMap16F(256, true);
 	this->brdfLutMap_ = this->generateTexture2D_RG16F(256, 256);
 
 	this->generateBrdfLutMap();
@@ -289,6 +289,16 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		shader.setInt("irradianceMap", textureFreeNumber);
 		textureFreeNumber++;
 
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->prefilteredMap_);
+		shader.setInt("prefilteredMap", textureFreeNumber);
+		textureFreeNumber++;
+
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_2D, this->brdfLutMap_);
+		shader.setInt("brdfLutMap", textureFreeNumber);
+		textureFreeNumber++;
+
 		glBindVertexArray(model->getMeshes()[j].getVAO());		
 		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
@@ -387,10 +397,10 @@ void OpenGLRenderer::renderQuad()
 	{
 		float vertices[] = {
 			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f, 1.0f,
+			-1.0f, -1.0f, 0.0f, 0.0f,
+			1.0f,  1.0f, 1.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 0.0f,
 		};
 		// setup plane VAO
 		glGenVertexArrays(1, &this->quadVAO);
@@ -398,13 +408,13 @@ void OpenGLRenderer::renderQuad()
 		
 		glBindVertexArray(this->quadVAO);
 		glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 		
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 		
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	}
 
 	glBindVertexArray(this->quadVAO);
@@ -450,8 +460,8 @@ void OpenGLRenderer::generateIrradianceMap()
 	this->restoreViewPort();
 }
 
-///<summary>Генерирует pre-filtering map.</summary>
-void OpenGLRenderer::generatePrefilteringMap()
+///<summary>Генерирует pre-filtered map.</summary>
+void OpenGLRenderer::generatePrefilteredMap()
 {
 	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
 	glm::mat4 view[] =
@@ -489,7 +499,7 @@ void OpenGLRenderer::generatePrefilteringMap()
 		{
 			this->prefilteringShader_.setMat4("viewMatrix", view[i]);
 
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->prefilteringMap_, mip);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->prefilteredMap_, mip);
 			
 			this->clearScreen();
 			this->renderCube();

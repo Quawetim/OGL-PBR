@@ -20,7 +20,8 @@ Renderer::Renderer()
 
 	this->environmentMap_ = 0;
 	this->irradianceMap_ = 0;
-	this->prefilteringMap_ = 0;
+	this->prefilteredMap_ = 0;
+	this->brdfLutMap_ = 0;
 }
 
 ///<summary>Деструктор.</summary>

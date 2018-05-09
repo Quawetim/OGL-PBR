@@ -63,11 +63,18 @@ uniform Light light[MAX_LIGHTS];
 
 uniform samplerCube environmentMap;
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilteredMap;
+uniform sampler2D brdfLutMap;
 
 vec3 computeSchlickApproximation(vec3 view_direction, vec3 half_way, vec3 R0)
 {
     float cosTheta = max(dot(view_direction, half_way), 0.0f);
     return R0 + (1.0f - R0) * pow(1.0f - cosTheta, 5.0f);
+}
+
+vec3 computeSchlickApproximation(float cosTheta, vec3 R0, float roughness)
+{
+    return R0 + (max(vec3(1.0f - roughness), R0) - R0) * pow(1.0f - cosTheta, 5.0f);
 }
 
 float computeTrowbridgeReitzNDF(vec3 normal, vec3 half_way, float roughness)
@@ -114,14 +121,15 @@ void main()
         //vec3 albedo = vec3(1.0f, 0.71f, 0.29f);
         //vec3 albedo = vec3(0.5f, 0.0f, 0.0f);
         vec3 albedo = material.diffuseColor;
-        float metallic = 0.4f;
-        float roughness = 0.6f;
-        //float metallic = material.metallic;
-        //float roughness = material.roughness;
+        //float metallic = 0.9f;
+        //float roughness = 0.1f;
+        float metallic = material.metallic;
+        float roughness = material.roughness;
         float ambientOcclusion = 1.0f;
 
         vec3 normal = normalize(fs_in.fragmentNormal);
         vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
+        vec3 reflectionDirection = reflect(-viewDirection, normal);
         float w0 = max(dot(normal, viewDirection), 0.0f);
 
         vec3 R0 = vec3(0.04f);
@@ -163,15 +171,33 @@ void main()
             L0 += (kd * albedo / PI + specular) * radiance * wi;
         }
 
-        vec3 ks = computeSchlickApproximation(viewDirection, normal, R0);
-        vec3 kd = 1.0f - ks;
-        kd *= 1.0f - metallic;
+        float cosTheta = max(dot(normal, viewDirection), 0.0f);
+        
+        vec3 ks = computeSchlickApproximation(cosTheta, R0, roughness);
+        vec3 kd = (1.0f - ks) * (1.0f - metallic);
 
         vec3 irradiance = texture(irradianceMap, normal).rgb;
         vec3 diffuseColor = irradiance * albedo;
-        vec3 ambientColor = kd * diffuseColor * ambientOcclusion;
+
+        const float MAX_REFLECTION_LOD = 4.0f;
+        vec3 prefilteredColor = textureLod(prefilteredMap, reflectionDirection, roughness * MAX_REFLECTION_LOD).rgb;
+        vec2 BRDF = texture(brdfLutMap, vec2(cosTheta, roughness)).rg;
+        
+        vec3 specularColor = prefilteredColor * (ks * BRDF.x + BRDF.y);
+        
+        vec3 ambientColor = (kd * diffuseColor + specularColor) * ambientOcclusion;
 
         fragmentColor.rgb = ambientColor + L0;
+
+        //vec3 ks = computeSchlickApproximation(viewDirection, normal, R0);
+        //vec3 kd = 1.0f - ks;
+        //kd *= 1.0f - metallic;
+
+        //vec3 irradiance = texture(irradianceMap, normal).rgb;
+        //vec3 diffuseColor = irradiance * albedo;
+        //vec3 ambientColor = kd * diffuseColor * ambientOcclusion;
+
+        //fragmentColor.rgb = ambientColor + L0;
     }
     else
     {

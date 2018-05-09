@@ -49,7 +49,7 @@ protected:
 	unsigned int irradianceMap_;
 
 	///<summary>Pre-filtering map.</summary>
-	unsigned int prefilteringMap_;
+	unsigned int prefilteredMap_;
 
 	
 
@@ -81,8 +81,8 @@ public:
 	///<summary>Генерирует irradiance map.</summary>
 	virtual void generateIrradianceMap() = 0;
 
-	///<summary>Генерирует pre-filtering map.</summary>
-	virtual void generatePrefilteringMap() = 0;
+	///<summary>Генерирует pre-filtered map.</summary>
+	virtual void generatePrefilteredMap() = 0;
 
 	virtual void generateBrdfLutMap() = 0;
 
@@ -314,8 +314,8 @@ public:
 	///<summary>Генерирует irradiance map.</summary>
 	void generateIrradianceMap();
 
-	///<summary>Генерирует pre-filtering map.</summary>
-	void generatePrefilteringMap();
+	///<summary>Генерирует pre-filtered map.</summary>
+	void generatePrefilteredMap();
 
 	void generateBrdfLutMap();
 
