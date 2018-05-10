@@ -48,11 +48,17 @@ protected:
 	///<summary>Irradiance map.</summary>
 	unsigned int irradianceMap_;
 
-	
+	///<summary>Pre-filtered environment map.</summary>
+	unsigned int prefilteredMap_;
 
-	
+	///<summary>BRDF LUT map.</summary>
+	unsigned int brdfLutMap_;
 
+	///<summary>Временный рендербуффер.</summary>
+	unsigned int tempRenderBuffer_;
 	
+	///<summary>Временный фреймбуффер.</summary>
+	unsigned int tempFrameBuffer_;
 
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
@@ -66,34 +72,25 @@ protected:
 	///<param name = 'material'>Материал.</param>
 	virtual void drawModel(Model* model, Shader shader, Material material) = 0;
 	
+	///<summary>Генерирует irradiance map.</summary>
+	virtual void generateIrradianceMap() = 0;
+
+	///<summary>Генерирует pre-filtered environment map.</summary>
+	virtual void generatePrefilteredMap() = 0;
+
+	///<summary>Генерирует BRDF LUT map.</summary>
+	virtual void generateBrdfLutMap() = 0;
+
 	virtual void renderCube() = 0;
 
-	
+	virtual void renderQuad() = 0;
 
 public:
 	///<summary>Конструктор.</summary>
 	Renderer();
 
 	///<summary>Деструктор.</summary>
-	~Renderer();
-
-	///<summary>Генерирует irradiance map.</summary>
-	virtual void generateIrradianceMap() = 0;
-
-	///<summary>Генерирует pre-filtered map.</summary>
-	virtual void generatePrefilteredMap() = 0;
-
-	virtual void generateBrdfLutMap() = 0;
-
-	unsigned int brdfLutMap_;
-
-	unsigned int tempRenderBuffer_;
-	unsigned int tempFrameBuffer_;
-
-	virtual void renderQuad() = 0;
-
-	///<summary>Pre-filtering map.</summary>
-	unsigned int prefilteredMap_;
+	~Renderer();	
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
@@ -281,20 +278,19 @@ extern Renderer* renderer;
 class OpenGLRenderer : public Renderer
 {
 private:
-	unsigned int frameVAO;
-	unsigned int frameVBO;
+	unsigned int quadVAO_;
+	unsigned int quadVBO_;
 
-	unsigned int cubeVAO;
-	unsigned int cubeVBO;
+	unsigned int cubeVAO_;
+	unsigned int cubeVBO_;
 
-	unsigned int quadVAO;
-	unsigned int quadVBO;
-
-	unsigned int debugQuadVAO;
-	unsigned int debugQuadVBO;
-
+	///<summary>Шейдер для генерации irradiance map.</summary>
 	Shader irradianceShader_;
+
+	///<summary>Шейдер для генерации pre-filtered map.</summary>
 	Shader prefilteringShader_;
+
+	///<summary>Шейдер для генерации BRDF LUT map.</summary>
 	Shader brdfLutShader_;
 
 	///<summary>Отрисовка модели.</summary>
@@ -303,8 +299,18 @@ private:
 	///<param name = 'material'>Материал.</param>
 	void drawModel(Model* model, Shader shader, Material material);
 
+	///<summary>Генерирует irradiance map.</summary>
+	void generateIrradianceMap();
+
+	///<summary>Генерирует pre-filtered map.</summary>
+	void generatePrefilteredMap();
+
+	///<summary>Генерирует BRDF LUT map.</summary>
+	void generateBrdfLutMap();
+
+	void renderQuad();
+
 	void renderCube();
-	
 
 public:
 	///<summary>Конструктор.</summary>
@@ -312,16 +318,6 @@ public:
 
 	///<summary>Деструктор.</summary>
 	~OpenGLRenderer();	
-
-	///<summary>Генерирует irradiance map.</summary>
-	void generateIrradianceMap();
-
-	///<summary>Генерирует pre-filtered map.</summary>
-	void generatePrefilteredMap();
-
-	void generateBrdfLutMap();
-
-	void renderQuad();
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 

@@ -129,7 +129,8 @@ OpenGLRenderer::OpenGLRenderer()
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
-	float vertices[] =
+	// Frame VAO
+	float quadVertices[] =
 	{
 		// positions   // textureCoords
 		-1.0f,  1.0f,  0.0f, 1.0f,
@@ -138,12 +139,12 @@ OpenGLRenderer::OpenGLRenderer()
 		1.0f, -1.0f,  1.0f, 0.0f
 	};
 
-	glGenVertexArrays(1, &this->frameVAO);
-	glGenBuffers(1, &this->frameVBO);
+	glGenVertexArrays(1, &this->quadVAO_);
+	glGenBuffers(1, &this->quadVBO_);
 	
-	glBindVertexArray(this->frameVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, this->frameVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+	glBindVertexArray(this->quadVAO_);
+	glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
 	
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
@@ -151,15 +152,75 @@ OpenGLRenderer::OpenGLRenderer()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
+	float cubeVertices[] =
+	{
+		// back face
+		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+		1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+		1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+		-1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+		-1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+		// front face
+		-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+		1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+		1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+		-1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+		-1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+		// left face
+		-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+		-1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+		-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+		-1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+		-1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+		-1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+		// right face
+		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+		1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+		1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+		1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+		1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+		// bottom face
+		-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+		1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+		1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+		-1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+		-1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+		// top face
+		-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+		1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+		1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+		1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+		-1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+		-1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+	};
+
+	glGenVertexArrays(1, &this->cubeVAO_);
+	glGenBuffers(1, &this->cubeVBO_);
+
+	glBindBuffer(GL_ARRAY_BUFFER, this->cubeVBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+	glBindVertexArray(cubeVAO_);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	this->irradianceShader_ = Shader("irradiance");
 	this->prefilteringShader_ = Shader("prefiltering");
 	this->brdfLutShader_ = Shader("brdf");
-
-	this->cubeVAO = 0;
-	this->cubeVBO = 0;
-
-	this->debugQuadVAO = 0;
-	this->debugQuadVBO = 0;
 
 	this->tempRenderBuffer_ = this->generateRenderBuffer(256, 256);
 	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
@@ -340,112 +401,6 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 	}
 }
 
-void OpenGLRenderer::renderCube()
-{
-    if (this->cubeVAO == 0)
-    {
-        float vertices[] = {
-            // back face
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-            // front face
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-            // left face
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-            // right face
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-            // bottom face
-            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-            // top face
-            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-        };
-
-        glGenVertexArrays(1, &this->cubeVAO);
-        glGenBuffers(1, &this->cubeVBO);
-
-        glBindBuffer(GL_ARRAY_BUFFER, this->cubeVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        glBindVertexArray(cubeVAO);
-        
-		glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-        
-		glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-        
-		glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-        
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-    }
-
-    glBindVertexArray(this->cubeVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-    glBindVertexArray(0);
-}
-
-void OpenGLRenderer::renderQuad()
-{
-	if (this->quadVAO == 0)
-	{
-		float vertices[] = {
-			// positions        // texture Coords
-			-1.0f,  1.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f,
-			1.0f,  1.0f, 1.0f, 1.0f,
-			1.0f, -1.0f, 1.0f, 0.0f,
-		};
-		// setup plane VAO
-		glGenVertexArrays(1, &this->quadVAO);
-		glGenBuffers(1, &this->quadVBO);
-		
-		glBindVertexArray(this->quadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, this->quadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-		
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	}
-
-	glBindVertexArray(this->quadVAO);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
-}
-
 ///<summary>Генерирует irradiance map.</summary>
 void OpenGLRenderer::generateIrradianceMap()
 {
@@ -546,6 +501,7 @@ void OpenGLRenderer::generatePrefilteredMap()
 	glEnable(GL_CULL_FACE);
 }
 
+///<summary>Генерирует BRDF LUT map.</summary>
 void OpenGLRenderer::generateBrdfLutMap()
 {
 	glDisable(GL_CULL_FACE);
@@ -571,6 +527,20 @@ void OpenGLRenderer::generateBrdfLutMap()
 	glEnable(GL_CULL_FACE);
 }
 
+void OpenGLRenderer::renderQuad()
+{
+	glBindVertexArray(this->quadVAO_);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+void OpenGLRenderer::renderCube()
+{
+	glBindVertexArray(this->cubeVAO_);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+}
+
 ////////////////////////////////////////////// public-функции //////////////////////////////////////////////
 
 ///<summary>Отрисовка кадра во весь экран.</summary>
@@ -582,7 +552,7 @@ void OpenGLRenderer::drawFrame(Shader shader, unsigned int frame)
 	shader.setFloat("gamma", gamma);
 	
 	this->bindTexture2D(frame);
-	glBindVertexArray(this->frameVAO);
+	glBindVertexArray(this->quadVAO_);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	this->bindTexture2D(0);
@@ -692,31 +662,6 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 
 void OpenGLRenderer::drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader)
 {
-	if (this->debugQuadVAO == 0)
-	{
-		float vertices[] =
-		{
-			// positions   // textureCoords
-			-1.0f,  1.0f,  0.0f, 1.0f,
-			-1.0f, -1.0f,  0.0f, 0.0f,			
-			1.0f,  1.0f,  1.0f, 1.0f,
-			1.0f, -1.0f,  1.0f, 0.0f
-		};
-
-		glGenVertexArrays(1, &this->debugQuadVAO);
-		glGenBuffers(1, &this->debugQuadVBO);
-
-		glBindVertexArray(this->debugQuadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, this->debugQuadVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	}
-
 	glm::mat4 modelMatrix;
 	modelMatrix = glm::scale(glm::vec3(0.3f));
 	modelMatrix *= glm::translate(glm::vec3(5.0f, 2.0f, 0.0f));
@@ -738,11 +683,7 @@ void OpenGLRenderer::drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	shader.setInt("bgTexture", 0);
 
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glDisable(GL_BLEND);
-
-	glBindVertexArray(this->debugQuadVAO);
+	glBindVertexArray(this->quadVAO_);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
 
@@ -1038,5 +979,8 @@ void OpenGLRenderer::setWindowTitle(const std::string title)
 ///<param name = 'ID'>Идентификатор.</param>
 void OpenGLRenderer::setEnvironmentMap(const unsigned int ID)
 {
-	this->environmentMap_ = ID;	
+	this->environmentMap_ = ID;
+
+	this->generateIrradianceMap();
+	this->generatePrefilteredMap();
 }

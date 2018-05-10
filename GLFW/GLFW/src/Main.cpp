@@ -79,10 +79,7 @@ int main()
 
 	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
 	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
-	renderer->setEnvironmentMap(environmentMap);
-	
-	renderer->generateIrradianceMap();
-	renderer->generatePrefilteredMap();
+	renderer->setEnvironmentMap(environmentMap);	
 	
 	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
 	skybox->setRotation(-90, glm::vec3(0.0f, 1.0f, 0.0f));
