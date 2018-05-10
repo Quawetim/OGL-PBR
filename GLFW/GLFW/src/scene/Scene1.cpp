@@ -63,7 +63,9 @@ void Scene1::init(std::vector<Model*> models)
 	Material material;
 
 	//  убы
-	texture = Texture("resources/textures/batman_specular.bmp", TextureType::specular);
+	texture = Texture("resources/textures/batman2.bmp", TextureType::smoothness);
+	material.addTexture(texture);
+	texture = Texture("resources/textures/batman2.bmp", TextureType::metallic);
 	material.addTexture(texture);
 	material.setAlbedo(255, 226, 155);
 	material.setMetallic(1.0f);
@@ -79,14 +81,16 @@ void Scene1::init(std::vector<Model*> models)
 	material.setDefault();
 
 	material.setAlbedo(155, 97, 186);
+	texture = Texture("resources/textures/batman1.bmp", TextureType::smoothness);
+	material.addTexture(texture);
+	texture = Texture("resources/textures/batman1.bmp", TextureType::metallic);
+	material.addTexture(texture);
 	material.setMetallic(0.3f);
 	material.setSmoothness(0.3f);
 	this->cubes_[2]->setMaterial(material);
 	material.setDefault();
 
-	texture = Texture("resources/textures/brick1/diffuse.bmp", TextureType::diffuse);
-	material.addTexture(texture);
-	texture = Texture("resources/textures/brick1/specular.bmp", TextureType::specular);
+	texture = Texture("resources/textures/brick1/diffuse.bmp", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick1/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
@@ -98,7 +102,7 @@ void Scene1::init(std::vector<Model*> models)
 	// —феры
 	material.setAlbedo(255, 226, 155);
 	material.setMetallic(1.0f);
-	material.setSmoothness(1.0f);
+	material.setSmoothness(0.6f);
 	this->spheres_[0]->setMaterial(material);
 	material.setDefault();
 
@@ -114,9 +118,7 @@ void Scene1::init(std::vector<Model*> models)
 	this->spheres_[2]->setMaterial(material);
 	material.setDefault();
 
-	texture = Texture("resources/textures/brick2/diffuse.bmp", TextureType::diffuse);
-	material.addTexture(texture);
-	texture = Texture("resources/textures/brick2/specular.bmp", TextureType::specular);
+	texture = Texture("resources/textures/brick2/diffuse.bmp", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick2/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
@@ -144,9 +146,7 @@ void Scene1::init(std::vector<Model*> models)
 	this->cylinders_[2]->setMaterial(material);
 	material.setDefault();
 
-	texture = Texture("resources/textures/brick3/diffuse.bmp", TextureType::diffuse);
-	material.addTexture(texture);
-	texture = Texture("resources/textures/brick3/specular.bmp", TextureType::specular);
+	texture = Texture("resources/textures/brick3/diffuse.bmp", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("resources/textures/brick3/normal.bmp", TextureType::normal);
 	material.addTexture(texture);
@@ -216,7 +216,7 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		}
 	}
 
-	this->spheres_[3]->rotate(deltaTime, -40.0, glm::vec3(1.0f, 1.0f, 1.0f));
+	if (move) this->spheres_[3]->rotate(deltaTime, -40.0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// ÷илиндры
 	for (size_t i = 0; i < this->cylinders_.size(); i++)

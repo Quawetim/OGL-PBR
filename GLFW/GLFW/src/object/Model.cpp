@@ -140,14 +140,20 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        std::vector<Texture> diffuseMap = loadMaterialTextures(material, aiTextureType_DIFFUSE, TextureType::diffuse);
-        textures.insert(textures.end(), diffuseMap.begin(), diffuseMap.end());
+        std::vector<Texture> albedoMap = loadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::albedo);
+        textures.insert(textures.end(), albedoMap.begin(), albedoMap.end());
 
-        std::vector<Texture> specularMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::specular);
-        textures.insert(textures.end(), specularMap.begin(), specularMap.end());
+        std::vector<Texture> smoothnessMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::smoothness);
+        textures.insert(textures.end(), smoothnessMap.begin(), smoothnessMap.end());
+
+		std::vector<Texture> metallicMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::metallic);
+		textures.insert(textures.end(), metallicMap.begin(), metallicMap.end());
 
         std::vector<Texture> normalMap = loadMaterialTextures(material, aiTextureType_NORMALS, TextureType::normal);
         textures.insert(textures.end(), normalMap.begin(), normalMap.end());
+
+		std::vector<Texture> ambientOcclusionMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::ambientOcclusion);
+		textures.insert(textures.end(), ambientOcclusionMap.begin(), ambientOcclusionMap.end());
     }
 
     return Mesh(name, vertices, indices, textures);

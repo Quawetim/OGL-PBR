@@ -59,7 +59,8 @@ void Scene2::init(std::vector<Model*> models)
 
 	//material.setAlbedo(255, 255, 255);	//белый
 	//material.setAlbedo(248, 188, 33);		//золото
-	material.setAlbedo(75, 140, 237);
+	material.setAlbedo(75, 140, 237);		//голубой
+	//material.setAlbedo(0, 0, 0);
 
 	for (size_t i = 0; i < 11; i++)
 	{

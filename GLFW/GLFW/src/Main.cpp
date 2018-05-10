@@ -105,7 +105,7 @@ int main()
 		testScene.init(testModels);
 	}
 
-	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::specular);
+	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -158,8 +158,8 @@ int main()
 		////////////////////////////////DEBUG////////////////////////////////
 
 		//testScene.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		//scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		//scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 

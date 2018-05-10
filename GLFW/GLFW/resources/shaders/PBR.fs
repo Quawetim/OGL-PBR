@@ -23,15 +23,9 @@ struct Light
 in VS_OUT
 {
     vec3 fragmentPosition;
-    vec3 fragmentPositionTBN;
-
     vec3 fragmentNormal;
     vec2 textureCoords;
-
     vec3 cameraPosition; 
-    vec3 cameraPositionTBN;
-
-    vec3 lightsPositionsTBN[MAX_LIGHTS];
 } fs_in;
 
 out vec4 fragmentColor;
@@ -41,13 +35,17 @@ const float MAX_REFLECTION_LOD = 4.0f;
 
 uniform Material material;
 
-uniform bool useDiffuseMaps;
-uniform int diffuseMapsCount;
-uniform sampler2D diffuseMaps[MAX_MAPS];
+uniform bool useAlbedoMaps;
+uniform int albedoMapsCount;
+uniform sampler2D albedoMaps[MAX_MAPS];
 
-uniform bool useSpecularMaps;
-uniform int specularMapsCount;
-uniform sampler2D specularMaps[MAX_MAPS];
+uniform bool useSmoothnessMaps;
+uniform int smoothnessMapsCount;
+uniform sampler2D smoothnessMaps[MAX_MAPS];
+
+uniform bool useMetallicMaps;
+uniform int metallicMapsCount;
+uniform sampler2D metallicMaps[MAX_MAPS];
 
 uniform bool useNormalMaps;
 uniform int normalMapsCount;
@@ -56,9 +54,27 @@ uniform sampler2D normalMaps[MAX_MAPS];
 uniform int lightsCount;
 uniform Light light[MAX_LIGHTS];
 
+uniform samplerCube environmentMap;
 uniform samplerCube irradianceMap;
 uniform samplerCube prefilteredMap;
 uniform sampler2D brdfLutMap;
+
+vec3 getNormal(int map)
+{
+    vec3 normal = texture(normalMaps[map], fs_in.textureCoords).rgb * 2.0f - 1.0f;
+
+    vec3 Q1 = dFdx(fs_in.fragmentPosition);
+    vec3 Q2 = dFdy(fs_in.fragmentPosition);
+    vec2 st1 = dFdx(fs_in.textureCoords);
+    vec2 st2 = dFdy(fs_in.textureCoords);
+
+    vec3 N = normalize(fs_in.fragmentNormal);
+    vec3 T = normalize(Q1 * st2.t - Q2 * st1.t);
+    vec3 B = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * normal);
+}
 
 vec3 computeSchlickApproximation(vec3 view_direction, vec3 half_way, vec3 R0)
 {
@@ -129,15 +145,50 @@ void main()
 {
     const bool useLighting = true;
 
-    fragmentColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);       
+    fragmentColor = vec4(0.0f, 0.0f, 0.0f, 1.0f); 
+     
 
     if (useLighting)
     {
-        vec3 albedo = material.albedo;
-        float metallic = material.metallic;
-        float roughness = max(1.0f - material.smoothness, 0.01f);
-               
-        vec3 normal = normalize(fs_in.fragmentNormal);
+        vec3 normal = vec3(0.0f);
+        vec3 albedo = vec3(0.0f);    
+        float smoothness = 0.0f;
+        float metallic = 0.0f;
+
+        ////////////////////////Albedo////////////////////////
+
+        if (useAlbedoMaps)
+        {
+            for (int i = 0; i < albedoMapsCount && i <= MAX_MAPS; i++) albedo += texture(albedoMaps[i], fs_in.textureCoords).rgb;
+        }
+        else albedo = material.albedo;
+
+        ////////////////////////Smoothness////////////////////////
+        
+        if (useSmoothnessMaps)
+        {
+            for (int i = 0; i < smoothnessMapsCount && i <= MAX_MAPS; i++) smoothness += texture(smoothnessMaps[i], fs_in.textureCoords).r;
+        }
+        else smoothness = material.smoothness;
+        
+        float roughness = 1.0f - smoothness;
+
+        ////////////////////////Metallic////////////////////////
+
+        if (useMetallicMaps)
+        {
+            for (int i = 0; i < metallicMapsCount && i <= MAX_MAPS; i++) metallic += texture(metallicMaps[i], fs_in.textureCoords).r;
+        }
+        else metallic = material.metallic;
+
+        ////////////////////////Normal////////////////////////
+
+        if (useNormalMaps)
+        {
+            for (int i = 0; i < normalMapsCount && i <= MAX_MAPS; i++) normal += getNormal(i);
+        }
+        else normal = normalize(fs_in.fragmentNormal);
+ 
         vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
         vec3 reflectionDirection = reflect(-viewDirection, normal);
         float w0 = max(dot(normal, viewDirection), 0.0f);
@@ -149,7 +200,7 @@ void main()
 
         // Reflectance
         vec3 L0 = vec3(0.0f);
-        for (int i = 0; i < lightsCount; i++)
+        for (int i = 0; i < lightsCount && i <= MAX_LIGHTS; i++)
         {
             // Radiance
             vec3 lightDirection = normalize(light[i].position - fs_in.fragmentPosition);
@@ -200,21 +251,22 @@ void main()
         vec3 prefilteredColor = textureLod(prefilteredMap, reflectionDirection, roughness * MAX_REFLECTION_LOD).rgb;
         vec2 BRDF = texture(brdfLutMap, vec2(cosTheta, roughness)).rg;
         
-        vec3 specularColor = prefilteredColor * (ks * BRDF.x + BRDF.y);
+        vec3 reflectionColor = prefilteredColor * (ks * BRDF.x + BRDF.y);
         
-        vec3 ambientColor = (kd * diffuseColor + specularColor) * ambientOcclusion;
+        vec3 ambientColor = (kd * diffuseColor + reflectionColor) * ambientOcclusion;     
 
         fragmentColor.rgb = ambientColor + L0;
+        //fragmentColor.rgb = normal;
     }
     else
     {
         // Without lighting
 
-        if (useDiffuseMaps) 
+        if (useAlbedoMaps) 
         {
-            for (int i = 0; i < diffuseMapsCount; i++)
+            for (int i = 0; i < albedoMapsCount && i <= MAX_MAPS; i++)
             {
-                fragmentColor.rgb += texture(diffuseMaps[i], fs_in.textureCoords).rgb;
+                fragmentColor.rgb += texture(albedoMaps[i], fs_in.textureCoords).rgb;
             }
         }
         else

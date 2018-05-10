@@ -12,9 +12,11 @@ InputHandle *InputHandle::inputHandle_;
 ///<summary>Задаёт соответствие TextureType и её TextureKeys в шейдере.</summary>
 const std::map<TextureType, TextureKeys> mapTextureType = 
 {
-	{ TextureType::diffuse, {"diffuseMaps", "useDiffuseMaps", "diffuseMapsCount"} },
-	{ TextureType::specular, {"specularMaps", "useSpecularMaps", "specularMapsCount" } },
-	{ TextureType::normal, {"normalMaps", "useNormalMaps", "normalMapsCount" } }
+	{ TextureType::albedo, {"albedoMaps", "useAlbedoMaps", "albedoMapsCount"} },
+	{ TextureType::smoothness, {"smoothnessMaps", "useSmoothnessMaps", "smoothnessMapsCount" } },
+	{ TextureType::metallic, { "metallicMaps", "useMetallicMaps", "metallicMapsCount" } },
+	{ TextureType::normal, {"normalMaps", "useNormalMaps", "normalMapsCount" } },
+	{ TextureType::ambientOcclusion,{ "ambientOcclusionMaps", "useAmbientOcclusionMaps", "ambientOcclusionMapsCount" } }
 };
 
 ///<summary>Размер генерируемой карты отражений.</summary>
@@ -30,7 +32,7 @@ Texture::Texture()
 {
 	this->id_ = 0;
 	this->path_ = "resources/textures/test.png";
-	this->type_ = TextureType::diffuse;
+	this->type_ = TextureType::albedo;
 }
 
 ///<summary>Конструктор.</summary>

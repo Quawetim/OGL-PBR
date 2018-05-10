@@ -66,9 +66,7 @@ void main()
         fragmentColor.rgb *= vignette;
     }
 
-    //fragmentColor.rgb = fragmentColor.rgb / (fragmentColor.rgb + vec3(1.0));
-
-    float exposure = 3.0f;
+    float exposure = 2.0f;
     fragmentColor.rgb = vec3(1.0f) - exp(-fragmentColor.rgb * exposure);
     
     fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));

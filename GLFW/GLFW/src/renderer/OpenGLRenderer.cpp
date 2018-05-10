@@ -122,7 +122,7 @@ OpenGLRenderer::OpenGLRenderer()
 	glDepthFunc(GL_LESS);
 
 	// Отсечение граней, у которых не видно лицевую сторону
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
 	//glEnable(GL_BLEND);
 	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -187,18 +187,24 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 {
 	for (size_t j = 0; j < model->getMeshes().size(); j++)
 	{		
-		unsigned int diffuseMapsCount = 0;
-		unsigned int specularMapsCount = 0;
+		unsigned int albedoMapsCount = 0;
+		unsigned int smoothnessMapsCount = 0;
+		unsigned int metallicMapsCount = 0;
 		unsigned int normalMapsCount = 0;
+		unsigned int ambientOcclusionMapsCount = 0;
 
-		bool useDiffuseMaps = false;
-		bool useSpecularMaps = false;
+		bool useAlbedoMaps = false;
+		bool useSmoothnessMaps = false;
+		bool useMetallicMaps = false;
 		bool useNormalMaps = false;
+		bool useAmbientOcclusionMaps = false;
 
 		TextureKeys mapKeys;
-		TextureKeys diffuseKeys = mapTextureType.find(TextureType::diffuse)->second;
-		TextureKeys	specularKeys = mapTextureType.find(TextureType::specular)->second;;
-		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;;
+		TextureKeys albedoKeys = mapTextureType.find(TextureType::albedo)->second;
+		TextureKeys	smoothnessKeys = mapTextureType.find(TextureType::smoothness)->second;
+		TextureKeys	metallicKeys = mapTextureType.find(TextureType::metallic)->second;
+		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;
+		TextureKeys ambientOcclusionKeys = mapTextureType.find(TextureType::ambientOcclusion)->second;
 		
 		std::string mapNumber;
 		std::vector<Texture> pointer;
@@ -215,33 +221,36 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 
 			switch (pointer[i].getType())
 			{
-				case TextureType::diffuse:     
+				case TextureType::albedo:     
 					{
-						mapKeys = diffuseKeys;
+						mapKeys = albedoKeys;
 
-						mapNumber = std::to_string(diffuseMapsCount);
-						diffuseMapsCount++;
+						mapNumber = std::to_string(albedoMapsCount);
+						albedoMapsCount++;
 
-						if (!useDiffuseMaps)
-						{
-							useDiffuseMaps = true;
-							shader.setBool(mapKeys.mapsUse, useDiffuseMaps);
-						}
+						if (!useAlbedoMaps) useAlbedoMaps = true;
 						
 						break;
 					}
-				case TextureType::specular:    
+				case TextureType::smoothness:
 					{
-						mapKeys = specularKeys;
+						mapKeys = smoothnessKeys;
 
-						mapNumber = std::to_string(specularMapsCount);
-						specularMapsCount++;
+						mapNumber = std::to_string(smoothnessMapsCount);
+						smoothnessMapsCount++;
 						
-						if (!useSpecularMaps)
-						{
-							useSpecularMaps = true;
-							shader.setBool(mapKeys.mapsUse, useSpecularMaps);
-						}
+						if (!useSmoothnessMaps) useSmoothnessMaps = true;
+
+						break;
+					}
+				case TextureType::metallic:
+					{
+						mapKeys = metallicKeys;
+
+						mapNumber = std::to_string(metallicMapsCount);
+						metallicMapsCount++;
+
+						if (!useMetallicMaps) useMetallicMaps = true;
 
 						break;
 					}
@@ -252,12 +261,19 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 						mapNumber = std::to_string(normalMapsCount);
 						normalMapsCount++;
 						
-						if (!useNormalMaps)
-						{
-							useNormalMaps = true;
-							shader.setBool(mapKeys.mapsUse, useNormalMaps);
-						}
+						if (!useNormalMaps) useNormalMaps = true;
 						
+						break;
+					}
+				case TextureType::ambientOcclusion:
+					{
+						mapKeys = ambientOcclusionKeys;
+
+						mapNumber = std::to_string(ambientOcclusionMapsCount);
+						ambientOcclusionMapsCount++;
+
+						if (!useAmbientOcclusionMaps) useAmbientOcclusionMaps = true;
+
 						break;
 					}
 				default:
@@ -272,12 +288,26 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
 		}
 
-		shader.setInt(diffuseKeys.mapsCount, diffuseMapsCount);
-		shader.setInt(specularKeys.mapsCount, specularMapsCount);
+		// Push texture flags
+		shader.setBool(albedoKeys.mapsUse, useAlbedoMaps);
+		shader.setBool(smoothnessKeys.mapsUse, useSmoothnessMaps);
+		shader.setBool(metallicKeys.mapsUse, useMetallicMaps);
+		shader.setBool(normalKeys.mapsUse, useNormalMaps);
+		shader.setBool(ambientOcclusionKeys.mapsUse, useAmbientOcclusionMaps);
+
+		shader.setInt(albedoKeys.mapsCount, albedoMapsCount);
+		shader.setInt(smoothnessKeys.mapsCount, smoothnessMapsCount);
+		shader.setInt(metallicKeys.mapsCount, metallicMapsCount);
 		shader.setInt(normalKeys.mapsCount, normalMapsCount);
+		shader.setInt(ambientOcclusionKeys.mapsCount, ambientOcclusionMapsCount);
 
 		int textureFreeNumber = pointer.size();
 		
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
+		shader.setInt("environmentMap", textureFreeNumber);
+		textureFreeNumber++;
+
 		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this->irradianceMap_);
 		shader.setInt("irradianceMap", textureFreeNumber);
@@ -419,6 +449,8 @@ void OpenGLRenderer::renderQuad()
 ///<summary>Генерирует irradiance map.</summary>
 void OpenGLRenderer::generateIrradianceMap()
 {
+	glDisable(GL_CULL_FACE);
+
 	int size = 256;
 
 	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
@@ -454,11 +486,15 @@ void OpenGLRenderer::generateIrradianceMap()
 
 	this->bindFrameBuffer(0);
 	this->restoreViewPort();
+
+	glEnable(GL_CULL_FACE);
 }
 
 ///<summary>Генерирует pre-filtered map.</summary>
 void OpenGLRenderer::generatePrefilteredMap()
 {
+	glDisable(GL_CULL_FACE);
+
 	int size = 512;
 
 	glm::mat4 projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
@@ -506,10 +542,14 @@ void OpenGLRenderer::generatePrefilteredMap()
 
 	this->bindFrameBuffer(0);
 	this->restoreViewPort();
+
+	glEnable(GL_CULL_FACE);
 }
 
 void OpenGLRenderer::generateBrdfLutMap()
 {
+	glDisable(GL_CULL_FACE);
+
 	int size = 256;
 
 	this->brdfLutShader_.activate();
@@ -527,6 +567,8 @@ void OpenGLRenderer::generateBrdfLutMap()
 
 	this->bindFrameBuffer(0);
 	this->restoreViewPort();
+
+	glEnable(GL_CULL_FACE);
 }
 
 ////////////////////////////////////////////// public-функции //////////////////////////////////////////////
@@ -562,12 +604,7 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 
 	shader.setVec3("material.albedo", albedo);
 	shader.setFloat("material.metallic", object->getMaterial().getMetallic());	
-	shader.setFloat("material.smoothness", object->getMaterial().getSmoothness());
-
-	// Push texture flags
-	shader.setBool("useDiffuseMaps", false);
-	shader.setBool("useSpecularMaps", false);
-	shader.setBool("useNormalMaps", false);
+	shader.setFloat("material.smoothness", object->getMaterial().getSmoothness());	
 
 	// Push lights
 	shader.setInt("lightsCount", lights.size());
@@ -598,7 +635,7 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	for (size_t i = 0; i < object->getModels().size(); i++)
 	{
 		drawModel(object->getModels()[i], shader, object->getMaterial());
-	}
+	}	
 }
 
 ///<summary>Отрисовка скайбокса.</summary>

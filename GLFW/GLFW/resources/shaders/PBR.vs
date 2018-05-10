@@ -21,22 +21,14 @@ struct Light
 out VS_OUT
 {
     vec3 fragmentPosition;
-    vec3 fragmentPositionTBN;
-
     vec3 fragmentNormal;
     vec2 textureCoords;
-
     vec3 cameraPosition; 
-    vec3 cameraPositionTBN;
-
-    vec3 lightsPositionsTBN[5];
 } vs_out;
 
 uniform mat4 projectionMatrix, viewMatrix, modelMatrix;
 
 uniform vec3 cameraPosition;
-
-uniform bool useNormalMaps;
 
 uniform int lightsCount;
 uniform Light light[5];
@@ -50,28 +42,4 @@ void main()
     vs_out.textureCoords = vTextureCoords;
 
     vs_out.cameraPosition = cameraPosition;
-
-    //if (useNormalMaps)
-    //{
-    //    vec3 normal = normalize(vec3(modelMatrix * vec4(vNormal, 0.0f)));
-    //    vec3 tangent = normalize(vec3(modelMatrix * vec4(vTangent, 0.0f)));
-        
-    //    vec3 bitangent;
-
-    //    // Gram–Schmidt process
-    //    tangent = normalize(tangent - dot(tangent, normal) * normal);
-    //    bitangent = cross(normal, tangent);
-
-    //    //bitangent = normalize(vec3(modelMatrix * vec4(vBitangent, 0.0f)));
-
-    //    mat3 TBN = transpose(mat3(tangent, bitangent, normal));
-
-    //    vs_out.fragmentPositionTBN = TBN * vs_out.fragmentPosition;
-    //    vs_out.cameraPositionTBN = TBN * cameraPosition;
-
-    //    for (int i = 0; i < lightsCount; i++)
-    //    {
-    //        vs_out.lightsPositionsTBN[i] = TBN * lights[i].position;
-    //    }
-    //}
 } 

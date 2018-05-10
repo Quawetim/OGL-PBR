@@ -17,7 +17,7 @@ unsigned int textureLoader::loadTexture(const std::string path, TextureType type
 
 		GLint internalFormat;
 
-		if (type == TextureType::diffuse)
+		if (type == TextureType::albedo)
 		{
 			internalFormat = GL_SRGB;
 		}
