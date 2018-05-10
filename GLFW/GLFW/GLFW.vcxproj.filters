@@ -197,6 +197,9 @@
     <ClCompile Include="src\scene\Scene2.cpp">
       <Filter>Файлы исходного кода\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\scene\Scene3.cpp">
+      <Filter>Файлы исходного кода\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\callbacks\Callbacks.h">
@@ -257,6 +260,9 @@
       <Filter>Файлы исходного кода\object\light</Filter>
     </ClInclude>
     <ClInclude Include="src\scene\Scene2.h">
+      <Filter>Файлы исходного кода\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\scene\Scene3.h">
       <Filter>Файлы исходного кода\scene</Filter>
     </ClInclude>
   </ItemGroup>

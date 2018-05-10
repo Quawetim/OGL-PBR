@@ -3,7 +3,7 @@
 #include "IScene.h"
 #include "../object/light/Light.h"
 
-///<summary>—цена 1.</summary>
+///<summary>—цена 2.</summary>
 class Scene2 : public IScene
 {
 private:

@@ -5,6 +5,7 @@
 #include "scene\TestScene.h"
 #include "scene\Scene1.h"
 #include "scene\Scene2.h"
+#include "scene\Scene3.h"
 #include "object\coordinate_axes\CoordinateAxes.h"
 #include "camera\ICamera.h"
 #include "object\skybox\Skybox.h"
@@ -35,6 +36,14 @@ int main()
 	inputHandler.setEventHandling();
 
 	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////	
+	
+	Shader guiShader("gui");
+
+	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
+
+	renderer->clearScreen();
+	renderer->drawDebugQuad(debugTexture, guiShader);
+	renderer->swapBuffers();
 
 	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   	
 
@@ -55,15 +64,14 @@ int main()
 	Shader pbrShader("PBR");
 	Shader axesShader("axes");
 	Shader skyboxShader("skybox");
-	Shader postProcessingShader("postProcessing");
-	Shader guiShader("gui");
+	Shader postProcessingShader("postProcessing");	
 
 	std::vector<Model*> models;
 
 	Model *cube = new Model("resources/3dmodels/cube.obj");
 	models.push_back(cube);
 
-	Model *sphere = new Model("resources/3dmodels/sphere_lowpoly.obj");
+	Model *sphere = new Model("resources/3dmodels/sphere_highpoly.obj");
 	models.push_back(sphere);
 
 	Model *cylinder = new Model("resources/3dmodels/cylinder.obj");
@@ -76,6 +84,9 @@ int main()
 
 	Scene2 scene2;
 	scene2.init(models);
+
+	Scene3 scene3;
+	scene3.init(models);
 
 	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
 	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
@@ -100,9 +111,7 @@ int main()
 		testModels.push_back(deadpool);
 		
 		testScene.init(testModels);
-	}
-
-	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
+	}	
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -112,6 +121,7 @@ int main()
 
 	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
+	float startTime = static_cast<float>(glfwGetTime());
     float currentFrameTime = 0.0f;
 	float fpsLastCheckTime = 0.0f;
 	float deltaTime = 0.0f;
@@ -155,8 +165,9 @@ int main()
 		////////////////////////////////DEBUG////////////////////////////////
 
 		//testScene.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		//scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 		//scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		scene3.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 
@@ -184,6 +195,11 @@ int main()
 		renderer->swapBuffers();
 		renderer->pollEvents();
 		frames++;
+
+		if (!scene3.move)
+		{
+			if (currentFrameTime - startTime >= 2.0f) scene3.move = true;
+		}
     }
 
 	delete cylinder;

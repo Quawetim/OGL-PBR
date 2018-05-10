@@ -15,7 +15,7 @@ void IEntity::move(float deltaTime, const float velocity_x, const float velocity
 ///<param name = 'axis'>Ось вращения.</param>
 void IEntity::rotate(float deltaTime, const double angle, const glm::vec3 axis)
 {
-	this->rotationAngle_ += angle * deltaTime;
+	this->rotationAngle_ += -angle * deltaTime;
 	this->rotationAxis_ = axis;
 
 	if (this->rotationAngle_ == 360) this->rotationAngle_ = 0;
@@ -72,7 +72,7 @@ void IEntity::setPosition(const glm::vec3 position)
 ///<param name = 'axis'>Ось поворота.</param>
 void IEntity::setRotation(const double angle, const glm::vec3 axis)
 {
-	this->rotationAngle_ = angle;
+	this->rotationAngle_ = -angle;
 	this->rotationAxis_ = axis;
 
 	if (this->rotationAngle_ == 360) this->rotationAngle_ = 0;

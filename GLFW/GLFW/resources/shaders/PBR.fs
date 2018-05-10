@@ -257,6 +257,11 @@ void main()
 
         fragmentColor.rgb = ambientColor + L0;
         //fragmentColor.rgb = normal;
+        //fragmentColor.rgb = albedo;
+        //fragmentColor.rgb = vec3(smoothness);
+        //fragmentColor.rgb = vec3(roughness);
+        //fragmentColor.rgb = vec3(metallic);
+        //fragmentColor.rgb = vec3(ambientOcclusion);
     }
     else
     {

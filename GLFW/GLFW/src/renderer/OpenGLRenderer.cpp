@@ -660,7 +660,7 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 	glBindVertexArray(0);
 }
 
-void OpenGLRenderer::drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader)
+void OpenGLRenderer::drawDebugQuad(unsigned int textureID, Shader shader)
 {
 	glm::mat4 modelMatrix;
 	modelMatrix = glm::scale(glm::vec3(0.3f));

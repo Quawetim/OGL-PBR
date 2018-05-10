@@ -53,7 +53,7 @@ void Scene2::init(std::vector<Model*> models)
 	Texture texture;
 	Material material;
 
-	//  убы
+	// —феры
 	float metallic = 0.0f;
 	float smoothness = 0.0f;
 

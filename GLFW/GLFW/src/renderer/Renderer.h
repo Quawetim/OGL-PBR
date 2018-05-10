@@ -119,7 +119,7 @@ public:
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	virtual void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position) = 0;
 
-	virtual void drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader) = 0;
+	virtual void drawDebugQuad(unsigned int textureID, Shader shader) = 0;
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>
@@ -346,7 +346,7 @@ public:
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position);
 
-	void drawDebugQuad(unsigned int textureID, glm::mat4 view_Matrix, Shader shader);
+	void drawDebugQuad(unsigned int textureID, Shader shader);
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'shader'>Шейдер.</param>
