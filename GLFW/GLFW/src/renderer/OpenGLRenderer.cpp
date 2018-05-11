@@ -566,7 +566,7 @@ void OpenGLRenderer::drawFrame(Shader shader, unsigned int frame)
 void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
 	shader.activate();
-	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, object->getModelMatrix());
+	shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, object->getModelMatrix());
 	shader.setVec3("cameraPosition", camera_position);	
 
 	// Push material params
@@ -618,7 +618,7 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 	glDepthFunc(GL_LEQUAL);
 
 	shader.activate();
-	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, skybox->getModelMatrix());
+	shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, skybox->getModelMatrix());
 	shader.setVec3("cameraPosition", camera_position);
 
 	shader.setInt("envMap", 0);
@@ -643,7 +643,7 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 	glm::vec3 color;
 
 	light->getShader()->activate();
-	light->getShader()->setProjectionViewModelMatrices(this->projectionMatrix_, view_Matrix, light->getModelMatrix());
+	light->getShader()->setProjectionViewModelMatrices(this->perspectiveProjection_, view_Matrix, light->getModelMatrix());
 
 	color = glm::pow(light->getSpecularColor(), glm::vec3(gamma));
 	light->getShader()->setVec3("color", color);
@@ -660,25 +660,91 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 	glBindVertexArray(0);
 }
 
+///<summary>Отрисовка UI элемента.</summary>
+///<param name = 'ui_element'>Элемент.</param>
+void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
+{
+	std::shared_ptr<Shader> shader = ui_element->getShader();
+
+	float left = (ui_element->getX() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
+	float bottom = (ui_element->getY() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
+
+	float right = (ui_element->getX() + ui_element->getWidth() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
+	float top = (ui_element->getY() + ui_element->getHeight() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
+
+	float vertices[] =
+	{
+		// positions   // textureCoords
+		left, top,  0.0f, 1.0f,
+		left, bottom,  0.0f, 0.0f,
+		right, top,  1.0f, 1.0f,
+		right, bottom,  1.0f, 0.0f
+	};
+
+	if (ui_element->VAO_ == 0)
+	{
+		glGenVertexArrays(1, &ui_element->VAO_);
+		glGenBuffers(1, &ui_element->VBO_);
+	}
+
+	glBindVertexArray(ui_element->VAO_);
+	glBindBuffer(GL_ARRAY_BUFFER, ui_element->VBO_);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+	glDisable(GL_DEPTH_TEST);
+	shader->activate();
+
+	shader->setProjectionMatrix(this->orthoProjection_);
+
+	if (ui_element->useBgTexture())
+	{
+		shader->setBool("useBgTexture", true);
+
+		std::shared_ptr<Texture> texture = ui_element->getBgTexture();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture->getID());
+		shader->setInt("bgTexture", 0);		
+	}
+	else
+	{
+		shader->setBool("useBgTexture", false);
+		shader->setVec3("bgColor", ui_element->getBgColor());
+	}
+
+	glBindVertexArray(ui_element->VAO_);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+
+	if (ui_element->useBgTexture())
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	glEnable(GL_DEPTH_TEST);
+}
+
 void OpenGLRenderer::drawDebugQuad(unsigned int textureID, Shader shader)
 {
 	glm::mat4 modelMatrix;
 	modelMatrix = glm::scale(glm::vec3(0.3f));
 	modelMatrix *= glm::translate(glm::vec3(5.0f, 2.0f, 0.0f));
 
-	float ratio = static_cast<float>(this->windowHeight_) / static_cast<float>(this->windowWidth_);
-	glm::mat4 projectionMatrix;
-
-	if (this->windowWidth_ >= this->windowHeight_) projectionMatrix = glm::ortho(-1.0f / ratio, 1.0f / ratio, -1.0f, 1.0f, -1.0f, 1.0f);
-	else projectionMatrix = glm::ortho(-1.0f, 1.0f, -1.0f * ratio, 1.0f * ratio, -1.0f, 1.0f);
-
 	glDisable(GL_DEPTH_TEST);
 
 	shader.activate();
 
-	shader.setProjectionMatrix(projectionMatrix);
+	shader.setProjectionMatrix(this->orthoProjection_);
 	shader.setModelMatrix(modelMatrix);
 	
+	shader.setBool("useBgTexture", true);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	shader.setInt("bgTexture", 0);

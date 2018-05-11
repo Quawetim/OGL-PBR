@@ -64,6 +64,9 @@
     <Filter Include="Файлы исходного кода\object\light">
       <UniqueIdentifier>{74813ebe-2086-4cfa-b53a-817f2c8cb796}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Файлы исходного кода\ui">
+      <UniqueIdentifier>{c854d589-e85a-4a18-9a40-d24501753305}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\README.md">
@@ -114,12 +117,6 @@
     <None Include="resources\shaders\skybox.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
-    <None Include="resources\shaders\gui.fs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
-    <None Include="resources\shaders\gui.vs">
-      <Filter>Файлы ресурсов\shaders</Filter>
-    </None>
     <None Include="resources\shaders\prefiltering.fs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
@@ -130,6 +127,12 @@
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
     <None Include="resources\shaders\brdf.vs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\ui.fs">
+      <Filter>Файлы ресурсов\shaders</Filter>
+    </None>
+    <None Include="resources\shaders\ui.vs">
       <Filter>Файлы ресурсов\shaders</Filter>
     </None>
   </ItemGroup>
@@ -200,6 +203,9 @@
     <ClCompile Include="src\scene\Scene3.cpp">
       <Filter>Файлы исходного кода\scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui\UiElement.cpp">
+      <Filter>Файлы исходного кода\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\callbacks\Callbacks.h">
@@ -264,6 +270,9 @@
     </ClInclude>
     <ClInclude Include="src\scene\Scene3.h">
       <Filter>Файлы исходного кода\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\UiElement.h">
+      <Filter>Файлы исходного кода\ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -75,12 +75,15 @@
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)/GLFW/lib/x86;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma</TargetName>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <ExecutablePath>$(SolutionDir)/GLFW/dll/x64;$(ExecutablePath)</ExecutablePath>
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)/GLFW/lib/x64;$(LibraryPath)</LibraryPath>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,6 +91,8 @@
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)/GLFW/lib/x86;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma</TargetName>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -95,6 +100,7 @@
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)/GLFW/lib/x64;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma64</TargetName>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -111,8 +117,10 @@
       <AdditionalDependencies>opengl32.lib;glfw3.lib;freetype271.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>rd /s /q "$(OutDir)resources"
@@ -135,10 +143,17 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <AdditionalDependencies>opengl32.lib;glfw3.lib;freetype271.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
-xcopy /s /y "$(ProjectDir)dll\x64\*.*" "$(OutDir)"
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
 xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -159,8 +174,10 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       <EntryPointSymbol>mainCRTStartup</EntryPointSymbol>
     </Link>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>rd /s /q "$(OutDir)resources"
@@ -189,10 +206,17 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
       </IgnoreAllDefaultLibraries>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
-xcopy /s /y "$(ProjectDir)dll\x64\*.*" "$(OutDir)"
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
 xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>rd /s /q "$(OutDir)resources"
+xcopy /s /y "$(ProjectDir)resources\*.*" "$(OutDir)resources\"
+xcopy /s /y "$(ProjectDir)dll\x86\*.*" "$(OutDir)"
+xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="..\..\README.md" />
@@ -207,8 +231,6 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <None Include="resources\shaders\axes.vs" />
     <None Include="resources\shaders\brdf.fs" />
     <None Include="resources\shaders\brdf.vs" />
-    <None Include="resources\shaders\gui.fs" />
-    <None Include="resources\shaders\gui.vs" />
     <None Include="resources\shaders\irradiance.fs" />
     <None Include="resources\shaders\irradiance.vs" />
     <None Include="resources\shaders\lightShader.fs" />
@@ -223,6 +245,8 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <None Include="resources\shaders\prefiltering.vs" />
     <None Include="resources\shaders\skybox.fs" />
     <None Include="resources\shaders\skybox.vs" />
+    <None Include="resources\shaders\ui.fs" />
+    <None Include="resources\shaders\ui.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\callbacks\Callbacks.cpp" />
@@ -247,6 +271,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClCompile Include="src\shader\Shader.cpp" />
     <ClCompile Include="src\stb_image\stb_image.cpp" />
     <ClCompile Include="src\texture_loader\TextureLoader.cpp" />
+    <ClCompile Include="src\ui\UiElement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
@@ -270,6 +295,7 @@ xcopy /s /y "$(ProjectDir)config\config.ini" "$(OutDir)config\"</Command>
     <ClInclude Include="src\scene\TestScene.h" />
     <ClInclude Include="src\shader\Shader.h" />
     <ClInclude Include="src\texture_loader\TextureLoader.h" />
+    <ClInclude Include="src\ui\UiElement.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GLFW.rc" />

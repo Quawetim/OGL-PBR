@@ -3,6 +3,7 @@
 #include "../object/Object.h"
 #include "../object/skybox/Skybox.h"
 #include "../object/light/Light.h"
+#include "../ui/UiElement.h"
 
 struct QWindow
 {
@@ -29,6 +30,9 @@ protected:
 
 	///<summary>Высота окна.</summary>
 	int windowHeight_;
+
+	///<summary>Соотношение сторон экрана.</summary>
+	float aspectRatio_;
 
 	///<summary>Полный экран.</summary>
 	bool isFullScreen_;
@@ -63,8 +67,11 @@ protected:
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
 
-	///<summary>Матрица проекции.</summary>
-	glm::mat4 projectionMatrix_;	
+	///<summary>Перспективная матрица проекции.</summary>
+	glm::mat4 perspectiveProjection_;
+
+	///<summary>Ортографическая матрица проекции.</summary>
+	glm::mat4 orthoProjection_;
 
 	///<summary>Отрисовка модели.</summary>
 	///<param name = 'model'>Модель.</param>
@@ -118,6 +125,10 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	virtual void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position) = 0;
+
+	///<summary>Отрисовка UI элемента.</summary>
+	///<param name = 'ui_element'>Элемент.</param>
+	virtual void drawUiElement(std::shared_ptr<UiElement> ui_element) = 0;
 
 	virtual void drawDebugQuad(unsigned int textureID, Shader shader) = 0;
 
@@ -264,8 +275,11 @@ public:
 	///<summary>Возвращает текущее значение FOV.</summary>
 	int getFOV() const;
 
-	///<summary>Возвращает матрицу проекции.</summary>
-	glm::mat4 getProjectionMatrix() const;
+	///<summary>Возвращает перспективную матрицу проекции.</summary>
+	glm::mat4 getPerspectiveProjectionMatrix() const;
+
+	///<summary>Возвращает ортографическую матрицу проекции.</summary>
+	glm::mat4 getOrthoProjectionMatrix() const;
 
 	///<summary>Возвращает идентификатор irradiance map.</summary>
 	unsigned int getIrradianceMap() const;
@@ -345,6 +359,10 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
 	void drawPointLight(std::shared_ptr<PointLight> light, glm::mat4 view_Matrix, glm::vec3 camera_position);
+
+	///<summary>Отрисовка UI элемента.</summary>
+	///<param name = 'ui_element'>Элемент.</param>
+	void drawUiElement(std::shared_ptr<UiElement> ui_element);
 
 	void drawDebugQuad(unsigned int textureID, Shader shader);
 

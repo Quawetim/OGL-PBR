@@ -33,6 +33,8 @@ uniform vec3 cameraPosition;
 uniform int lightsCount;
 uniform Light light[5];
 
+bool useNormalMaps;
+
 void main()
 {
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0f);

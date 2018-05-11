@@ -2,7 +2,6 @@
 #include "renderer\Renderer.h"
 #include "callbacks\Callbacks.h"
 #include "object\Object.h"
-#include "scene\TestScene.h"
 #include "scene\Scene1.h"
 #include "scene\Scene2.h"
 #include "scene\Scene3.h"
@@ -10,6 +9,7 @@
 #include "camera\ICamera.h"
 #include "object\skybox\Skybox.h"
 #include "texture_loader\TextureLoader.h"
+#include "ui\UiElement.h"
 
 void sleep(float seconds)
 {
@@ -35,18 +35,6 @@ int main()
 	InputHandler inputHandler;
 	inputHandler.setEventHandling();
 
-	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////	
-	
-	Shader guiShader("gui");
-
-	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
-
-	renderer->clearScreen();
-	renderer->drawDebugQuad(debugTexture, guiShader);
-	renderer->swapBuffers();
-
-	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   	
-
 	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera());
 	std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
 	std::shared_ptr<ICamera> camera_static(new StaticCamera());
@@ -60,11 +48,21 @@ int main()
 
 	std::shared_ptr<ICamera> camera = cameras[0];
 
+	Shader uiShader("ui");
 	Shader materialShader("material");
 	Shader pbrShader("PBR");
 	Shader axesShader("axes");
 	Shader skyboxShader("skybox");
-	Shader postProcessingShader("postProcessing");	
+	Shader postProcessingShader("postProcessing");
+
+	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////		
+
+	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
+
+	renderer->clearScreen();
+	renderer->swapBuffers();
+
+	////////////////////////////////////////////////////////////LoadingData//////////////////////////////////////////////////////////////   		
 
 	std::vector<Model*> models;
 
@@ -80,13 +78,13 @@ int main()
 	CoordinateAxes coordinateAxes;
 
 	Scene1 scene1;
-	scene1.init(models);
+	//scene1.init(models);
 
 	Scene2 scene2;
-	scene2.init(models);
+	//scene2.init(models);
 
 	Scene3 scene3;
-	scene3.init(models);
+	//scene3.init(models);
 
 	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
 	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
@@ -97,27 +95,12 @@ int main()
 	
 	////////////////////////////////DEBUG////////////////////////////////
 
-	bool testSceneEnabled = false;
-
-	TestScene testScene;
-
-	if (testSceneEnabled)
-	{
-		std::vector<Model*> testModels;
-		Model *nanosuit = new Model("_old/resources/3dmodels/nanosuit/nanosuit.obj");
-		testModels.push_back(nanosuit);
-
-		Model *deadpool = new Model("_old/resources/3dmodels/deadpool.obj");
-		testModels.push_back(deadpool);
-		
-		testScene.init(testModels);
-	}	
+	std::shared_ptr<UiElement> panel(new Panel());
+	panel->setBgColor(255, 0, 0);
 
 	////////////////////////////////DEBUG////////////////////////////////
 
 	renderer->setVsync(false);
-
-	sleep(0.5f);
 
 	////////////////////////////////////////////////////////////RenderLoop///////////////////////////////////////////////////////////////
 
@@ -164,10 +147,9 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		//testScene.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 		//scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 		//scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		scene3.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		//scene3.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 
@@ -176,6 +158,8 @@ int main()
 		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
 
 		//renderer->drawDebugQuad(renderer->brdfLutMap_, camera->getViewMatrix(), guiShader);
+
+		renderer->drawUiElement(panel);
 
 		// Frame
 

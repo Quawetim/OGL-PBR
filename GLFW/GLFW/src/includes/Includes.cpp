@@ -31,7 +31,7 @@ float gamma = 2.2f;
 Texture::Texture()
 {
 	this->id_ = 0;
-	this->path_ = "resources/textures/test.png";
+	this->path_ = "";
 	this->type_ = TextureType::albedo;
 }
 

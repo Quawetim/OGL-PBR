@@ -16,7 +16,12 @@ Renderer::Renderer()
 
 	readConfig();
 
-	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
+	this->aspectRatio_ = static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_);
+
+	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), this->aspectRatio_, 0.05f, 500.0f);
+
+	if (this->windowWidth_ >= this->windowHeight_) this->orthoProjection_ = glm::ortho(-1.0f * this->aspectRatio_, 1.0f * this->aspectRatio_, -1.0f, 1.0f, -1.0f, 1.0f);
+	else this->orthoProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f / this->aspectRatio_, 1.0f / this->aspectRatio_, -1.0f, 1.0f);
 
 	this->environmentMap_ = 0;
 	this->irradianceMap_ = 0;
@@ -127,7 +132,7 @@ bool Renderer::isOgl() const
 void Renderer::setFOV(const int fov)
 {
 	this->fov_ = static_cast<float>(fov);
-	this->projectionMatrix_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
+	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_), 0.05f, 500.0f);
 }
 
 ///<summary>Возвращает указатель на окно.</summary>
@@ -184,10 +189,16 @@ int Renderer::getFOV() const
 	return static_cast<int>(this->fov_);
 }
 
-///<summary>Возвращает матрицу проекции.</summary>
-glm::mat4 Renderer::getProjectionMatrix() const
+///<summary>Возвращает перспективную матрицу проекции.</summary>
+glm::mat4 Renderer::getPerspectiveProjectionMatrix() const
 {
-	return this->projectionMatrix_;
+	return this->perspectiveProjection_;
+}
+
+///<summary>Возвращает ортографическую матрицу проекции.</summary>
+glm::mat4 Renderer::getOrthoProjectionMatrix() const
+{
+	return this->orthoProjection_;
 }
 
 ///<summary>Возвращает идентификатор irradiance map.</summary>
