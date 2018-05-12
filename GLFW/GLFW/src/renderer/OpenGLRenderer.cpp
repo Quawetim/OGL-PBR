@@ -104,9 +104,15 @@ OpenGLRenderer::OpenGLRenderer()
 	glfwSetScrollCallback(this->window_.OGLwindow, InputHandle::scrollDispatch);
 
 	// Скрыть курсор, поместить в центр экрана
-	//this->windowInfo_.setShowCursor(false);
-	glfwSetInputMode(this->window_.OGLwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPos(this->window_.OGLwindow, this->getWindowHalfWidth(), this->getWindowHalfHeight());
+	if (this->isShowCursor_)
+	{
+		glfwSetInputMode(this->window_.OGLwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	else
+	{
+		glfwSetInputMode(this->window_.OGLwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetCursorPos(this->window_.OGLwindow, this->getWindowHalfWidth(), this->getWindowHalfHeight());
+	}
 
 	glEnable(GL_MULTISAMPLE);
 
@@ -1031,7 +1037,18 @@ void OpenGLRenderer::setVsync(const bool vsync)
 ///<param name = 'showCursor'>Отображать курсор.</param>
 void OpenGLRenderer::setShowCursor(const bool showCursor)
 {
-	//this->isShowCursor_ = showCursor;
+	this->isShowCursor_ = showCursor;
+
+	if (this->isShowCursor_)
+	{
+		glfwSetInputMode(this->window_.OGLwindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);		
+	}
+	else
+	{
+		glfwSetInputMode(this->window_.OGLwindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+
+	glfwSetCursorPos(this->window_.OGLwindow, this->getWindowHalfWidth(), this->getWindowHalfHeight());
 }
 
 ///<summary>Задаёт имя окна.</summary>

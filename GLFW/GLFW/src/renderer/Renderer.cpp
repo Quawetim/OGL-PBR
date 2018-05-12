@@ -10,7 +10,7 @@ Renderer::Renderer()
 
 	this->isFullScreen_ = false;
 	this->isVSync_ = false;
-	this->isShowCursor_ = true;
+	this->isShowCursor_ = false;
 
 	this->fov_ = 60.0f;
 

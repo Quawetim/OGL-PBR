@@ -51,20 +51,21 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
     // FOV по-умолчанию
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { renderer->setFOV(60); }
 
-    // Отображение курсора при удерживании CTRL
-    //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-    //{
-    //    windowInfo.setShowCursor(true);
-    //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    //}
+    // Отображение курсора при нажтии CTRL
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+	{
+		if (renderer->isShowCursor()) 
+			renderer->setShowCursor(false);
+		else renderer->setShowCursor(true);
+    }
 
-    //// Скрытие курсора при отпускании CTRL
-    //if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
-    //{
-    //    windowInfo.setShowCursor(false);
-    //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    //    glfwSetCursorPos(window, windowInfo.getHalfWidth(), windowInfo.getHalfHeight());
-    //}
+    // Скрытие курсора при отпускании CTRL
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
+    {
+        //windowInfo.setShowCursor(false);
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        //glfwSetCursorPos(window, renderer->getWindowHalfWidth(), renderer->getWindowHeight());
+    }
 
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> space" << std::endl;
 	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> tab" << std::endl;

@@ -170,8 +170,8 @@ int main()
 		renderer->drawFrame(postProcessingShader, frame);
 
 		// Обработка ввода
-				
-		camera->handleInput(deltaTime);
+						
+		if (!renderer->isShowCursor()) camera->handleInput(deltaTime);
 		//skybox->setPosition(camera->getPosition());
 
         // Меняем кадр

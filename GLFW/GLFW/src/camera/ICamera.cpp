@@ -87,7 +87,7 @@ void FirstPersonCamera::handleInput(float deltaTime)
 	this->yaw_ += offsetX * deltaTime * this->cameraVelocities_.yaw;
 
 	if (this->yaw_ > 360.0f) this->yaw_ -= 360.0f;
-	if (this->yaw_ < -360.0f) this->yaw_ += 360.0f;
+	if (this->yaw_ < -360.0f) this->yaw_ += 360.0f;	
 
 	//if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_E) == GLFW_PRESS) this->roll_ -= deltaTime * this->cameraVelocities_.roll;
 	//if (glfwGetKey(windowInfo.getWindowPointer(), GLFW_KEY_Q) == GLFW_PRESS) this->roll_ += deltaTime * this->cameraVelocities_.roll;
@@ -97,7 +97,9 @@ void FirstPersonCamera::handleInput(float deltaTime)
 
 	this->front_ = glm::normalize(glm::vec3(sin(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_)), sin(glm::radians(this->pitch_)),
 		-1.0f * cos(glm::radians(this->yaw_)) * cos(glm::radians(this->pitch_))));
+
 	//this->up_ = glm::normalize(glm::vec3(cos(glm::radians(this->roll_)), sin(glm::radians(this->roll_)), cos(glm::radians(this->roll_))));
+	
 	this->right_ = glm::normalize(glm::cross(this->front_, this->up_));
 
 	if (renderer->isOgl())
