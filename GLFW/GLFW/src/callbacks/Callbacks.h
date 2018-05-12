@@ -42,7 +42,7 @@ namespace callbacks
 	///<param name = 'length'>Длина сообщения.</param>
 	///<param name = 'message'>Сообщение.</param>
 	///<param name = 'userParam'>Параметры.</param>
-	void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+	HWND glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
 	///<summary>Обработка ошибок GLFW.</summary>
 	///<param name = 'errorCode'>Код ошибки.</param>

@@ -7,16 +7,18 @@ Renderer::Renderer()
 
 	this->windowWidth_ = 800;
 	this->windowHeight_ = 600;
+	this->scaleX_ = 1.0f;
+	this->scaleY_ = 1.0f;
 
 	this->isFullScreen_ = false;
 	this->isVSync_ = false;
-	this->isShowCursor_ = false;
+	this->isShowCursor_ = true;
 
 	this->fov_ = 60.0f;
 
 	readConfig();
 
-	this->aspectRatio_ = static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_);
+	this->updateAspectRatio();
 
 	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), this->aspectRatio_, 0.05f, 500.0f);
 
@@ -119,6 +121,29 @@ void Renderer::readConfig()
 	}
 
 	fin.close();
+}
+
+void Renderer::updateAspectRatio()
+{
+	this->aspectRatio_ = static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_);
+}
+
+///<summary>Задаёт ширину окна.</summary>
+///<param name = 'width'>Ширина.</param>
+void Renderer::setWindowWidth(const int width)
+{
+	this->scaleX_ = static_cast<float>(width) / static_cast<float>(this->windowWidth_);
+	this->windowWidth_ = width;
+	this->updateAspectRatio();
+}
+
+///<summary>Задаёт высоту окна.</summary>
+///<param name = 'height'>Высота.</param>
+void Renderer::setWindowHeight(const int height)
+{
+	this->scaleY_ = static_cast<float>(height) / static_cast<float>(this->windowHeight_);
+	this->windowHeight_ = height;
+	this->updateAspectRatio();
 }
 
 ///<summary>Возвращает тип рендерера.</summary>

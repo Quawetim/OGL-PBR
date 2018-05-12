@@ -13,9 +13,13 @@
 #include <ctime>
 #include <memory>
 
+#include <Windows.h>
+
 #include <GLAD\glad.h>
 
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW\glfw3.h>
+#include <GLFW\glfw3native.h>
 
 #include <GLM\glm.hpp>
 #include <GLM\gtc\matrix_transform.hpp>

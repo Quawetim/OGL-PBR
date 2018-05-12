@@ -11,10 +11,16 @@
 #include "texture_loader\TextureLoader.h"
 #include "ui\UiElement.h"
 
+int abcdefg = 128;
 void sleep(float seconds)
 {
 	float end = static_cast<float>(glfwGetTime()) + seconds;
 	while (glfwGetTime() < end) {};
+}
+
+void testfunc()
+{
+	abcdefg = 256;
 }
 
 #if defined(_WIN64) && defined(NDEBUG)
@@ -78,7 +84,7 @@ int main()
 	CoordinateAxes coordinateAxes;
 
 	Scene1 scene1;
-	//scene1.init(models);
+	scene1.init(models);
 
 	Scene2 scene2;
 	//scene2.init(models);
@@ -95,8 +101,12 @@ int main()
 	
 	////////////////////////////////DEBUG////////////////////////////////
 
-	std::shared_ptr<UiElement> panel(new Panel());
-	panel->setBgColor(255, 0, 0);
+	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 300));
+	panel->setBgColor(255, 0, 0);	
+	
+	std::shared_ptr<UiButton> button(new UiButton());
+	button->setClickFunction(&testfunc);
+	button->click();
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -147,7 +157,7 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		//scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 		//scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 		//scene3.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
@@ -159,7 +169,7 @@ int main()
 
 		//renderer->drawDebugQuad(renderer->brdfLutMap_, camera->getViewMatrix(), guiShader);
 
-		renderer->drawUiElement(panel);
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
 
 		// Frame
 
@@ -171,8 +181,11 @@ int main()
 
 		// Обработка ввода
 						
-		if (!renderer->isShowCursor()) camera->handleInput(deltaTime);
-		//skybox->setPosition(camera->getPosition());
+		if (!renderer->isShowCursor())
+		{
+			camera->handleInput(deltaTime);
+			//skybox->setPosition(camera->getPosition());
+		}
 
         // Меняем кадр
 

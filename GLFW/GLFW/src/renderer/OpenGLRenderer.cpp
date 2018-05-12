@@ -678,13 +678,19 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	float right = (ui_element->getX() + ui_element->getWidth() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
 	float top = (ui_element->getY() + ui_element->getHeight() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
 
+	//top = 1.0f;
+	//bottom = -1.0f;
+
+	//left = -1.0f;
+	//right = 1.0f;
+
 	float vertices[] =
 	{
 		// positions   // textureCoords
-		left, top,  0.0f, 1.0f,
-		left, bottom,  0.0f, 0.0f,
-		right, top,  1.0f, 1.0f,
-		right, bottom,  1.0f, 0.0f
+		left, top,		0.0f, 1.0f,
+		left, bottom,	0.0f, 0.0f,
+		right, top,		1.0f, 1.0f,
+		right, bottom,	1.0f, 0.0f
 	};
 
 	if (ui_element->VAO_ == 0)
@@ -1000,20 +1006,6 @@ void OpenGLRenderer::useDepthTesting(const bool use)
 QWindow OpenGLRenderer::getWindow() const
 {
 	return this->window_;
-}
-
-///<summary>Задаёт ширину окна.</summary>
-///<param name = 'width'>Ширина.</param>
-void OpenGLRenderer::setWindowWidth(const int width)
-{
-	//this->windowWidth_ = width;
-}
-
-///<summary>Задаёт высоту окна.</summary>
-///<param name = 'height'>Высота.</param>
-void OpenGLRenderer::setWindowHeight(const int height)
-{
-	//this->windowHeight_ = height;
 }
 
 ///<summary>Задаёт полноэкранный режим.</summary>

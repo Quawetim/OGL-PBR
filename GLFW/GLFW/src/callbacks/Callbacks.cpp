@@ -51,20 +51,11 @@ void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int
     // FOV по-умолчанию
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { renderer->setFOV(60); }
 
-    // Отображение курсора при нажтии CTRL
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    // Отображение курсора при нажтии ALT
+	if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
 	{
-		if (renderer->isShowCursor()) 
-			renderer->setShowCursor(false);
+		if (renderer->isShowCursor()) renderer->setShowCursor(false);
 		else renderer->setShowCursor(true);
-    }
-
-    // Скрытие курсора при отпускании CTRL
-    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_RELEASE)
-    {
-        //windowInfo.setShowCursor(false);
-        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        //glfwSetCursorPos(window, renderer->getWindowHalfWidth(), renderer->getWindowHeight());
     }
 
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> space" << std::endl;
@@ -90,7 +81,7 @@ void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int heig
 ///<param name = 'length'>Длина сообщения.</param>
 ///<param name = 'message'>Сообщение.</param>
 ///<param name = 'userParam'>Параметры.</param>
-void APIENTRY callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+HWND callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     std::stringstream ss;
 

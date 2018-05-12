@@ -31,6 +31,9 @@ protected:
 	///<summary>Высота окна.</summary>
 	int windowHeight_;
 
+	float scaleX_;
+	float scaleY_;
+
 	///<summary>Соотношение сторон экрана.</summary>
 	float aspectRatio_;
 
@@ -73,12 +76,8 @@ protected:
 	///<summary>Ортографическая матрица проекции.</summary>
 	glm::mat4 orthoProjection_;
 
-	///<summary>Отрисовка модели.</summary>
-	///<param name = 'model'>Модель.</param>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'material'>Материал.</param>
-	virtual void drawModel(Model* model, Shader shader, Material material) = 0;
-	
+	void updateAspectRatio();
+
 	///<summary>Генерирует irradiance map.</summary>
 	virtual void generateIrradianceMap() = 0;
 
@@ -87,6 +86,12 @@ protected:
 
 	///<summary>Генерирует BRDF LUT map.</summary>
 	virtual void generateBrdfLutMap() = 0;
+
+	///<summary>Отрисовка модели.</summary>
+	///<param name = 'model'>Модель.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'material'>Материал.</param>
+	virtual void drawModel(Model* model, Shader shader, Material material) = 0;	
 
 	virtual void renderCube() = 0;
 
@@ -219,11 +224,11 @@ public:
 
 	///<summary>Задаёт ширину окна.</summary>
 	///<param name = 'width'>Ширина.</param>
-	virtual void setWindowWidth(const int width) = 0;
+	void setWindowWidth(const int width);
 
 	///<summary>Задаёт высоту окна.</summary>
 	///<param name = 'height'>Высота.</param>
-	virtual void setWindowHeight(const int height) = 0;
+	void setWindowHeight(const int height);
 
 	///<summary>Задаёт имя окна.</summary>
 	///<param name = 'title'>Имя.</param>
@@ -307,12 +312,6 @@ private:
 	///<summary>Шейдер для генерации BRDF LUT map.</summary>
 	Shader brdfLutShader_;
 
-	///<summary>Отрисовка модели.</summary>
-	///<param name = 'model'>Модель.</param>
-	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'material'>Материал.</param>
-	void drawModel(Model* model, Shader shader, Material material);
-
 	///<summary>Генерирует irradiance map.</summary>
 	void generateIrradianceMap();
 
@@ -321,6 +320,12 @@ private:
 
 	///<summary>Генерирует BRDF LUT map.</summary>
 	void generateBrdfLutMap();
+
+	///<summary>Отрисовка модели.</summary>
+	///<param name = 'model'>Модель.</param>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'material'>Материал.</param>
+	void drawModel(Model* model, Shader shader, Material material);
 
 	void renderQuad();
 
@@ -331,7 +336,7 @@ public:
 	OpenGLRenderer();
 
 	///<summary>Деструктор.</summary>
-	~OpenGLRenderer();	
+	~OpenGLRenderer();		
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
@@ -446,13 +451,7 @@ public:
 	///<summary>Возвращает указатель на окно.</summary>
 	QWindow getWindow() const;
 
-	///<summary>Задаёт ширину окна.</summary>
-	///<param name = 'width'>Ширина.</param>
-	void setWindowWidth(const int width);
-
-	///<summary>Задаёт высоту окна.</summary>
-	///<param name = 'height'>Высота.</param>
-	void setWindowHeight(const int height);
+	////////////////////////////////////////////// set-функции //////////////////////////////////////////////
 
 	///<summary>Задаёт полноэкранный режим.</summary>
 	///<param name = 'fullScreen'>Полноэкранный режим.</param>

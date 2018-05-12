@@ -1,5 +1,6 @@
 #include "UiElement.h"
 
+//////////////////////////////////////UiElement//////////////////////////////////////
 ///<summary>Констркутор.</summary>
 UiElement::UiElement()
 {
@@ -82,24 +83,32 @@ std::shared_ptr<Shader> UiElement::getShader() const
 	return this->shader_;
 }
 
-//////////////////////////////////////Panel//////////////////////////////////////
+//////////////////////////////////////UiPanel//////////////////////////////////////
 ///<summary>Констркутор.</summary>
 ///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
 ///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-Panel::Panel(const int x, const int y, const int width, const int height)
+UiPanel::UiPanel(const int x, const int y, const int width, const int height)
 {
 	this->x_ = x;
 	this->y_ = y;
 	this->width_ = width;
-	this->height_ = height;
-
-	
+	this->height_ = height;	
 }
 
-///<summary>Отрисовывает элемент.</summary>
-void Panel::draw()
+void UiPanel::addChild(std::shared_ptr<UiElement> ui_element)
 {
-	
+	this->childs_.push_back(ui_element);
+}
+
+//////////////////////////////////////UiButton//////////////////////////////////////
+void UiButton::setClickFunction(void(*function)())
+{
+	this->click_function_ = function;
+}
+
+void UiButton::click()
+{
+	this->click_function_();
 }

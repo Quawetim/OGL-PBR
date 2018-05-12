@@ -3,8 +3,12 @@
 
 class UiElement
 {
-public:
+	friend class OpenGLRenderer;
+private:
+	///<summary>Vertex Array Object.</summary>
 	unsigned int VAO_;
+
+	///<summary>Vertex Buffer Object.</summary>
 	unsigned int VBO_;
 
 protected:
@@ -30,14 +34,11 @@ protected:
 	std::shared_ptr<Texture> bgTexture_;
 
 	///<summary>Шейдер.</summary>
-	std::shared_ptr<Shader> shader_;
+	std::shared_ptr<Shader> shader_;	
 
 public:
 	///<summary>Констркутор.</summary>
 	UiElement();
-
-	///<summary>Отрисовывает элемент.</summary>
-	virtual void draw() = 0;
 
 	///<summary>Задаёт цвет в RGB формате.</summary>
 	void setBgColor(const unsigned int red, const unsigned int green, const unsigned int blue);
@@ -73,24 +74,34 @@ public:
 	std::shared_ptr<Shader> getShader() const;
 };
 
-class Panel : public UiElement
+class UiPanel : public UiElement
 {
+private:
+	std::vector<std::shared_ptr<UiElement>> childs_;
+
 public:
 	///<summary>Конструктор по-умолчанию.</summary>
-	Panel() {};
+	UiPanel() {};
 
 	///<summary>Констркутор.</summary>
 	///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
 	///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
 	///<param name = 'width'>Ширина элемента.</param>
 	///<param name = 'height'>Высота элемента.</param>
-	Panel(const int x, const int y, const int width, const int height);
+	UiPanel(const int x, const int y, const int width, const int height);
 
-	///<summary>Отрисовывает элемент.</summary>
-	void draw();
+	void addChild(std::shared_ptr<UiElement> ui_element);
 };
 
-class Button : public Panel
+class UiButton : public UiElement
 {
+private:
+	void(*click_function_)();
 
+public:
+	UiButton() {};
+
+	void setClickFunction(void(*function)());
+
+	void click();
 };

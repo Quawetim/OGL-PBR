@@ -14,7 +14,7 @@ Logger::Logger()
         std::cout << "Failed to initialize Logger." << std::endl;
         system("pause");
 #else
-        MessageBox(NULL, L"Failed to initialize Logger.", L"ERROR:Logger", MB_OK | MB_ICONERROR);
+        MessageBox(NULL, L"Failed to initialize Logger.", L"ERROR:Logger", MB_SYSTEMMODAL | MB_OK | MB_ICONERROR);
 #endif
         exit(ERROR_INIT_LOGGER);
     }
@@ -66,7 +66,7 @@ void Logger::log(std::string source, enum ErrorType error_type, std::string mess
     {
         std::wstring w_msg, w_src;
 
-        ss_src << "ERROR:" << source;
+        ss_src << "ERROR: " << source;
 
         std::string src;
         src = ss_src.str();
@@ -74,7 +74,7 @@ void Logger::log(std::string source, enum ErrorType error_type, std::string mess
         w_msg = std::wstring(message.begin(), message.end());
         w_src = std::wstring(src.begin(), src.end());
 
-        MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
+        MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_SYSTEMMODAL | MB_OK | MB_ICONERROR);
 
         logger.stop(__FUNCTION__, true, "Error occured.");
     }
@@ -132,7 +132,7 @@ void Logger::stop(std::string source, bool error, std::string message)
         std::stringstream ss_src;
         std::wstring w_msg, w_src;
 
-        ss_src << "ERROR:" << source;
+        ss_src << "ERROR: " << source;
 
         std::string src;
         src = ss_src.str();
@@ -140,7 +140,7 @@ void Logger::stop(std::string source, bool error, std::string message)
         w_msg = std::wstring(message.begin(), message.end());
         w_src = std::wstring(src.begin(), src.end());
 
-        MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_OK | MB_ICONERROR);
+        MessageBox(NULL, w_msg.c_str(), w_src.c_str(), MB_SYSTEMMODAL | MB_OK | MB_ICONERROR);
         exit(BAD_EXIT);
 #endif 
     }
