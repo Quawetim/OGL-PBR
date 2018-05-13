@@ -58,8 +58,8 @@ void main()
 
 	    float len = length(position);
 	            
-        float radius = 0.8f;
-        float softness = 0.5f;
+        float radius = 0.72f;
+        float softness = 0.62f;
 
         float vignette = smoothstep(radius, radius - softness, len);
 

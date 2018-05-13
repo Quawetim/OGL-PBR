@@ -11,7 +11,7 @@
 #include "texture_loader\TextureLoader.h"
 #include "ui\UiElement.h"
 
-int abcdefg = 128;
+int abcdefg = 0;
 void sleep(float seconds)
 {
 	float end = static_cast<float>(glfwGetTime()) + seconds;
@@ -20,7 +20,7 @@ void sleep(float seconds)
 
 void testfunc()
 {
-	abcdefg = 256;
+	abcdefg += 1;
 }
 
 #if defined(_WIN64) && defined(NDEBUG)
@@ -32,8 +32,6 @@ int main()
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
-	//unsigned int frame = renderer->generateTexture2D_RGB16F(renderer->getWindowWidth(), renderer->getWindowHeight());
-	//unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
 
 	GLint ttt;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &ttt);
@@ -81,7 +79,7 @@ int main()
 	Model *cylinder = new Model("resources/3dmodels/cylinder.obj");
 	models.push_back(cylinder);
 
-	CoordinateAxes coordinateAxes;
+	std::shared_ptr<CoordinateAxes> coordinateAxes(new CoordinateAxes());
 
 	Scene1 scene1;
 	scene1.init(models);
@@ -104,9 +102,10 @@ int main()
 	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 720));
 	panel->setBgColor(255, 0, 0);	
 	
-	std::shared_ptr<UiButton> button(new UiButton());
+	std::shared_ptr<UiButton> button(new UiButton(0, 0, 40, 40));
+	button->setBgColor(0, 255, 0);
 	button->setClickFunction(&testfunc);
-	button->click();
+	//button->click();
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -125,7 +124,7 @@ int main()
 
     logger.log(__FUNCTION__, ErrorType::info, "Initialization complete. Entering main loop.");
 	
-	while (!renderer->quit())
+	while (!renderer->shouldExit())
 	//while (frames < 1)
 	{
 		currentFrameTime = static_cast<float>(glfwGetTime());
@@ -163,14 +162,6 @@ int main()
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 
-		// GUI
-
-		coordinateAxes.draw(axesShader, camera->getViewMatrixAxes());
-
-		//renderer->drawDebugQuad(renderer->brdfLutMap_, camera->getViewMatrix(), guiShader);
-
-		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
-
 		// Frame
 
 		renderer->bindFrameBuffer(0);
@@ -178,6 +169,18 @@ int main()
 		
 		renderer->clearScreen();
 		renderer->drawFrame(postProcessingShader);
+
+		// GUI
+		renderer->drawCoordinateAxes(coordinateAxes, camera->getViewMatrixAxes());
+
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button));
+
+		if (inputHandler.mouseKeys_[GLFW_MOUSE_BUTTON_1])
+		{
+			inputHandler.mouseKeys_[GLFW_MOUSE_BUTTON_1] = false;
+			button->click();
+		}
 
 		// Обработка ввода
 						

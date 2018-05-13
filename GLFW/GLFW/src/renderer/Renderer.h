@@ -4,6 +4,7 @@
 #include "../object/skybox/Skybox.h"
 #include "../object/light/Light.h"
 #include "../ui/UiElement.h"
+#include "../object/coordinate_axes/CoordinateAxes.h"
 
 struct QWindow
 {
@@ -124,7 +125,7 @@ public:
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>
-	virtual void drawCoordinateAxes(glm::mat4 view_matrix) = 0;
+	virtual void drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix) = 0;
 
 	virtual void drawDebugQuad(unsigned int textureID, Shader shader) = 0;
 
@@ -140,7 +141,10 @@ public:
 	virtual void pollEvents() const = 0;
 
 	///<summary>Флаг выхода из главного цикла.</summary>
-	virtual bool quit() const = 0;
+	virtual bool shouldExit() const = 0;
+
+	///<summary>Завершение работы.</summary>
+	virtual void exit() const = 0;
 
 	///<summary>Задаёт параметры вьюпорта.</summary>
 	///<param name = 'x'>Координата x левого нижнего угла.</param>
@@ -326,6 +330,9 @@ private:
 	///<summary>Шейдер для генерации BRDF LUT map.</summary>
 	Shader brdfLutShader_;
 
+	///<summary>Шейдер для отрисовки координатных осей.</summary>
+	Shader coordinateAxesShader_;
+
 	///<summary>Пересчитывает размер frame текстуры.</summary>
 	void updateFrameSize();
 
@@ -387,7 +394,7 @@ public:
 
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>
-	void drawCoordinateAxes(glm::mat4 view_matrix);
+	void drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix);
 
 	void drawDebugQuad(unsigned int textureID, Shader shader);
 
@@ -403,7 +410,10 @@ public:
 	void pollEvents() const;
 
 	///<summary>Флаг выхода из главного цикла.</summary>
-	bool quit() const;
+	bool shouldExit() const;
+
+	///<summary>Завершение работы.</summary>
+	void exit() const;
 
 	///<summary>Задаёт параметры вьюпорта.</summary>
 	///<param name = 'x'>Координата x левого нижнего угла.</param>

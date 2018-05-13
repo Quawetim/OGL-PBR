@@ -103,6 +103,19 @@ void UiPanel::addChild(std::shared_ptr<UiElement> ui_element)
 }
 
 //////////////////////////////////////UiButton//////////////////////////////////////
+///<summary>Констркутор.</summary>
+///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
+///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
+///<param name = 'width'>Ширина элемента.</param>
+///<param name = 'height'>Высота элемента.</param>
+UiButton::UiButton(const int x, const int y, const int width, const int height)
+{
+	this->x_ = x;
+	this->y_ = y;
+	this->width_ = width;
+	this->height_ = height;
+}
+
 void UiButton::setClickFunction(void(*function)())
 {
 	this->click_function_ = function;

@@ -2,13 +2,41 @@
 #include "..\camera\ICamera.h"
 #include "..\renderer\Renderer.h"
 
+///<summary>Кнструктор по-умолчанию.</summary>
+InputHandler::InputHandler()
+{
+	for (size_t i = 0; i < 1024; i++)
+	{
+		if (i < 5) this->mouseKeys_[i] = false;
+
+		this->keyboardKeys_[i] = false;
+	}
+}
+
 ///<summary>Обработка позиции курсора.</summary>
 ///<param name = 'window'>Указатель на окно.</param>
 ///<param name = 'xpos'>Координата по оси x.</param>
 ///<param name = 'ypos'>Координата по оси y.</param>
 void InputHandler::handleCursorPosition(GLFWwindow* window, double xpos, double ypos)
 {
+	
+}
 
+///<summary>Обработка клавиш мышки.</summary>
+///<param name = 'window'>Указатель на окно.</param>
+///<param name = 'button'>Клавиша.</param>
+///<param name = 'action'>Событие.</param>
+///<param name = 'mods'>Модификаторы.</param>
+void InputHandler::handleMouseButtons(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button >= 0 && button < 5)
+	{
+		if (action == GLFW_PRESS) this->mouseKeys_[button] = true;
+		else
+		{
+			if (action == GLFW_RELEASE) this->mouseKeys_[button] = false;
+		}
+	}
 }
 
 ///<summary>Обработка колёсика мышки.</summary>
@@ -40,26 +68,46 @@ void InputHandler::handleScroll(GLFWwindow* window, double xoffset, double yoffs
 ///<param name = 'action'>Действие.</param>
 ///<param name = 'mods'>Модификаторы.</param>
 void InputHandler::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    static int PrevCamera;
-    
-    // Клавиши для выхода из приложения
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-    //if (key == GLFW_KEY_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
-    //if (key == GLFW_KEY_KP_ENTER && action == GLFW_PRESS) glfwSetWindowShouldClose(window, GL_TRUE);
+{   
+	if (key >= 0 && key < 1024)
+	{
+		if (action == GLFW_PRESS) this->keyboardKeys_[key] = true;
+		else
+		{
+			if (action == GLFW_RELEASE) this->keyboardKeys_[key] = false;
+		}
+	}
 
-    // FOV по-умолчанию
-	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS) { renderer->setFOV(60); }
+	// Клавиши для выхода из приложения
+	if (this->keyboardKeys_[GLFW_KEY_ESCAPE]) renderer->exit();
 
-    // Отображение курсора при нажтии ALT
-	if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+	// FOV по-умолчанию
+	if (this->keyboardKeys_[GLFW_KEY_BACKSPACE])
+	{
+		renderer->setFOV(60);
+		this->keyboardKeys_[GLFW_KEY_BACKSPACE] = false;
+	}
+
+	// Отображение курсора при нажтии ALT
+	if (this->keyboardKeys_[GLFW_KEY_LEFT_ALT])
 	{
 		if (renderer->isShowCursor()) renderer->setShowCursor(false);
 		else renderer->setShowCursor(true);
-    }
 
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> space" << std::endl;
-	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS) std::cout << "<InputHandler::handleKeyboard> tab" << std::endl;
+		this->keyboardKeys_[GLFW_KEY_LEFT_ALT] = false;
+	}
+
+	if (this->keyboardKeys_[GLFW_KEY_SPACE])
+	{
+		std::cout << "<InputHandler::handleKeyboard> space" << std::endl;
+		this->keyboardKeys_[GLFW_KEY_SPACE] = false;
+	}
+
+	if (this->keyboardKeys_[GLFW_KEY_TAB])
+	{
+		std::cout << "<InputHandler::handleKeyboard> tab" << std::endl;
+		this->keyboardKeys_[GLFW_KEY_TAB] = false;
+	}
 }
 
 ///<summary>Обработка изменения размера окна.</summary>
@@ -81,7 +129,7 @@ void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int heig
 ///<param name = 'length'>Длина сообщения.</param>
 ///<param name = 'message'>Сообщение.</param>
 ///<param name = 'userParam'>Параметры.</param>
-HWND callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+void APIENTRY callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     std::stringstream ss;
 
@@ -137,8 +185,6 @@ HWND callbacks::glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum seve
 
     ss << std::endl;
     ss << "**************************" << std::endl;
-
-
 }
 
 ///<summary>Обработка ошибок GLFW.</summary>

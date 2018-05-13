@@ -4,12 +4,28 @@
 ///<summary>Default callbacks</summary>
 class InputHandler : public InputHandle
 {
+private:
+	
+
 public:
+	bool mouseKeys_[5];
+	bool keyboardKeys_[1024];
+
+	///<summary>Кнструктор по-умолчанию.</summary>
+	InputHandler();
+
 	///<summary>Обработка позиции курсора.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'xpos'>Координата по оси x.</param>
 	///<param name = 'ypos'>Координата по оси y.</param>
 	void handleCursorPosition(GLFWwindow* window, double xpos, double ypos);
+
+	///<summary>Обработка клавиш мышки.</summary>
+	///<param name = 'window'>Указатель на окно.</param>
+	///<param name = 'button'>Клавиша.</param>
+	///<param name = 'action'>Событие.</param>
+	///<param name = 'mods'>Модификаторы.</param>
+	void handleMouseButtons(GLFWwindow* window, int button, int action, int mods);
 
 	///<summary>Обработка колёсика мышки.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
@@ -42,7 +58,7 @@ namespace callbacks
 	///<param name = 'length'>Длина сообщения.</param>
 	///<param name = 'message'>Сообщение.</param>
 	///<param name = 'userParam'>Параметры.</param>
-	HWND glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
+	void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
 
 	///<summary>Обработка ошибок GLFW.</summary>
 	///<param name = 'errorCode'>Код ошибки.</param>

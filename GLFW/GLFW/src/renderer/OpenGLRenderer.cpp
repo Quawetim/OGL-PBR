@@ -10,7 +10,7 @@ OpenGLRenderer::OpenGLRenderer()
 	{
 		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize GLFW.");
 		logger.stop(__FUNCTION__);
-		exit(ERROR_INIT_GLFW);
+		std::exit(ERROR_INIT_GLFW);
 	}
 
 	// OpenGL 4.3       
@@ -52,7 +52,7 @@ OpenGLRenderer::OpenGLRenderer()
 		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize WINDOW.");
 		logger.stop(__FUNCTION__);
 		glfwTerminate();
-		exit(ERROR_INIT_WINDOW);
+		std::exit(ERROR_INIT_WINDOW);
 	}
 
 	// Окно в центр экрана
@@ -68,7 +68,7 @@ OpenGLRenderer::OpenGLRenderer()
 	{
 		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize GLAD.");
 		logger.stop(__FUNCTION__);
-		exit(ERROR_INIT_GLAD);
+		std::exit(ERROR_INIT_GLAD);
 	}
 
 	int GL_Current_Version_Major = GLVersion.major;
@@ -80,7 +80,7 @@ OpenGLRenderer::OpenGLRenderer()
 	glGetIntegerv(GL_CONTEXT_FLAGS, &gl_context_flags);
 	if (gl_context_flags & GL_CONTEXT_FLAG_DEBUG_BIT)
 	{
-		glEnable(GL_DEBUG_OUTPUT);
+		//glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(callbacks::glDebugOutput, nullptr);
 
@@ -92,7 +92,7 @@ OpenGLRenderer::OpenGLRenderer()
 		logger.log(__FUNCTION__, ErrorType::error, "Failed to initialize GL DebugOutput.");
 		logger.stop(__FUNCTION__);
 		glfwTerminate();
-		exit(ERROR_INIT_DEBUG_OUTPUT);
+		std::exit(ERROR_INIT_DEBUG_OUTPUT);
 	}
 #endif
 
@@ -101,6 +101,7 @@ OpenGLRenderer::OpenGLRenderer()
 	glfwSetFramebufferSizeCallback(this->window_.OGLwindow, InputHandle::framebufferSizeDispatch);
 	glfwSetKeyCallback(this->window_.OGLwindow, InputHandle::keyboardDispatch);
 	glfwSetCursorPosCallback(this->window_.OGLwindow, InputHandle::cursorPosDispatch);
+	glfwSetMouseButtonCallback(this->window_.OGLwindow, InputHandle::mouseButtonsDispatch);
 	glfwSetScrollCallback(this->window_.OGLwindow, InputHandle::scrollDispatch);
 
 	// Скрыть курсор, поместить в центр экрана
@@ -231,6 +232,7 @@ OpenGLRenderer::OpenGLRenderer()
 	this->irradianceShader_ = Shader("irradiance");
 	this->prefilteringShader_ = Shader("prefiltering");
 	this->brdfLutShader_ = Shader("brdf");
+	this->coordinateAxesShader_ = Shader("axes");
 
 	this->tempRenderBuffer_ = this->generateRenderBuffer(256, 256);
 	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
@@ -492,7 +494,7 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 					{
 						logger.log(__FUNCTION__, ErrorType::error, "Unexpected texture type");
 						logger.stop(__FUNCTION__, true, "Unexpected texture type");
-						exit(ERROR_UNEXPECTED_TEXTURE_TYPE);
+						std::exit(ERROR_UNEXPECTED_TEXTURE_TYPE);
 					}
 			}
 
@@ -689,6 +691,8 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 ///<param name = 'ui_element'>Элемент.</param>
 void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 {
+	glDisable(GL_DEPTH_TEST);
+
 	std::shared_ptr<Shader> shader = ui_element->getShader();
 
 	/*			 ___________________(x1; y1)
@@ -698,7 +702,7 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	*			|___________________|
 	*	(x0; y0)					
 	*/
-
+	
 	float scaleX = this->windowWidth_ / 1280.0f;
 	float scaleY = this->windowHeight_ / 720.0f;
 
@@ -733,7 +737,6 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-	glDisable(GL_DEPTH_TEST);
 	shader->activate();
 
 	shader->setProjectionMatrix(this->orthoProjection_);
@@ -769,9 +772,22 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 
 ///<summary>Отрисовка осей координат.</summary>
 ///<param name = 'view_matrix'>Матрица вида.</param>
-void OpenGLRenderer::drawCoordinateAxes(glm::mat4 view_matrix)
+void OpenGLRenderer::drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix)
 {
+	this->coordinateAxesShader_.activate();
+	this->coordinateAxesShader_.setProjectionViewModelMatrices(axes->getProjectionMatrix(), view_matrix, axes->getModelMatrix());
 
+	int margin = 5;
+	int size = 60;
+
+	glViewport(this->windowWidth_ - size - margin, margin, size, size);
+
+	glBindVertexArray(axes->getVAO());
+	glClear(GL_DEPTH_BUFFER_BIT);
+	glDrawArrays(GL_LINES, 0, 6);
+	glBindVertexArray(0);
+
+	glViewport(0, 0, this->windowWidth_, this->windowHeight_);
 }
 
 void OpenGLRenderer::drawDebugQuad(unsigned int textureID, Shader shader)
@@ -823,9 +839,15 @@ void OpenGLRenderer::pollEvents() const
 }
 
 ///<summary>Флаг выхода из главного цикла.</summary>
-bool OpenGLRenderer::quit() const
+bool OpenGLRenderer::shouldExit() const
 {
 	return glfwWindowShouldClose(this->window_.OGLwindow);
+}
+
+///<summary>Завершение работы.</summary>
+void OpenGLRenderer::exit() const
+{
+	glfwSetWindowShouldClose(this->window_.OGLwindow, GL_TRUE);
 }
 
 ///<summary>Задаёт параметры вьюпорта.</summary>

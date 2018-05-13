@@ -17,9 +17,9 @@
 
 #include <GLAD\glad.h>
 
-#define GLFW_EXPOSE_NATIVE_WIN32
+//#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW\glfw3.h>
-#include <GLFW\glfw3native.h>
+//#include <GLFW\glfw3native.h>
 
 #include <GLM\glm.hpp>
 #include <GLM\gtc\matrix_transform.hpp>
@@ -74,6 +74,13 @@ protected:
 	///<param name = 'ypos'>Координата по оси y.</param>
 	virtual void handleCursorPosition(GLFWwindow* window, double xpos, double ypos) = 0;
 
+	///<summary>Обработка клавиш мышки.</summary>
+	///<param name = 'window'>Указатель на окно.</param>
+	///<param name = 'button'>Клавиша.</param>
+	///<param name = 'action'>Событие.</param>
+	///<param name = 'mods'>Модификаторы.</param>
+	virtual void handleMouseButtons(GLFWwindow* window, int button, int action, int mods) = 0;
+
 	///<summary>Обработка колёсика мышки.</summary>
 	///<param name = 'window'>Указатель на окно.</param>
 	///<param name = 'xoffset'>Смещение по оси X.</param>
@@ -101,6 +108,11 @@ public:
 	static void cursorPosDispatch(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (inputHandle_) inputHandle_->handleCursorPosition(window, xpos, ypos);
+	}
+
+	static void mouseButtonsDispatch(GLFWwindow* window, int button, int action, int mods)
+	{
+		if (inputHandle_) inputHandle_->handleMouseButtons(window, button, action, mods);
 	}
 
 	static void scrollDispatch(GLFWwindow* window, double xoffset, double yoffset)

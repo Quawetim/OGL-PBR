@@ -9,6 +9,7 @@ CoordinateAxes::CoordinateAxes()
 
 	float vertexData[] =
 	{
+		//3x positions			//3x colors
 		0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
@@ -46,24 +47,6 @@ CoordinateAxes::~CoordinateAxes()
 	glDeleteBuffers(1, &this->VBO_);
 }
 
-///<summary>Отрисовка осей.</summary>
-///<param name = 'shader'>Шейдер.</param>
-///<param name = 'view_matrix'>Матрица вида.</param>
-void CoordinateAxes::draw(const Shader shader, const glm::mat4 view_matrix)
-{
-	shader.activate();
-	shader.setProjectionViewModelMatrices(this->projectionMatrix_, view_matrix, this->modelMatrix_);
-	
-	glViewport(5, 5, 60, 60);
-
-	glBindVertexArray(this->VAO_);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	glDrawArrays(GL_LINES, 0, 6);
-	glBindVertexArray(0);
-
-	glViewport(0, 0, renderer->getWindowWidth(), renderer->getWindowHeight());
-}
-
 ///<summary>Возвращает VAO.</summary>
 unsigned int CoordinateAxes::getVAO() const
 {
@@ -74,4 +57,10 @@ unsigned int CoordinateAxes::getVAO() const
 glm::mat4 CoordinateAxes::getModelMatrix() const
 {
 	return this->modelMatrix_;
+}
+
+///<summary>Возвращает матрицу проекции.</summary>
+glm::mat4 CoordinateAxes::getProjectionMatrix() const
+{
+	return this->projectionMatrix_;
 }

@@ -34,7 +34,9 @@ protected:
 	std::shared_ptr<Texture> bgTexture_;
 
 	///<summary>Шейдер.</summary>
-	std::shared_ptr<Shader> shader_;	
+	std::shared_ptr<Shader> shader_;
+
+	std::vector<std::shared_ptr<UiElement>> childs_;
 
 public:
 	///<summary>Констркутор.</summary>
@@ -77,7 +79,7 @@ public:
 class UiPanel : public UiElement
 {
 private:
-	std::vector<std::shared_ptr<UiElement>> childs_;
+	
 
 public:
 	///<summary>Конструктор по-умолчанию.</summary>
@@ -99,7 +101,15 @@ private:
 	void(*click_function_)();
 
 public:
+	///<summary>Конструктор по-умолчанию.</summary>
 	UiButton() {};
+
+	///<summary>Констркутор.</summary>
+	///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
+	///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
+	///<param name = 'width'>Ширина элемента.</param>
+	///<param name = 'height'>Высота элемента.</param>
+	UiButton(const int x, const int y, const int width, const int height);
 
 	void setClickFunction(void(*function)());
 
