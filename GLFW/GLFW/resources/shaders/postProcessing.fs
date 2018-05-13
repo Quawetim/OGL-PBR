@@ -8,6 +8,7 @@ in VS_OUT
 out vec4 fragmentColor;
 
 uniform float gamma;
+uniform vec2 resolution;
 
 uniform sampler2D frame;
 
@@ -53,7 +54,6 @@ void main()
 
     if (vignette)
     {	
-        vec2 resolution = vec2(1280.0f, 720.0f);
 	    vec2 position = (gl_FragCoord.xy / resolution.xy) - vec2(0.5f);
 
 	    float len = length(position);

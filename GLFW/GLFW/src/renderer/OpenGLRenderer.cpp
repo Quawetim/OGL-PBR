@@ -224,6 +224,10 @@ OpenGLRenderer::OpenGLRenderer()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	this->frame_ = this->generateTexture2D_RGB16F(this->windowWidth_, this->windowHeight_);
+	this->frameRenderBuffer_ = this->generateRenderBuffer(this->windowWidth_, this->windowHeight_);
+	this->frameFrameBuffer_ = this->generateFrameBuffer(this->frameRenderBuffer_, this->frame_);
+
 	this->irradianceShader_ = Shader("irradiance");
 	this->prefilteringShader_ = Shader("prefiltering");
 	this->brdfLutShader_ = Shader("brdf");
@@ -246,165 +250,19 @@ OpenGLRenderer::~OpenGLRenderer()
 
 ////////////////////////////////////////////// private-функции //////////////////////////////////////////////
 
-///<summary>Отрисовка модели.</summary>
-///<param name = 'model'>Модель.</param>
-///<param name = 'shader'>Шейдер.</param>
-///<param name = 'material'>Материал.</param>
-void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
+///<summary>Пересчитывает размер frame текстуры.</summary>
+void OpenGLRenderer::updateFrameSize()
 {
-	for (size_t j = 0; j < model->getMeshes().size(); j++)
-	{		
-		unsigned int albedoMapsCount = 0;
-		unsigned int smoothnessMapsCount = 0;
-		unsigned int metallicMapsCount = 0;
-		unsigned int normalMapsCount = 0;
-		unsigned int ambientOcclusionMapsCount = 0;
+	unsigned int oldFrame = this->frame_;
 
-		bool useAlbedoMaps = false;
-		bool useSmoothnessMaps = false;
-		bool useMetallicMaps = false;
-		bool useNormalMaps = false;
-		bool useAmbientOcclusionMaps = false;
+	this->frame_ = this->generateTexture2D_RGB16F(this->windowWidth_, this->windowHeight_);
 
-		TextureKeys mapKeys;
-		TextureKeys albedoKeys = mapTextureType.find(TextureType::albedo)->second;
-		TextureKeys	smoothnessKeys = mapTextureType.find(TextureType::smoothness)->second;
-		TextureKeys	metallicKeys = mapTextureType.find(TextureType::metallic)->second;
-		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;
-		TextureKeys ambientOcclusionKeys = mapTextureType.find(TextureType::ambientOcclusion)->second;
-		
-		std::string mapNumber;
-		std::vector<Texture> pointer;
+	this->bindFrameBuffer(this->frameFrameBuffer_);
+	glBindRenderbuffer(GL_RENDERBUFFER, this->frameRenderBuffer_);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->windowWidth_, this->windowHeight_);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->frame_, 0);
 
-		// костылище
-		// проверить на жор памяти копированием
-		if (material.isTexturesEmpty()) pointer = model->getMeshes()[j].getTextures();
-		else pointer = material.getTextures();
-
-		// Push textures, i = texture unit
-		for (size_t i = 0; i < pointer.size(); i++)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-
-			switch (pointer[i].getType())
-			{
-				case TextureType::albedo:     
-					{
-						mapKeys = albedoKeys;
-
-						mapNumber = std::to_string(albedoMapsCount);
-						albedoMapsCount++;
-
-						if (!useAlbedoMaps) useAlbedoMaps = true;
-						
-						break;
-					}
-				case TextureType::smoothness:
-					{
-						mapKeys = smoothnessKeys;
-
-						mapNumber = std::to_string(smoothnessMapsCount);
-						smoothnessMapsCount++;
-						
-						if (!useSmoothnessMaps) useSmoothnessMaps = true;
-
-						break;
-					}
-				case TextureType::metallic:
-					{
-						mapKeys = metallicKeys;
-
-						mapNumber = std::to_string(metallicMapsCount);
-						metallicMapsCount++;
-
-						if (!useMetallicMaps) useMetallicMaps = true;
-
-						break;
-					}
-				case TextureType::normal:      
-					{
-						mapKeys = normalKeys;
-
-						mapNumber = std::to_string(normalMapsCount);
-						normalMapsCount++;
-						
-						if (!useNormalMaps) useNormalMaps = true;
-						
-						break;
-					}
-				case TextureType::ambientOcclusion:
-					{
-						mapKeys = ambientOcclusionKeys;
-
-						mapNumber = std::to_string(ambientOcclusionMapsCount);
-						ambientOcclusionMapsCount++;
-
-						if (!useAmbientOcclusionMaps) useAmbientOcclusionMaps = true;
-
-						break;
-					}
-				default:
-					{
-						logger.log(__FUNCTION__, ErrorType::error, "Unexpected texture type");
-						logger.stop(__FUNCTION__, true, "Unexpected texture type");
-						exit(ERROR_UNEXPECTED_TEXTURE_TYPE);
-					}
-			}
-
-			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), i);
-			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
-		}
-
-		// Push texture flags
-		shader.setBool(albedoKeys.mapsUse, useAlbedoMaps);
-		shader.setBool(smoothnessKeys.mapsUse, useSmoothnessMaps);
-		shader.setBool(metallicKeys.mapsUse, useMetallicMaps);
-		shader.setBool(normalKeys.mapsUse, useNormalMaps);
-		shader.setBool(ambientOcclusionKeys.mapsUse, useAmbientOcclusionMaps);
-
-		shader.setInt(albedoKeys.mapsCount, albedoMapsCount);
-		shader.setInt(smoothnessKeys.mapsCount, smoothnessMapsCount);
-		shader.setInt(metallicKeys.mapsCount, metallicMapsCount);
-		shader.setInt(normalKeys.mapsCount, normalMapsCount);
-		shader.setInt(ambientOcclusionKeys.mapsCount, ambientOcclusionMapsCount);
-
-		int textureFreeNumber = pointer.size();
-		
-		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
-		shader.setInt("environmentMap", textureFreeNumber);
-		textureFreeNumber++;
-
-		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, this->irradianceMap_);
-		shader.setInt("irradianceMap", textureFreeNumber);
-		textureFreeNumber++;
-
-		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, this->prefilteredMap_);
-		shader.setInt("prefilteredMap", textureFreeNumber);
-		textureFreeNumber++;
-
-		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
-		glBindTexture(GL_TEXTURE_2D, this->brdfLutMap_);
-		shader.setInt("brdfLutMap", textureFreeNumber);
-		textureFreeNumber++;
-
-		glBindVertexArray(model->getMeshes()[j].getVAO());		
-		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-
-		for (size_t i = 0; i < pointer.size(); i++)
-		{
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(GL_TEXTURE_2D, 0);
-		}
-
-		glActiveTexture(GL_TEXTURE0 + pointer.size());
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-		glActiveTexture(GL_TEXTURE0);
-	}
+	this->deleteTexture2D(oldFrame);
 }
 
 ///<summary>Генерирует irradiance map.</summary>
@@ -533,6 +391,167 @@ void OpenGLRenderer::generateBrdfLutMap()
 	glEnable(GL_CULL_FACE);
 }
 
+///<summary>Отрисовка модели.</summary>
+///<param name = 'model'>Модель.</param>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'material'>Материал.</param>
+void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
+{
+	for (size_t j = 0; j < model->getMeshes().size(); j++)
+	{
+		unsigned int albedoMapsCount = 0;
+		unsigned int smoothnessMapsCount = 0;
+		unsigned int metallicMapsCount = 0;
+		unsigned int normalMapsCount = 0;
+		unsigned int ambientOcclusionMapsCount = 0;
+
+		bool useAlbedoMaps = false;
+		bool useSmoothnessMaps = false;
+		bool useMetallicMaps = false;
+		bool useNormalMaps = false;
+		bool useAmbientOcclusionMaps = false;
+
+		TextureKeys mapKeys;
+		TextureKeys albedoKeys = mapTextureType.find(TextureType::albedo)->second;
+		TextureKeys	smoothnessKeys = mapTextureType.find(TextureType::smoothness)->second;
+		TextureKeys	metallicKeys = mapTextureType.find(TextureType::metallic)->second;
+		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;
+		TextureKeys ambientOcclusionKeys = mapTextureType.find(TextureType::ambientOcclusion)->second;
+
+		std::string mapNumber;
+		std::vector<Texture> pointer;
+
+		// костылище
+		// проверить на жор памяти копированием
+		if (material.isTexturesEmpty()) pointer = model->getMeshes()[j].getTextures();
+		else pointer = material.getTextures();
+
+		// Push textures, i = texture unit
+		for (size_t i = 0; i < pointer.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+
+			switch (pointer[i].getType())
+			{
+				case TextureType::albedo:
+					{
+						mapKeys = albedoKeys;
+
+						mapNumber = std::to_string(albedoMapsCount);
+						albedoMapsCount++;
+
+						if (!useAlbedoMaps) useAlbedoMaps = true;
+
+						break;
+					}
+				case TextureType::smoothness:
+					{
+						mapKeys = smoothnessKeys;
+
+						mapNumber = std::to_string(smoothnessMapsCount);
+						smoothnessMapsCount++;
+
+						if (!useSmoothnessMaps) useSmoothnessMaps = true;
+
+						break;
+					}
+				case TextureType::metallic:
+					{
+						mapKeys = metallicKeys;
+
+						mapNumber = std::to_string(metallicMapsCount);
+						metallicMapsCount++;
+
+						if (!useMetallicMaps) useMetallicMaps = true;
+
+						break;
+					}
+				case TextureType::normal:
+					{
+						mapKeys = normalKeys;
+
+						mapNumber = std::to_string(normalMapsCount);
+						normalMapsCount++;
+
+						if (!useNormalMaps) useNormalMaps = true;
+
+						break;
+					}
+				case TextureType::ambientOcclusion:
+					{
+						mapKeys = ambientOcclusionKeys;
+
+						mapNumber = std::to_string(ambientOcclusionMapsCount);
+						ambientOcclusionMapsCount++;
+
+						if (!useAmbientOcclusionMaps) useAmbientOcclusionMaps = true;
+
+						break;
+					}
+				default:
+					{
+						logger.log(__FUNCTION__, ErrorType::error, "Unexpected texture type");
+						logger.stop(__FUNCTION__, true, "Unexpected texture type");
+						exit(ERROR_UNEXPECTED_TEXTURE_TYPE);
+					}
+			}
+
+			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), i);
+			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
+		}
+
+		// Push texture flags
+		shader.setBool(albedoKeys.mapsUse, useAlbedoMaps);
+		shader.setBool(smoothnessKeys.mapsUse, useSmoothnessMaps);
+		shader.setBool(metallicKeys.mapsUse, useMetallicMaps);
+		shader.setBool(normalKeys.mapsUse, useNormalMaps);
+		shader.setBool(ambientOcclusionKeys.mapsUse, useAmbientOcclusionMaps);
+
+		shader.setInt(albedoKeys.mapsCount, albedoMapsCount);
+		shader.setInt(smoothnessKeys.mapsCount, smoothnessMapsCount);
+		shader.setInt(metallicKeys.mapsCount, metallicMapsCount);
+		shader.setInt(normalKeys.mapsCount, normalMapsCount);
+		shader.setInt(ambientOcclusionKeys.mapsCount, ambientOcclusionMapsCount);
+
+		int textureFreeNumber = pointer.size();
+
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
+		shader.setInt("environmentMap", textureFreeNumber);
+		textureFreeNumber++;
+
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->irradianceMap_);
+		shader.setInt("irradianceMap", textureFreeNumber);
+		textureFreeNumber++;
+
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, this->prefilteredMap_);
+		shader.setInt("prefilteredMap", textureFreeNumber);
+		textureFreeNumber++;
+
+		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
+		glBindTexture(GL_TEXTURE_2D, this->brdfLutMap_);
+		shader.setInt("brdfLutMap", textureFreeNumber);
+		textureFreeNumber++;
+
+		glBindVertexArray(model->getMeshes()[j].getVAO());
+		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
+
+		for (size_t i = 0; i < pointer.size(); i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		glActiveTexture(GL_TEXTURE0 + pointer.size());
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		glActiveTexture(GL_TEXTURE0);
+	}
+}
+
 void OpenGLRenderer::renderQuad()
 {
 	glBindVertexArray(this->quadVAO_);
@@ -551,13 +570,13 @@ void OpenGLRenderer::renderCube()
 
 ///<summary>Отрисовка кадра во весь экран.</summary>
 ///<param name = 'shader'>Шейдер.</param>
-///<param name = 'frame'>Кадр.</param>
-void OpenGLRenderer::drawFrame(Shader shader, unsigned int frame)
+void OpenGLRenderer::drawFrame(Shader shader)
 {
 	shader.activate();
 	shader.setFloat("gamma", gamma);
+	shader.setVec2("resolution", glm::vec2(this->windowWidth_, this->windowHeight_));
 	
-	this->bindTexture2D(frame);
+	this->bindTexture2D(this->frame_);
 	glBindVertexArray(this->quadVAO_);
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -672,25 +691,30 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 {
 	std::shared_ptr<Shader> shader = ui_element->getShader();
 
-	float left = (ui_element->getX() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	float bottom = (ui_element->getY() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
+	/*			 ___________________(x1; y1)
+	*			|					|
+	*			|					|
+	*			|					|
+	*			|___________________|
+	*	(x0; y0)					
+	*/
 
-	float right = (ui_element->getX() + ui_element->getWidth() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	float top = (ui_element->getY() + ui_element->getHeight() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
+	float scaleX = this->windowWidth_ / 1280.0f;
+	float scaleY = this->windowHeight_ / 720.0f;
 
-	//top = 1.0f;
-	//bottom = -1.0f;
+	float x0 = (ui_element->getX() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
+	float y0 = (ui_element->getY() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
 
-	//left = -1.0f;
-	//right = 1.0f;
+	float x1 = (ui_element->getX() + ui_element->getWidth() * scaleX - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
+	float y1 = (ui_element->getY() + ui_element->getHeight() * scaleY - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
 
 	float vertices[] =
 	{
 		// positions   // textureCoords
-		left, top,		0.0f, 1.0f,
-		left, bottom,	0.0f, 0.0f,
-		right, top,		1.0f, 1.0f,
-		right, bottom,	1.0f, 0.0f
+		x0, y1,	0.0f, 1.0f,
+		x0, y0,	0.0f, 0.0f,
+		x1, y1,	1.0f, 1.0f,
+		x1, y0,	1.0f, 0.0f
 	};
 
 	if (ui_element->VAO_ == 0)
@@ -741,6 +765,13 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	}
 
 	glEnable(GL_DEPTH_TEST);
+}
+
+///<summary>Отрисовка осей координат.</summary>
+///<param name = 'view_matrix'>Матрица вида.</param>
+void OpenGLRenderer::drawCoordinateAxes(glm::mat4 view_matrix)
+{
+
 }
 
 void OpenGLRenderer::drawDebugQuad(unsigned int textureID, Shader shader)
@@ -879,6 +910,7 @@ unsigned int OpenGLRenderer::generateTexture2D_RG16F(const int width, const int 
 
 ///<summary>Создаёт float CubeMap.</summary>
 ///<param name = 'size'>Размер.</param>
+///<param name = 'generate_mipmap'>Нужно ли генерировать mipmap.</param>
 unsigned int OpenGLRenderer::generateCubeMap16F(const int size, bool generate_mipmap)
 {
 	unsigned int ID;
@@ -924,6 +956,9 @@ void OpenGLRenderer::deleteTexture2D(const unsigned int ID)
 	glDeleteTextures(1, &ID);
 }
 
+///<summary>Создаёт рендербуффер.</summary>
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
 unsigned int OpenGLRenderer::generateRenderBuffer(const int width, const int height)
 {
 	unsigned int renderBuffer;
@@ -931,14 +966,16 @@ unsigned int OpenGLRenderer::generateRenderBuffer(const int width, const int hei
 	glGenRenderbuffers(1, &renderBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
 
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 
 	return renderBuffer;
 }
 
 ///<summary>Создаёт фреймбуффер.</summary>
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
 ///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
-unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int textureID)
+unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int renderBuffer, const unsigned int textureID)
 {
 	unsigned int frameBuffer;
 
@@ -947,10 +984,6 @@ unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int textureID)
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureID, 0);
 
-	unsigned int renderBuffer;
-	glGenRenderbuffers(1, &renderBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, this->windowWidth_, this->windowHeight_);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -967,6 +1000,7 @@ unsigned int OpenGLRenderer::generateFrameBuffer(const unsigned int textureID)
 }
 
 ///<summary>Создаёт кубический фреймбуффер.</summary>
+///<param name = 'renderBuffer'>Рендербуффер.</param>
 unsigned int OpenGLRenderer::generateFrameBufferCube(const unsigned int renderBuffer)
 {
 	unsigned int frameBuffer;
@@ -978,6 +1012,12 @@ unsigned int OpenGLRenderer::generateFrameBufferCube(const unsigned int renderBu
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 
 	return frameBuffer;
+}
+
+///<summary>Задаёт активный фреймбуффер для кадра.</summary>
+void OpenGLRenderer::bindFrameBuffer()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, this->frameFrameBuffer_);
 }
 
 ///<summary>Задаёт активный фреймбуффер.</summary>

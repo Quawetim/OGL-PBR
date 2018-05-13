@@ -152,6 +152,15 @@ void Shader::setFloat(const std::string &name, const float value) const
     glUniform1f(glGetUniformLocation(this->id_, name.c_str()), value);
 }
 
+///<summary>Задаёт (передаёт) значение переменной типа vec2 в шейдере по имени.</summary>
+///<param name = 'name'>Имя переменной в шейдере.</param>
+///<param name = 'value'>Задаваемое значение.</param>
+void Shader::setVec2(const std::string &name, const glm::vec2 &value) const
+{
+	this->activate();
+	glUniform2fv(glGetUniformLocation(this->id_, name.c_str()), 1, &value[0]);
+}
+
 ///<summary>Задаёт (передаёт) значение переменной типа vec3 в шейдере по имени.</summary>
 ///<param name = 'name'>Имя переменной в шейдере.</param>
 ///<param name = 'value'>Задаваемое значение.</param>

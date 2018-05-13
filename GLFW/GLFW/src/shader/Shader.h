@@ -54,6 +54,11 @@ public:
     ///<param name = 'value'>Задаваемое значение.</param>
     void setFloat(const std::string &name, const float value) const;
 
+	///<summary>Задаёт (передаёт) значение переменной типа vec2 в шейдере по имени.</summary>
+	///<param name = 'name'>Имя переменной в шейдере.</param>
+	///<param name = 'value'>Задаваемое значение.</param>
+	void setVec2(const std::string &name, const glm::vec2 &value) const;
+
     ///<summary>Задаёт (передаёт) значение переменной типа vec3 в шейдере по имени.</summary>
     ///<param name = 'name'>Имя переменной в шейдере.</param>
     ///<param name = 'value'>Задаваемое значение.</param>

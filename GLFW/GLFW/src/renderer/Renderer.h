@@ -49,24 +49,6 @@ protected:
 	///<summary>FOV.</summary>
 	float fov_;
 
-	///<summary>Environment map.</summary>
-	unsigned int environmentMap_;
-
-	///<summary>Irradiance map.</summary>
-	unsigned int irradianceMap_;
-
-	///<summary>Pre-filtered environment map.</summary>
-	unsigned int prefilteredMap_;
-
-	///<summary>BRDF LUT map.</summary>
-	unsigned int brdfLutMap_;
-
-	///<summary>Временный рендербуффер.</summary>
-	unsigned int tempRenderBuffer_;
-	
-	///<summary>Временный фреймбуффер.</summary>
-	unsigned int tempFrameBuffer_;
-
 	///<summary>Разрешение карт отражений.</summary>
 	int reflectionsResolution_;
 
@@ -76,7 +58,13 @@ protected:
 	///<summary>Ортографическая матрица проекции.</summary>
 	glm::mat4 orthoProjection_;
 
+	///<summary>Считывает Aspect Ratio 
+	///<para>и обновляет projectionPerspective и orthoPerspective.</para>
+	///</summary>
 	void updateAspectRatio();
+
+	///<summary>Пересчитывает размер frame текстуры.</summary>
+	virtual void updateFrameSize() = 0;
 
 	///<summary>Генерирует irradiance map.</summary>
 	virtual void generateIrradianceMap() = 0;
@@ -108,8 +96,7 @@ public:
 
 	///<summary>Отрисовка кадра во весь экран.</summary>
 	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'frame'>Кадр.</param>
-	virtual void drawFrame(Shader shader, unsigned int frame) = 0;
+	virtual void drawFrame(Shader shader) = 0;
 
 	///<summary>Отрисовка объекта.</summary>
 	///<param name = 'object'>Объект.</param>
@@ -135,12 +122,11 @@ public:
 	///<param name = 'ui_element'>Элемент.</param>
 	virtual void drawUiElement(std::shared_ptr<UiElement> ui_element) = 0;
 
-	virtual void drawDebugQuad(unsigned int textureID, Shader shader) = 0;
-
 	///<summary>Отрисовка осей координат.</summary>
-	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
-	//virtual void drawCoordinateAxes(Shader shader, glm::mat4 view_matrix) = 0;
+	virtual void drawCoordinateAxes(glm::mat4 view_matrix) = 0;
+
+	virtual void drawDebugQuad(unsigned int textureID, Shader shader) = 0;
 
 	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
 
@@ -183,7 +169,8 @@ public:
 
 	///<summary>Создаёт float CubeMap.</summary>
 	///<param name = 'size'>Размер.</param>
-	virtual unsigned int generateCubeMap16F(const int size, bool generate_mipmap) = 0;
+	///<param name = 'generate_mipmap'>Нужно ли генерировать mipmap.</param>
+	virtual unsigned int generateCubeMap16F(const int size, const bool generate_mipmap) = 0;
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'ID'>Идентификатор текстуры.</param>
@@ -193,14 +180,23 @@ public:
 	///<param name = 'ID'>Идентификатор текстуры.</param>
 	virtual void deleteTexture2D(const unsigned int ID) = 0;
 
+	///<summary>Создаёт рендербуффер.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
 	virtual unsigned int generateRenderBuffer(const int width, const int height) = 0;
 
 	///<summary>Создаёт фреймбуффер.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
 	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
-	virtual unsigned int generateFrameBuffer(const unsigned int textureID) = 0;
+	virtual unsigned int generateFrameBuffer(const unsigned int renderBuffer, const unsigned int textureID) = 0;
 
 	///<summary>Создаёт кубический фреймбуффер.</summary>
+	///<param name = 'renderBuffer'>Рендербуффер.</param>
 	virtual unsigned int generateFrameBufferCube(const unsigned int renderBuffer) = 0;
+
+	///<summary>Задаёт активный фреймбуффер для кадра.</summary>
+	virtual void bindFrameBuffer() = 0;
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
 	///<param name = 'ID'>Идентификатор фреймбуффера.</param>
@@ -285,9 +281,6 @@ public:
 
 	///<summary>Возвращает ортографическую матрицу проекции.</summary>
 	glm::mat4 getOrthoProjectionMatrix() const;
-
-	///<summary>Возвращает идентификатор irradiance map.</summary>
-	unsigned int getIrradianceMap() const;
 };
 
 ///<summary>Рендерер.</summary>
@@ -297,11 +290,32 @@ extern Renderer* renderer;
 class OpenGLRenderer : public Renderer
 {
 private:
-	unsigned int quadVAO_;
-	unsigned int quadVBO_;
+	///<summary>VAO/VBO для отрисовки прямоугольника.</summary>
+	unsigned int quadVAO_, quadVBO_;
 
-	unsigned int cubeVAO_;
-	unsigned int cubeVBO_;
+	///<summary>VAO/VBO для отрисовки куба.</summary>
+	unsigned int cubeVAO_, cubeVBO_;
+
+	///<summary>Кадр, в который рисуется сцена и его буфферы.</summary>
+	unsigned int frame_, frameRenderBuffer_, frameFrameBuffer_;
+
+	///<summary>Environment map.</summary>
+	unsigned int environmentMap_;
+
+	///<summary>Irradiance map.</summary>
+	unsigned int irradianceMap_;
+
+	///<summary>Pre-filtered environment map.</summary>
+	unsigned int prefilteredMap_;
+
+	///<summary>BRDF LUT map.</summary>
+	unsigned int brdfLutMap_;
+
+	///<summary>Временный рендербуффер.</summary>
+	unsigned int tempRenderBuffer_;
+
+	///<summary>Временный фреймбуффер.</summary>
+	unsigned int tempFrameBuffer_;
 
 	///<summary>Шейдер для генерации irradiance map.</summary>
 	Shader irradianceShader_;
@@ -311,6 +325,9 @@ private:
 
 	///<summary>Шейдер для генерации BRDF LUT map.</summary>
 	Shader brdfLutShader_;
+
+	///<summary>Пересчитывает размер frame текстуры.</summary>
+	void updateFrameSize();
 
 	///<summary>Генерирует irradiance map.</summary>
 	void generateIrradianceMap();
@@ -342,8 +359,7 @@ public:
 
 	///<summary>Отрисовка кадра во весь экран.</summary>
 	///<param name = 'shader'>Шейдер.</param>
-	///<param name = 'frame'>Кадр.</param>
-	void drawFrame(Shader shader, unsigned int frame);
+	void drawFrame(Shader shader);
 
 	///<summary>Отрисовка объекта.</summary>
 	///<param name = 'object'>Объект.</param>
@@ -369,12 +385,11 @@ public:
 	///<param name = 'ui_element'>Элемент.</param>
 	void drawUiElement(std::shared_ptr<UiElement> ui_element);
 
-	void drawDebugQuad(unsigned int textureID, Shader shader);
-
 	///<summary>Отрисовка осей координат.</summary>
-	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
-	//void drawCoordinateAxes(Shader shader, glm::mat4 view_matrix);
+	void drawCoordinateAxes(glm::mat4 view_matrix);
+
+	void drawDebugQuad(unsigned int textureID, Shader shader);
 
 	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
 
@@ -417,7 +432,8 @@ public:
 
 	///<summary>Создаёт float CubeMap.</summary>
 	///<param name = 'size'>Размер.</param>
-	unsigned int generateCubeMap16F(const int size, bool generate_mipmap);
+	///<param name = 'generate_mipmap'>Нужно ли генерировать mipmap.</param>
+	unsigned int generateCubeMap16F(const int size, const bool generate_mipmap);
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры.</param>
@@ -427,14 +443,23 @@ public:
 	///<param name = 'textureID'>Идентификатор текстуры.</param>
 	void deleteTexture2D(const unsigned int textureID);
 
+	///<summary>Создаёт рендербуффер.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
 	unsigned int generateRenderBuffer(const int width, const int height);
 
 	///<summary>Создаёт фреймбуффер.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
 	///<param name = 'textureID'>Идентификатор текстуры, хранящей значения фреймбуффера.</param>
-	unsigned int generateFrameBuffer(const unsigned int textureID);
+	unsigned int generateFrameBuffer(const unsigned int renderBuffer, const unsigned int textureID);
 
 	///<summary>Создаёт кубический фреймбуффер.</summary>
+	///<param name = 'renderBuffer'>Рендербуффер.</param>
 	unsigned int generateFrameBufferCube(const unsigned int renderBuffer);
+
+	///<summary>Задаёт активный фреймбуффер для кадра.</summary>
+	void bindFrameBuffer();
 
 	///<summary>Задаёт активный фреймбуффер.</summary>
 	///<param name = 'frameBufferID'>Идентификатор фреймбуффера.</param>

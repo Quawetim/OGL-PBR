@@ -18,17 +18,7 @@ Renderer::Renderer()
 
 	readConfig();
 
-	this->updateAspectRatio();
-
-	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), this->aspectRatio_, 0.05f, 500.0f);
-
-	if (this->windowWidth_ >= this->windowHeight_) this->orthoProjection_ = glm::ortho(-1.0f * this->aspectRatio_, 1.0f * this->aspectRatio_, -1.0f, 1.0f, -1.0f, 1.0f);
-	else this->orthoProjection_ = glm::ortho(-1.0f, 1.0f, -1.0f / this->aspectRatio_, 1.0f / this->aspectRatio_, -1.0f, 1.0f);
-
-	this->environmentMap_ = 0;
-	this->irradianceMap_ = 0;
-	this->prefilteredMap_ = 0;
-	this->brdfLutMap_ = 0;
+	this->updateAspectRatio();	
 }
 
 ///<summary>Деструктор.</summary>
@@ -123,27 +113,34 @@ void Renderer::readConfig()
 	fin.close();
 }
 
+///<summary>Считывает Aspect Ratio 
+///<para>и обновляет projectionPerspective и orthoPerspective.</para>
+///</summary>
 void Renderer::updateAspectRatio()
 {
 	this->aspectRatio_ = static_cast<float>(this->windowWidth_) / static_cast<float>(this->windowHeight_);
+
+	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), this->aspectRatio_, 0.05f, 500.0f);
+
+	this->orthoProjection_ = glm::ortho(-1.0f * this->aspectRatio_, 1.0f * this->aspectRatio_, -1.0f, 1.0f, -1.0f, 1.0f);
 }
 
 ///<summary>Задаёт ширину окна.</summary>
 ///<param name = 'width'>Ширина.</param>
 void Renderer::setWindowWidth(const int width)
 {
-	this->scaleX_ = static_cast<float>(width) / static_cast<float>(this->windowWidth_);
 	this->windowWidth_ = width;
 	this->updateAspectRatio();
+	this->updateFrameSize();
 }
 
 ///<summary>Задаёт высоту окна.</summary>
 ///<param name = 'height'>Высота.</param>
 void Renderer::setWindowHeight(const int height)
 {
-	this->scaleY_ = static_cast<float>(height) / static_cast<float>(this->windowHeight_);
 	this->windowHeight_ = height;
 	this->updateAspectRatio();
+	this->updateFrameSize();
 }
 
 ///<summary>Возвращает тип рендерера.</summary>
@@ -224,10 +221,4 @@ glm::mat4 Renderer::getPerspectiveProjectionMatrix() const
 glm::mat4 Renderer::getOrthoProjectionMatrix() const
 {
 	return this->orthoProjection_;
-}
-
-///<summary>Возвращает идентификатор irradiance map.</summary>
-unsigned int Renderer::getIrradianceMap() const
-{
-	return this->irradianceMap_;
 }

@@ -32,8 +32,8 @@ int main()
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
-	unsigned int frame = renderer->generateTexture2D_RGB16F(renderer->getWindowWidth(), renderer->getWindowHeight());
-	unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
+	//unsigned int frame = renderer->generateTexture2D_RGB16F(renderer->getWindowWidth(), renderer->getWindowHeight());
+	//unsigned int frameBuffer = renderer->generateFrameBuffer(frame);
 
 	GLint ttt;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &ttt);
@@ -101,7 +101,7 @@ int main()
 	
 	////////////////////////////////DEBUG////////////////////////////////
 
-	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 300));
+	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 720));
 	panel->setBgColor(255, 0, 0);	
 	
 	std::shared_ptr<UiButton> button(new UiButton());
@@ -146,7 +146,7 @@ int main()
 			fps = 0;
 		}
 
-		renderer->bindFrameBuffer(frameBuffer);
+		renderer->bindFrameBuffer();
 		renderer->useDepthTesting(true);
 
 		// Очистить экран
@@ -177,7 +177,7 @@ int main()
 		renderer->useDepthTesting(false);
 		
 		renderer->clearScreen();
-		renderer->drawFrame(postProcessingShader, frame);
+		renderer->drawFrame(postProcessingShader);
 
 		// Обработка ввода
 						
