@@ -11,16 +11,31 @@
 #include "texture_loader\TextureLoader.h"
 #include "ui\UiElement.h"
 
-int abcdefg = 0;
-void sleep(float seconds)
+int activeScene = 0;
+
+void func1(std::shared_ptr<IScene> scene)
 {
-	float end = static_cast<float>(glfwGetTime()) + seconds;
-	while (glfwGetTime() < end) {};
+	activeScene++;
+
+	if (activeScene > 2) activeScene = 0;
 }
 
-void testfunc()
+void func2(std::shared_ptr<IScene> scene)
 {
-	abcdefg += 1;
+	bool value = scene->getMoveObjects();
+	scene->moveObjects(!value);
+}
+
+void func3(std::shared_ptr<IScene> scene)
+{
+	bool value = scene->getMoveLights();
+	scene->moveLights(!value);
+}
+
+void func4(std::shared_ptr<IScene> scene)
+{
+	bool value = scene->getShowLights();
+	scene->showLights(!value);
 }
 
 #if defined(_WIN64) && defined(NDEBUG)
@@ -36,8 +51,8 @@ int main()
 	GLint ttt;
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &ttt);
 
-	InputHandler inputHandler;
-	inputHandler.setEventHandling();
+	std::shared_ptr<InputHandler> inputHandler(new InputHandler);
+	inputHandler->setEventHandling();
 
 	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera());
 	std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
@@ -52,16 +67,15 @@ int main()
 
 	std::shared_ptr<ICamera> camera = cameras[0];
 
-	Shader uiShader("ui");
 	Shader materialShader("material");
 	Shader pbrShader("PBR");
-	Shader axesShader("axes");
 	Shader skyboxShader("skybox");
 	Shader postProcessingShader("postProcessing");
 
 	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////		
 
-	unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
+	//unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
+	std::shared_ptr<Texture> debugTexture(new Texture("resources/textures/test.png", TextureType::albedo));
 
 	renderer->clearScreen();
 	renderer->swapBuffers();
@@ -81,14 +95,19 @@ int main()
 
 	std::shared_ptr<CoordinateAxes> coordinateAxes(new CoordinateAxes());
 
-	Scene1 scene1;
-	scene1.init(models);
+	std::shared_ptr<Scene1> scene1(new Scene1);
+	scene1->init(models);
 
-	Scene2 scene2;
-	//scene2.init(models);
+	std::shared_ptr<Scene2> scene2(new Scene2);
+	scene2->init(models);
 
-	Scene3 scene3;
-	//scene3.init(models);
+	std::shared_ptr<Scene3> scene3(new Scene3);
+	//scene3->init(models);
+
+	std::vector<std::shared_ptr<IScene>> allScene;
+	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene1));
+	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene2));
+	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene3));
 
 	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
 	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
@@ -100,12 +119,24 @@ int main()
 	////////////////////////////////DEBUG////////////////////////////////
 
 	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 720));
-	panel->setBgColor(255, 0, 0);	
+	panel->setBgColor(128, 128, 128);	
 	
-	std::shared_ptr<UiButton> button(new UiButton(0, 0, 50, 40));
-	button->setBgColor(0, 255, 0);
-	button->setClickFunction(&testfunc);
-	//button->click();
+	std::shared_ptr<UiButton> button1(new UiButton(0, 0, 50, 40));
+	button1->setBgColor(200, 0, 0);
+	//button1->setBgTexture(debugTexture);
+	button1->setClickFunction(&func1);
+
+	std::shared_ptr<UiButton> button2(new UiButton(0, 40, 50, 40));
+	button2->setBgColor(0, 200, 0);
+	button2->setClickFunction(&func2);
+
+	std::shared_ptr<UiButton> button3(new UiButton(0, 80, 50, 40));
+	button3->setBgColor(0, 0, 200);
+	button3->setClickFunction(&func3);
+
+	std::shared_ptr<UiButton> button4(new UiButton(0, 120, 50, 40));
+	button4->setBgColor(200, 200, 0);
+	button4->setClickFunction(&func4);
 
 	////////////////////////////////DEBUG////////////////////////////////
 
@@ -156,9 +187,7 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		scene1.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		//scene2.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
-		//scene3.render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		allScene[activeScene]->render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 
@@ -173,14 +202,16 @@ int main()
 		// GUI
 		renderer->drawCoordinateAxes(coordinateAxes, camera->getViewMatrixAxes());
 
-		//renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
-		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button));
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button1));
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button2));
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button3));
+		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button4));
 
-		if (inputHandler.mouseKeys_[GLFW_MOUSE_BUTTON_1])
-		{
-			inputHandler.mouseKeys_[GLFW_MOUSE_BUTTON_1] = false;
-			button->click(inputHandler.mouseX_, inputHandler.mouseY_);
-		}
+		button1->checkActions(inputHandler, allScene[activeScene], renderer->getUiScaleX(), renderer->getUiScaleY());
+		button2->checkActions(inputHandler, allScene[activeScene], renderer->getUiScaleX(), renderer->getUiScaleY());
+		button3->checkActions(inputHandler, allScene[activeScene], renderer->getUiScaleX(), renderer->getUiScaleY());
+		button4->checkActions(inputHandler, allScene[activeScene], renderer->getUiScaleX(), renderer->getUiScaleY());
 
 		// Обработка ввода
 						
@@ -196,10 +227,10 @@ int main()
 		renderer->pollEvents();
 		frames++;
 
-		if (!scene3.move)
-		{
-			if (currentFrameTime - startTime >= 2.0f) scene3.move = true;
-		}
+		//if (!scene3->move)
+		//{
+		//	if (currentFrameTime - startTime >= 2.0f) scene3->move = true;
+		//}
     }
 
 	delete cylinder;

@@ -8,6 +8,9 @@ UiElement::UiElement()
 	this->VBO_ = 0;
 
 	this->bgColor_ = glm::vec3(0.5f);
+	this->hoverColor_ = glm::vec3(0.7f);
+	this->color_ = this->bgColor_;
+
 	this->x_ = 0;
 	this->y_ = 0;
 	this->width_ = 100;
@@ -21,18 +24,21 @@ UiElement::UiElement()
 void UiElement::setBgColor(const unsigned int red, const unsigned int green, const unsigned int blue)
 {
 	this->bgColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+	this->color_ = this->bgColor_;
 }
 
 ///<summary>Задаёт цвет в float формате.</summary>
 void UiElement::setBgColor(const glm::vec3 color)
 {
 	this->bgColor_ = color;
+	this->color_ = this->bgColor_;
 }
 
 ///<summary>Задаёт текстуру.</summary>
 void UiElement::setBgTexture(const std::shared_ptr<Texture> texture)
 {
 	this->bgTexture_ = texture;
+	this->useBgTexture_ = true;
 }
 
 ///<summary>Возвращает позицию X левого нижнего угла в пикселях.</summary>
@@ -60,9 +66,9 @@ int UiElement::getHeight() const
 }
 
 ///<summary>Возвращает цвет.</summary>
-glm::vec3 UiElement::getBgColor() const
+glm::vec3 UiElement::getColor() const
 {
-	return this->bgColor_;
+	return this->color_;
 }
 
 ///<summary>Возвращает признак использования bgTexture.</summary>
@@ -94,7 +100,7 @@ UiPanel::UiPanel(const int x, const int y, const int width, const int height)
 	this->x_ = x;
 	this->y_ = y;
 	this->width_ = width;
-	this->height_ = height;	
+	this->height_ = height;
 }
 
 void UiPanel::addChild(std::shared_ptr<UiElement> ui_element)
@@ -114,22 +120,41 @@ UiButton::UiButton(const int x, const int y, const int width, const int height)
 	this->y_ = y;
 	this->width_ = width;
 	this->height_ = height;
+
+	this->click = nullptr;
 }
 
-void UiButton::setClickFunction(void(*function)())
+void UiButton::setClickFunction(void(*function)(std::shared_ptr<IScene>))
 {
-	this->click_function_ = function;
+	this->click = function;
 }
 
-void UiButton::click(const double mouseX, const double mouseY)
+void UiButton::checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene, const float scaleX, const float scaleY)
 {
-	int left = this->x_;
-	int right = this->width_;
-	int top = this->y_;
-	int bottom = this->height_;
+	int left = this->x_ * scaleX;
+	int right = left + this->width_ * scaleX;
+	
+	int bottom = this->y_ * scaleY;
+	int top = bottom + this->height_ * scaleY;
 
-	if (left <= mouseX && mouseX <= right && bottom <= mouseY <= top)
+	double mouseX = input_handler->mouseX_;
+	double mouseY = input_handler->mouseY_;
+
+	if (left <= mouseX && mouseX <= right && bottom <= mouseY && mouseY <= top)
 	{
-		this->click_function_();
+		this->color_ = this->hoverColor_;
+
+		if (this->click != nullptr)
+		{
+			if (input_handler->mouseKeys_[GLFW_MOUSE_BUTTON_1])
+			{
+				this->click(scene);
+				input_handler->mouseKeys_[GLFW_MOUSE_BUTTON_1] = false;
+			}
+		}
+	}
+	else
+	{
+		this->color_ = this->bgColor_;
 	}
 }

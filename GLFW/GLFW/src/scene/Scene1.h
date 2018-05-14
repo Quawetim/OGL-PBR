@@ -12,7 +12,6 @@ private:
 	std::vector<Object*> cylinders_;
 	bool decrease_;
 
-	bool drawLights_ = true;
 	std::vector<std::shared_ptr<PointLight>> lights_;
 
 public:

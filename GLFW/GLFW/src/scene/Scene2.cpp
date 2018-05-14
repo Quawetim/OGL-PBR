@@ -107,7 +107,7 @@ void Scene2::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
-	if (false)
+	if (this->lightsVisible_)
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{
@@ -115,7 +115,7 @@ void Scene2::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		}
 	}
 
-	if (true)
+	if (this->lightsMoving_)
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{

@@ -179,16 +179,14 @@ void Scene1::init(std::vector<Model*> models)
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
 void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
-{
-	bool move = false;
-	
+{	
 	// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
 		renderer->drawObject(this->cubes_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
-	if (move)
+	if (this->objectsMoving_)
 	{
 		this->cubes_[0]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 		this->cubes_[1]->rotate(deltaTime, -90.0, glm::vec3(0.0f, 0.0f, 1.0f));
@@ -201,7 +199,7 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	{
 		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
 
-		if (move)
+		if (this->objectsMoving_)
 		{
 			if (this->decrease_)
 			{
@@ -216,17 +214,17 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		}
 	}
 
-	if (move) this->spheres_[3]->rotate(deltaTime, -40.0, glm::vec3(1.0f, 1.0f, 1.0f));
+	if (this->objectsMoving_) this->spheres_[3]->rotate(deltaTime, -40.0, glm::vec3(1.0f, 1.0f, 1.0f));
 
 	// Цилиндры
 	for (size_t i = 0; i < this->cylinders_.size(); i++)
 	{
 		renderer->drawObject(this->cylinders_[i], shader, this->lights_, view_matrix, camera_position);
 		
-		if (move) this->cylinders_[i]->rotate(deltaTime, 10.0, glm::vec3(0.0f, 1.0f, 0.0f));
+		if (this->objectsMoving_) this->cylinders_[i]->rotate(deltaTime, 10.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	if (this->drawLights_)
+	if (this->lightsVisible_)
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{
@@ -234,7 +232,7 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		}
 	}	
 	
-	if (true)
+	if (this->lightsMoving_)
 	{
 		glm::vec3 pos, newPos;
 		float r, angle;

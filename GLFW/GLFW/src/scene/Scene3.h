@@ -16,8 +16,6 @@ private:
 	bool right_ = true; 
 
 public:
-	bool move = false;
-
 	///<summary>Деструктор.</summary>
 	~Scene3();
 

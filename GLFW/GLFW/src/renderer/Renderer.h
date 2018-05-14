@@ -32,8 +32,8 @@ protected:
 	///<summary>Высота окна.</summary>
 	int windowHeight_;
 
-	float scaleX_;
-	float scaleY_;
+	///<summary>Коэффициенты размера ui от исходного.</summary>
+	float uiScaleX_, uiScaleY_;
 
 	///<summary>Соотношение сторон экрана.</summary>
 	float aspectRatio_;
@@ -267,6 +267,12 @@ public:
 
 	///<summary>Возвращает полувысоту окна.</summary>
 	float getWindowHalfHeight() const;
+
+	///<summary>Возвращает коэффициент размера ui по оси X.</summary>
+	float getUiScaleX() const;
+
+	///<summary>Возвращает коэффициент размера ui по оси Y.</summary>
+	float getUiScaleY() const;
 
 	///<summary>Возвращает признак полноэкранности.</summary>
 	bool isFullScreen() const;

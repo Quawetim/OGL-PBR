@@ -1,5 +1,7 @@
 #pragma once
 #include "..\includes\Includes.h"
+#include "..\callbacks\Callbacks.h"
+#include "..\scene\IScene.h"
 
 class UiElement
 {
@@ -24,8 +26,12 @@ protected:
 	///<summary>Высота элемента.</summary>
 	int height_;
 
+	glm::vec3 color_;
+
 	///<summary>Цвет.</summary>
 	glm::vec3 bgColor_;
+
+	glm::vec3 hoverColor_;
 
 	///<summary>Флаг использования текстуры.</summary>
 	bool useBgTexture_;
@@ -64,7 +70,7 @@ public:
 	int getHeight() const;
 
 	///<summary>Возвращает цвет.</summary>
-	glm::vec3 getBgColor() const;
+	glm::vec3 getColor() const;
 
 	///<summary>Возвращает признак использования bgTexture.</summary>
 	bool useBgTexture() const;
@@ -98,7 +104,7 @@ public:
 class UiButton : public UiElement
 {
 private:
-	void(*click_function_)();
+	void(*click)(std::shared_ptr<IScene>);
 
 public:
 	///<summary>Конструктор по-умолчанию.</summary>
@@ -111,7 +117,7 @@ public:
 	///<param name = 'height'>Высота элемента.</param>
 	UiButton(const int x, const int y, const int width, const int height);
 
-	void setClickFunction(void(*function)());
+	void setClickFunction(void(*function)(std::shared_ptr<IScene>));
 
-	void click(const double mouseX, const double mouseY);
+	void checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene, const float scaleX, const float scaleY);
 };

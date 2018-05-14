@@ -6,9 +6,7 @@ Renderer::Renderer()
 	this->window_.OGLwindow = nullptr;
 
 	this->windowWidth_ = 800;
-	this->windowHeight_ = 600;
-	this->scaleX_ = 1.0f;
-	this->scaleY_ = 1.0f;
+	this->windowHeight_ = 600;	
 
 	this->isFullScreen_ = false;
 	this->isVSync_ = false;
@@ -19,6 +17,9 @@ Renderer::Renderer()
 	readConfig();
 
 	this->updateAspectRatio();	
+	
+	this->uiScaleX_ = 1.0f;
+	this->uiScaleY_ = 1.0f;
 }
 
 ///<summary>Деструктор.</summary>
@@ -123,6 +124,9 @@ void Renderer::updateAspectRatio()
 	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), this->aspectRatio_, 0.05f, 500.0f);
 
 	this->orthoProjection_ = glm::ortho(-1.0f * this->aspectRatio_, 1.0f * this->aspectRatio_, -1.0f, 1.0f, -1.0f, 1.0f);
+
+	this->uiScaleX_ = this->windowWidth_ / 1280.0f;
+	this->uiScaleY_ = this->windowHeight_ / 720.0f;
 }
 
 ///<summary>Задаёт ширину окна.</summary>
@@ -185,6 +189,18 @@ float Renderer::getWindowHalfWidth() const
 float Renderer::getWindowHalfHeight() const
 {
 	return this->windowHeight_ / 2.0f;
+}
+
+///<summary>Возвращает коэффициент размера ui по оси X.</summary>
+float Renderer::getUiScaleX() const
+{
+	return this->uiScaleX_;
+}
+
+///<summary>Возвращает коэффициент размера ui по оси Y.</summary>
+float Renderer::getUiScaleY() const
+{
+	return this->uiScaleY_;
 }
 
 ///<summary>Возвращает признак полноэкранности.</summary>

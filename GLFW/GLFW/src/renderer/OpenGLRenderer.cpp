@@ -696,30 +696,35 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	std::shared_ptr<Shader> shader = ui_element->getShader();
 
 	/*	
-	*	(x0; y0) ___________________
+	*	   (0;0) ___________________
 	*			|					|
-	*			|					|
+	*			|	ui_element		|
 	*			|					|
 	*			|___________________|
-	*								(x1; y1)			
+	*								(1;1)			
 	*/
-	
-	float scaleX = this->windowWidth_ / 1280.0f;
-	float scaleY = this->windowHeight_ / 720.0f;
 
-	float x0 = (ui_element->getX() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	float y0 = (ui_element->getY() + this->getWindowHalfHeight() - ui_element->getHeight() * scaleY) / this->getWindowHalfHeight();
+	// Magic.
+
+	//left = (ui_element->getX() * this->uiScaleX_ - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
+	//top = (this->getWindowHalfHeight() - ui_element->getY() * this->uiScaleY_) / this->getWindowHalfHeight();
 	
-	float x1 = (ui_element->getX() + ui_element->getWidth() * scaleX - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	float y1 = (this->getWindowHalfHeight() - ui_element->getY()) / this->getWindowHalfHeight();
+	//right = (ui_element->getX() * this->uiScaleX_ + ui_element->getWidth() * this->uiScaleX_ - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
+	//bottom = (this->getWindowHalfHeight() - ui_element->getY() * this->uiScaleY_ - ui_element->getHeight() * this->uiScaleY_) / this->getWindowHalfHeight();
+
+	float left = (ui_element->getX() * this->uiScaleX_ / this->getWindowHalfWidth() - 1.0f) * this->aspectRatio_;
+	float right = left + (ui_element->getWidth() * this->uiScaleX_ * this->aspectRatio_) / this->getWindowHalfWidth();
+
+	float top = 1.0f - (ui_element->getY() * this->uiScaleY_ / this->getWindowHalfHeight());
+	float bottom = top - (ui_element->getHeight() * this->uiScaleY_ / this->getWindowHalfHeight());
 
 	float vertices[] =
 	{
 		// positions   // textureCoords
-		x0, y1,	0.0f, 1.0f,
-		x0, y0,	0.0f, 0.0f,
-		x1, y1,	1.0f, 1.0f,
-		x1, y0,	1.0f, 0.0f
+		left,	top,	0.0f, 1.0f,
+		left,	bottom,	0.0f, 0.0f,
+		right,	top,	1.0f, 1.0f,
+		right,	bottom,	1.0f, 0.0f
 	};
 
 	if (ui_element->VAO_ == 0)
@@ -755,7 +760,7 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	else
 	{
 		shader->setBool("useBgTexture", false);
-		shader->setVec3("bgColor", ui_element->getBgColor());
+		shader->setVec3("bgColor", ui_element->getColor());
 	}
 
 	glBindVertexArray(ui_element->VAO_);

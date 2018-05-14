@@ -288,7 +288,7 @@ void Scene3::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
-	if (this->move)
+	if (this->objectsMoving_)
 	{
 		for (size_t i = 0; i < spheres_.size(); i++)
 		{
@@ -297,7 +297,7 @@ void Scene3::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	}
 
 	// Свет
-	if (false)
+	if (this->lightsVisible_)
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{
@@ -305,7 +305,7 @@ void Scene3::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		}
 	}
 
-	if (this->move)
+	if (this->lightsMoving_)
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{
