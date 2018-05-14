@@ -121,7 +121,15 @@ void UiButton::setClickFunction(void(*function)())
 	this->click_function_ = function;
 }
 
-void UiButton::click()
+void UiButton::click(const double mouseX, const double mouseY)
 {
-	this->click_function_();
+	int left = this->x_;
+	int right = this->width_;
+	int top = this->y_;
+	int bottom = this->height_;
+
+	if (left <= mouseX && mouseX <= right && bottom <= mouseY <= top)
+	{
+		this->click_function_();
+	}
 }

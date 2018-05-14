@@ -695,22 +695,23 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 
 	std::shared_ptr<Shader> shader = ui_element->getShader();
 
-	/*			 ___________________(x1; y1)
+	/*	
+	*	(x0; y0) ___________________
 	*			|					|
 	*			|					|
 	*			|					|
 	*			|___________________|
-	*	(x0; y0)					
+	*								(x1; y1)			
 	*/
 	
 	float scaleX = this->windowWidth_ / 1280.0f;
 	float scaleY = this->windowHeight_ / 720.0f;
 
 	float x0 = (ui_element->getX() - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	float y0 = (ui_element->getY() - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
-
+	float y0 = (ui_element->getY() + this->getWindowHalfHeight() - ui_element->getHeight() * scaleY) / this->getWindowHalfHeight();
+	
 	float x1 = (ui_element->getX() + ui_element->getWidth() * scaleX - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	float y1 = (ui_element->getY() + ui_element->getHeight() * scaleY - this->getWindowHalfHeight()) / this->getWindowHalfHeight();
+	float y1 = (this->getWindowHalfHeight() - ui_element->getY()) / this->getWindowHalfHeight();
 
 	float vertices[] =
 	{

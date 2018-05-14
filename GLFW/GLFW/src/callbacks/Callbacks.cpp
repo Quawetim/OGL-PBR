@@ -19,7 +19,8 @@ InputHandler::InputHandler()
 ///<param name = 'ypos'>Координата по оси y.</param>
 void InputHandler::handleCursorPosition(GLFWwindow* window, double xpos, double ypos)
 {
-	
+	this->mouseX_ = xpos;
+	this->mouseY_ = ypos;
 }
 
 ///<summary>Обработка клавиш мышки.</summary>

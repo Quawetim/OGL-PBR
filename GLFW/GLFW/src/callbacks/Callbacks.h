@@ -11,6 +11,8 @@ public:
 	bool mouseKeys_[5];
 	bool keyboardKeys_[1024];
 
+	double mouseX_, mouseY_;
+
 	///<summary> нструктор по-умолчанию.</summary>
 	InputHandler();
 

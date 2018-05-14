@@ -113,5 +113,5 @@ public:
 
 	void setClickFunction(void(*function)());
 
-	void click();
+	void click(const double mouseX, const double mouseY);
 };

@@ -102,7 +102,7 @@ int main()
 	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 720));
 	panel->setBgColor(255, 0, 0);	
 	
-	std::shared_ptr<UiButton> button(new UiButton(0, 0, 40, 40));
+	std::shared_ptr<UiButton> button(new UiButton(0, 0, 50, 40));
 	button->setBgColor(0, 255, 0);
 	button->setClickFunction(&testfunc);
 	//button->click();
@@ -173,13 +173,13 @@ int main()
 		// GUI
 		renderer->drawCoordinateAxes(coordinateAxes, camera->getViewMatrixAxes());
 
-		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
+		//renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(panel));
 		renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(button));
 
 		if (inputHandler.mouseKeys_[GLFW_MOUSE_BUTTON_1])
 		{
 			inputHandler.mouseKeys_[GLFW_MOUSE_BUTTON_1] = false;
-			button->click();
+			button->click(inputHandler.mouseX_, inputHandler.mouseY_);
 		}
 
 		// Обработка ввода
