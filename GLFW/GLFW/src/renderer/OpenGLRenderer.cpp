@@ -22,13 +22,9 @@ OpenGLRenderer::OpenGLRenderer()
 
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	
+
 #ifdef _DEBUG
-	int max_texture_image_units;
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
-
-	char* s = (char*)glGetString(GL_VENDOR);
-	char* s1 = (char*)glGetString(GL_RENDERER);
-
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #endif
 
@@ -100,6 +96,12 @@ OpenGLRenderer::OpenGLRenderer()
 		glfwTerminate();
 		std::exit(ERROR_INIT_DEBUG_OUTPUT);
 	}
+
+	int max_texture_image_units;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
+
+	char* s = (char*)glGetString(GL_VENDOR);
+	char* s1 = (char*)glGetString(GL_RENDERER);
 #endif
 
 	// Callbacks

@@ -41,12 +41,16 @@ void main()
 {
     const bool useDisplacementMapping = true;
     vec3 vertexPosition = vPosition;
-    
+
     if (useHeightMaps && useDisplacementMapping)
     {
         for (int i = 0; i < heightMapsCount && i <= MAX_MAPS; i++)
         {
             float height = texture(heightMaps[i], vTextureCoords).r;
+            
+            if (vNormal.x == 0.0f && vNormal.y == 1.0f && vNormal.z == 0.0f) height = 0.5f;
+            if (vNormal.x == 0.0f && vNormal.y == -1.0f && vNormal.z == 0.0f) height = 0.5f;
+            
             vertexPosition += vec3(vNormal * height * material.surfaceHeight);
         }
     }

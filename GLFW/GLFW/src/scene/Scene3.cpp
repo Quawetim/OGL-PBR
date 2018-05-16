@@ -63,7 +63,7 @@ void Scene3::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("pbr/wood/oak/height.png", TextureType::height);
 	material.addTexture(texture);
-	material.setSurfaceHeight(0.05f);
+	material.setSurfaceHeight(0.01f);
 	this->spheres_[0]->setMaterial(material);
 	material.setDefault();
 
@@ -77,7 +77,7 @@ void Scene3::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("pbr/wood/mahog/height.png", TextureType::height);
 	material.addTexture(texture);
-	material.setSurfaceHeight(0.5f);
+	material.setSurfaceHeight(0.01f);
 	this->spheres_[1]->setMaterial(material);
 	material.setDefault();
 
@@ -272,8 +272,19 @@ void Scene3::init(std::vector<Model*> models)
 	this->spheres_[18]->setMaterial(material);
 	material.setDefault();
 
-	material.setAlbedo(255, 255, 255);
-	material.setSmoothness(1.0f);
+	//material.setAlbedo(255, 255, 255);
+	//material.setSmoothness(1.0f);
+	texture = Texture("pbr/uncat/tufted-leather/albedo.png", TextureType::albedo);
+	material.addTexture(texture);
+	texture = Texture("pbr/uncat/tufted-leather/smoothness.png", TextureType::smoothness);
+	material.addTexture(texture);
+	texture = Texture("pbr/uncat/tufted-leather/ao.png", TextureType::ambientOcclusion);
+	material.addTexture(texture);
+	texture = Texture("pbr/uncat/tufted-leather/normal.png", TextureType::normal);
+	material.addTexture(texture);
+	texture = Texture("pbr/uncat/tufted-leather/height.png", TextureType::height);
+	material.addTexture(texture);
+	material.setSurfaceHeight(0.08f);
 	this->spheres_[19]->setMaterial(material);
 	material.setDefault();
 
