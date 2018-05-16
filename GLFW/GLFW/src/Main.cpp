@@ -11,13 +11,25 @@
 #include "texture_loader\TextureLoader.h"
 #include "ui\UiElement.h"
 
+// Force use Nvidia
+extern "C"
+{
+	__declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+}
+
+// Force use AMD
+extern "C"
+{
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
 int activeScene = 0;
 
 void func1(std::shared_ptr<IScene> scene)
 {
 	activeScene++;
 
-	if (activeScene > 2) activeScene = 0;
+	if (activeScene > 1) activeScene = 0;
 }
 
 void func2(std::shared_ptr<IScene> scene)
@@ -48,9 +60,6 @@ int main()
 
 	renderer = new OpenGLRenderer();
 
-	GLint ttt;
-	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &ttt);
-
 	std::shared_ptr<InputHandler> inputHandler(new InputHandler);
 	inputHandler->setEventHandling();
 
@@ -74,8 +83,7 @@ int main()
 
 	////////////////////////////////////////////////////////////LoadingScreen////////////////////////////////////////////////////////////		
 
-	//unsigned int debugTexture = textureLoader::loadTexture("resources/textures/test.png", TextureType::albedo);
-	std::shared_ptr<Texture> debugTexture(new Texture("resources/textures/test.png", TextureType::albedo));
+	std::shared_ptr<Texture> debugTexture(new Texture("test.png", TextureType::albedo));
 
 	renderer->clearScreen();
 	renderer->swapBuffers();
@@ -84,33 +92,33 @@ int main()
 
 	std::vector<Model*> models;
 
-	Model *cube = new Model("resources/3dmodels/cube.obj");
+	Model *cube = new Model("cube.obj");
 	models.push_back(cube);
 
-	Model *sphere = new Model("resources/3dmodels/sphere_highpoly.obj");
+	Model *sphere = new Model("sphere_highpoly.obj");
 	models.push_back(sphere);
 
-	Model *cylinder = new Model("resources/3dmodels/cylinder.obj");
+	Model *cylinder = new Model("cylinder.obj");
 	models.push_back(cylinder);
 
 	std::shared_ptr<CoordinateAxes> coordinateAxes(new CoordinateAxes());
 
 	std::shared_ptr<Scene1> scene1(new Scene1);
-	scene1->init(models);
+	//scene1->init(models);
 
 	std::shared_ptr<Scene2> scene2(new Scene2);
 	scene2->init(models);
 
 	std::shared_ptr<Scene3> scene3(new Scene3);
-	//scene3->init(models);
+	scene3->init(models);
 
 	std::vector<std::shared_ptr<IScene>> allScene;
-	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene1));
+	//allScene.push_back(std::dynamic_pointer_cast<IScene>(scene1));
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene2));
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene3));
 
-	unsigned int environmentMap = textureLoader::loadCubeMap("env_map_01");
-	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_map_03", 1024);
+	unsigned int environmentMap = textureLoader::loadCubeMap("env_maps/env_map_01");
+	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_maps/env_map_03", 1024);
 	renderer->setEnvironmentMap(environmentMap);	
 	
 	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f));		// жрЄт кучу пам€ти из-за огромного размера текстур (2048*2048*6*3 байт = 72 ћб)
@@ -118,24 +126,31 @@ int main()
 	
 	////////////////////////////////DEBUG////////////////////////////////
 
-	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 50, 720));
-	panel->setBgColor(128, 128, 128);	
+	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 40, 720));
+	panel->setBgColor(47, 46, 48);	
 	
-	std::shared_ptr<UiButton> button1(new UiButton(0, 0, 50, 40));
-	button1->setBgColor(200, 0, 0);
-	//button1->setBgTexture(debugTexture);
+	std::shared_ptr<UiButton> button1(new UiButton(0, 0, 40, 40));
+	button1->setBgColor(43, 141, 217);
+	std::shared_ptr<Texture> icon_button1(new Texture("ui/next.png", TextureType::albedo));
+	button1->setBgTexture(icon_button1);
 	button1->setClickFunction(&func1);
 
-	std::shared_ptr<UiButton> button2(new UiButton(0, 40, 50, 40));
-	button2->setBgColor(0, 200, 0);
+	std::shared_ptr<UiButton> button2(new UiButton(0, 40, 40, 40));
+	button2->setBgColor(43, 141, 217);
+	std::shared_ptr<Texture> icon_button2(new Texture("ui/rotate_objects.png", TextureType::albedo));
+	button2->setBgTexture(icon_button2);
 	button2->setClickFunction(&func2);
 
-	std::shared_ptr<UiButton> button3(new UiButton(0, 80, 50, 40));
-	button3->setBgColor(0, 0, 200);
+	std::shared_ptr<UiButton> button3(new UiButton(0, 80, 40, 40));
+	button3->setBgColor(43, 141, 217);
+	std::shared_ptr<Texture> icon_button3(new Texture("ui/rotate_lights.png", TextureType::albedo));
+	button3->setBgTexture(icon_button3);
 	button3->setClickFunction(&func3);
 
-	std::shared_ptr<UiButton> button4(new UiButton(0, 120, 50, 40));
-	button4->setBgColor(200, 200, 0);
+	std::shared_ptr<UiButton> button4(new UiButton(0, 120, 40, 40));
+	button4->setBgColor(43, 141, 217);
+	std::shared_ptr<Texture> icon_button4(new Texture("ui/light1.png", TextureType::albedo));
+	button4->setBgTexture(icon_button4);
 	button4->setClickFunction(&func4);
 
 	////////////////////////////////DEBUG////////////////////////////////

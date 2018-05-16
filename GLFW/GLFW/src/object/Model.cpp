@@ -28,8 +28,10 @@ Model::Model(std::string path)
     this->rotationAxis_ = glm::vec3(0.0f, 1.0f, 0.0f);
     this->scaleCoeffs_ = glm::vec3(1.0f);
 
+	std::string s = "resources/3dmodels/" + path;
+
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    const aiScene *scene = importer.ReadFile(s, aiProcess_Triangulate | aiProcess_FlipUVs);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -38,11 +40,11 @@ Model::Model(std::string path)
         return;
     }
 
-    int dot_pos = path.find_last_of('.');
-    int last_slash_pos = path.find_last_of('/');
+    int dot_pos = s.find_last_of('.');
+    int last_slash_pos = s.find_last_of('/');
 
-    this->name_ = path.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
-    this->dir_ = path.substr(0, last_slash_pos);
+    this->name_ = s.substr(last_slash_pos + 1, dot_pos - last_slash_pos - 1);
+    this->dir_ = s.substr(0, last_slash_pos);
 
     handleNode(scene->mRootNode, scene);
 }

@@ -1,6 +1,6 @@
 #version 430
 
-out vec3 fragmentColor;
+out vec4 fragmentColor;
 
 in vec3 textureCoords;
 
@@ -40,5 +40,5 @@ void main()
     }
 
     irradiance = PI * irradiance * (1.0f / samples);
-    fragmentColor = irradiance;
+    fragmentColor = vec4(irradiance, 1.0f);
 }

@@ -5,10 +5,15 @@
 ///<param name = 'type'>Тип текстуры.</param>
 unsigned int textureLoader::loadTexture(const std::string path, TextureType type)
 {
+	//stbi_set_flip_vertically_on_load(true);
+
     unsigned int ID;
 
     int width, height, color_channels;
-    unsigned char *data = stbi_load(path.c_str(), &width, &height, &color_channels, 0);
+
+	std::string s = "resources/textures/" + path;
+
+    unsigned char *data = stbi_load(s.c_str(), &width, &height, &color_channels, 0);
 
     if (data)
     {
@@ -19,11 +24,11 @@ unsigned int textureLoader::loadTexture(const std::string path, TextureType type
 
 		if (type == TextureType::albedo)
 		{
-			internalFormat = GL_SRGB;
+			internalFormat = GL_SRGB_ALPHA;
 		}
 		else
 		{
-			internalFormat = GL_RGB;
+			internalFormat = GL_RGBA;
 		}
 
         GLenum format;
@@ -66,13 +71,14 @@ unsigned int textureLoader::loadTexture(const std::string path, TextureType type
 ///<param name = 'path'>Путь к текстуре после resources/textures/.</param>
 unsigned int textureLoader::loadTextureHDR(const std::string path)
 {
+	//stbi_set_flip_vertically_on_load(true);
+
 	unsigned int ID;
 
 	int width, height, color_channels;
 
 	std::string s = "resources/textures/" + path;
-
-	stbi_set_flip_vertically_on_load(true);
+	
 	float *data = stbi_loadf(s.c_str(), &width, &height, &color_channels, 0);
 
 	if (data)
@@ -119,6 +125,8 @@ unsigned int textureLoader::loadTextureHDR(const std::string path)
 ///<param name = 'folder'>Папка с текстурами граней.</param>
 unsigned int textureLoader::loadCubeMap(const std::string folder)
 {
+	//stbi_set_flip_vertically_on_load(false);
+
 	unsigned int ID;
 
 	int width, height, colorChannels;
@@ -185,6 +193,8 @@ unsigned int textureLoader::loadCubeMap(const std::string folder)
 ///<param name = 'resolution'>Разрешение.</param>
 unsigned int textureLoader::loadCubeMapHDR(const std::string folder, const int resolution)
 {
+	//stbi_set_flip_vertically_on_load(false);
+
 	unsigned int ID;
 
 	int width, height, colorChannels;

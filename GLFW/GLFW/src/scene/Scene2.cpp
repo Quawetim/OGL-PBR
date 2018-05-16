@@ -78,7 +78,7 @@ void Scene2::init(std::vector<Model*> models)
 		metallic += 0.1f;
 	}
 
-	std::shared_ptr<Model> pointLight(new Model("resources/3dmodels/pointLight.obj"));
+	std::shared_ptr<Model> pointLight(new Model("pointLight.obj"));
 	std::shared_ptr<Shader> lightShader(new Shader("lightShader"));
 
 	std::shared_ptr<PointLight> light;

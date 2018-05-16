@@ -70,4 +70,6 @@ void main()
     fragmentColor.rgb = vec3(1.0f) - exp(-fragmentColor.rgb * exposure);
     
     fragmentColor.rgb = pow(fragmentColor.rgb, vec3(1.0f / gamma));
+
+    fragmentColor = vec4(fragmentColor.rgb, 1.0f);
 }

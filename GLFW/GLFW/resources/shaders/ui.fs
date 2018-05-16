@@ -5,20 +5,21 @@ in VS_OUT
     vec2 textureCoords;
 } fs_in;
 
-out vec3 fragmentColor;
+out vec4 fragmentColor;
 
-uniform vec3 bgColor;
-uniform bool useBgTexture;
-uniform sampler2D bgTexture;
+uniform vec3 color;
+uniform bool useTexture;
+uniform sampler2D Texture;
 
 void main()
 {	
-    if (useBgTexture)
+    if (useTexture)
     {
-        fragmentColor = texture(bgTexture, fs_in.textureCoords).rgb;
+        fragmentColor = texture(Texture, fs_in.textureCoords);
+        fragmentColor.rgb *= color;
     }
     else
     {
-        fragmentColor = bgColor;
+        fragmentColor = vec4(color, 1.0f);
     }
 }

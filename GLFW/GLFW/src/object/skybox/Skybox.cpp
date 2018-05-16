@@ -5,7 +5,7 @@
 ///<param name = 'size'>Размер скайбокса.</param>
 Skybox::Skybox(const float size)
 {
-	this->models_.push_back(new Model("resources/3dmodels/skybox.obj"));
+	this->models_.push_back(new Model("skybox.obj"));
 
 	this->scaleCoeffs_ = glm::vec3(size);
 	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);

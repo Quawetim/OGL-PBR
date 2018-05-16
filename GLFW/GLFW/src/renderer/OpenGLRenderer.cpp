@@ -23,6 +23,12 @@ OpenGLRenderer::OpenGLRenderer()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef _DEBUG
+	int max_texture_image_units;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_image_units);
+
+	char* s = (char*)glGetString(GL_VENDOR);
+	char* s1 = (char*)glGetString(GL_RENDERER);
+
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #endif
 
@@ -131,8 +137,9 @@ OpenGLRenderer::OpenGLRenderer()
 	// Отсечение граней, у которых не видно лицевую сторону
 	glEnable(GL_CULL_FACE);
 
-	//glEnable(GL_BLEND);
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Блендинг
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
@@ -371,6 +378,7 @@ void OpenGLRenderer::generatePrefilteredMap()
 void OpenGLRenderer::generateBrdfLutMap()
 {
 	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
 
 	int size = 256;
 
@@ -390,6 +398,8 @@ void OpenGLRenderer::generateBrdfLutMap()
 	this->bindFrameBuffer(0);
 	this->restoreViewPort();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_CULL_FACE);
 }
 
@@ -642,6 +652,7 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 ///<param name = 'camera_position'>Позиция камеры.</param>
 void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
+	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
 
 	shader.activate();
@@ -659,6 +670,8 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	glDepthFunc(GL_LESS);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 ///<summary>Отрисовка точечного источника освещения.</summary>
@@ -721,10 +734,10 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	float vertices[] =
 	{
 		// positions   // textureCoords
-		left,	top,	0.0f, 1.0f,
-		left,	bottom,	0.0f, 0.0f,
-		right,	top,	1.0f, 1.0f,
-		right,	bottom,	1.0f, 0.0f
+		left,	top,	0.0f, 0.0f,
+		left,	bottom,	0.0f, 1.0f,
+		right,	top,	1.0f, 0.0f,
+		right,	bottom,	1.0f, 1.0f
 	};
 
 	if (ui_element->VAO_ == 0)
@@ -749,19 +762,20 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 
 	if (ui_element->useBgTexture())
 	{
-		shader->setBool("useBgTexture", true);
+		shader->setBool("useTexture", true);
 
 		std::shared_ptr<Texture> texture = ui_element->getBgTexture();
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture->getID());
-		shader->setInt("bgTexture", 0);		
+		shader->setInt("Texture", 0);		
 	}
 	else
 	{
-		shader->setBool("useBgTexture", false);
-		shader->setVec3("bgColor", ui_element->getColor());
+		shader->setBool("useTexture", false);	
 	}
+
+	shader->setVec3("color", ui_element->getColor());
 
 	glBindVertexArray(ui_element->VAO_);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

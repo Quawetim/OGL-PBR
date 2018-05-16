@@ -19,8 +19,8 @@ InputHandler::InputHandler()
 ///<param name = 'ypos'>Координата по оси y.</param>
 void InputHandler::handleCursorPosition(GLFWwindow* window, double xpos, double ypos)
 {
-	this->mouseX_ = xpos;
-	this->mouseY_ = ypos;
+	this->cursorX_ = xpos;
+	this->cursorY_ = ypos;
 }
 
 ///<summary>Обработка клавиш мышки.</summary>
@@ -120,6 +120,40 @@ void InputHandler::handleFramebufferSize(GLFWwindow* window, int width, int heig
 	renderer->setViewport(0, 0, width, height);
     renderer->setWindowWidth(width);
     renderer->setWindowHeight(height);
+}
+
+///<summary>Задаёт флаг нажатия клавиши мышки.</summary>
+///<param name = 'key'>Номер клавиши.</param>
+///<param name = 'value'>Значение флага.</param>
+void InputHandler::setMouseKeyState(const int key, const bool value)
+{
+	this->mouseKeys_[key] = value;
+}
+
+///<summary>Возвращает флаг нажатия клавиши мышки.</summary>
+///<param name = 'key'>Номер клавиши.</param>
+bool InputHandler::getMouseKeyState(const int key) const
+{
+	return this->mouseKeys_[key];
+}
+
+///<summary>Возвращает флаг нажатия клавиши клавиатуры.</summary>
+///<param name = 'key'>Номер клавиши.</param>
+bool InputHandler::getKeyboardKeyState(const int key) const
+{
+	return this->keyboardKeys_[key];
+}
+
+///<summary>Возвращает позицию курсора по оси X.</summary>
+double InputHandler::getCursorX() const
+{
+	return this->cursorX_;
+}
+
+///<summary>Возвращает позицию курсора по оси Y.</summary>
+double InputHandler::getCursorY() const
+{
+	return this->cursorY_;
 }
 
 ///<summary>Вывод ошибок в консоль.</summary>

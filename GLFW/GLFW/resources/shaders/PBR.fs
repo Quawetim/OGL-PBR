@@ -279,4 +279,6 @@ void main()
             fragmentColor.rgb = material.albedo;
         }       
     }
+
+    //fragmentColor = vec4(fragmentColor.rgb, 1.0f);
 }

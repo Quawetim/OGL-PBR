@@ -5,14 +5,16 @@
 class InputHandler : public InputHandle
 {
 private:
-	
-
-public:
+	///<summary>Хранит флаги нажатия клавиш мышки.</summary>
 	bool mouseKeys_[5];
+
+	///<summary>Хранит флаги нажатия клавиш клавиатуры.</summary>
 	bool keyboardKeys_[1024];
 
-	double mouseX_, mouseY_;
+	///<summary>Позиция курсора.</summary>
+	double cursorX_, cursorY_;
 
+public:
 	///<summary>Кнструктор по-умолчанию.</summary>
 	InputHandler();
 
@@ -48,6 +50,25 @@ public:
 	///<param name = 'width'>Новая ширина.</param>
 	///<param name = 'height'>Новая высота.</param>
 	void handleFramebufferSize(GLFWwindow* window, int width, int height);
+
+	///<summary>Задаёт флаг нажатия клавиши мышки.</summary>
+	///<param name = 'key'>Номер клавиши.</param>
+	///<param name = 'value'>Значение флага.</param>
+	void setMouseKeyState(const int key, const bool value);
+
+	///<summary>Возвращает флаг нажатия клавиши мышки.</summary>
+	///<param name = 'key'>Номер клавиши.</param>
+	bool getMouseKeyState(const int key) const;
+
+	///<summary>Возвращает флаг нажатия клавиши клавиатуры.</summary>
+	///<param name = 'key'>Номер клавиши.</param>
+	bool getKeyboardKeyState(const int key) const;
+
+	///<summary>Возвращает позицию курсора по оси X.</summary>
+	double getCursorX() const;
+
+	///<summary>Возвращает позицию курсора по оси Y.</summary>
+	double getCursorY() const;
 };
 
 namespace callbacks

@@ -63,9 +63,9 @@ void Scene1::init(std::vector<Model*> models)
 	Material material;
 
 	// Кубы
-	texture = Texture("resources/textures/batman2.bmp", TextureType::smoothness);
+	texture = Texture("batman2.png", TextureType::smoothness);
 	material.addTexture(texture);
-	texture = Texture("resources/textures/batman2.bmp", TextureType::metallic);
+	texture = Texture("batman2.png", TextureType::metallic);
 	material.addTexture(texture);
 	material.setAlbedo(255, 226, 155);
 	material.setMetallic(1.0f);
@@ -81,19 +81,15 @@ void Scene1::init(std::vector<Model*> models)
 	material.setDefault();
 
 	material.setAlbedo(155, 97, 186);
-	texture = Texture("resources/textures/batman1.bmp", TextureType::smoothness);
+	texture = Texture("batman1.png", TextureType::smoothness);
 	material.addTexture(texture);
-	texture = Texture("resources/textures/batman1.bmp", TextureType::metallic);
+	texture = Texture("batman1.png", TextureType::metallic);
 	material.addTexture(texture);
 	material.setMetallic(0.3f);
 	material.setSmoothness(0.3f);
 	this->cubes_[2]->setMaterial(material);
 	material.setDefault();
 
-	texture = Texture("resources/textures/brick1/diffuse.bmp", TextureType::albedo);
-	material.addTexture(texture);
-	texture = Texture("resources/textures/brick1/normal.bmp", TextureType::normal);
-	material.addTexture(texture);
 	material.setMetallic(0.0f);
 	material.setSmoothness(0.0f);
 	this->cubes_[3]->setMaterial(material);
@@ -118,10 +114,6 @@ void Scene1::init(std::vector<Model*> models)
 	this->spheres_[2]->setMaterial(material);
 	material.setDefault();
 
-	texture = Texture("resources/textures/brick2/diffuse.bmp", TextureType::albedo);
-	material.addTexture(texture);
-	texture = Texture("resources/textures/brick2/normal.bmp", TextureType::normal);
-	material.addTexture(texture);
 	material.setMetallic(0.0f);
 	material.setSmoothness(0.0f);
 	this->spheres_[3]->setMaterial(material);
@@ -146,16 +138,12 @@ void Scene1::init(std::vector<Model*> models)
 	this->cylinders_[2]->setMaterial(material);
 	material.setDefault();
 
-	texture = Texture("resources/textures/brick3/diffuse.bmp", TextureType::albedo);
-	material.addTexture(texture);
-	texture = Texture("resources/textures/brick3/normal.bmp", TextureType::normal);
-	material.addTexture(texture);
 	material.setMetallic(0.0f);
 	material.setSmoothness(0.0f);
 	this->cylinders_[3]->setMaterial(material);
 	material.setDefault();
 
-	std::shared_ptr<Model> pointLight(new Model("resources/3dmodels/pointLight.obj"));
+	std::shared_ptr<Model> pointLight(new Model("pointLight.obj"));
 	std::shared_ptr<Shader> lightShader(new Shader("lightShader"));
 
 	std::shared_ptr<PointLight> light(new PointLight(lightShader, pointLight));

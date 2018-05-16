@@ -48,11 +48,23 @@ public:
 	///<summary>Констркутор.</summary>
 	UiElement();
 
-	///<summary>Задаёт цвет в RGB формате.</summary>
+	///<summary>Задаёт основной цвет в RGB формате.</summary>
+	///<param name = 'red'>Красная компонента цвета.</param>
+	///<param name = 'green'>Зелёная компонента цвета.</param>
+	///<param name = 'blue'>Синяя компонента цвета.</param>
 	void setBgColor(const unsigned int red, const unsigned int green, const unsigned int blue);
 	
-	///<summary>Задаёт цвет в float формате.</summary>
+	///<summary>Задаёт основной цвет в float формате.</summary>
 	void setBgColor(const glm::vec3 color);
+
+	///<summary>Задаёт hover цвет в RGB формате.</summary>
+	///<param name = 'red'>Красная компонента цвета.</param>
+	///<param name = 'green'>Зелёная компонента цвета.</param>
+	///<param name = 'blue'>Синяя компонента цвета.</param>
+	void setHoverColor(const unsigned int red, const unsigned int green, const unsigned int blue);
+
+	///<summary>Задаёт hover цвет в float формате.</summary>
+	void setHoverColor(const glm::vec3 color);
 
 	///<summary>Задаёт текстуру.</summary>
 	void setBgTexture(const std::shared_ptr<Texture> texture);

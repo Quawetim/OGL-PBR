@@ -21,6 +21,9 @@ UiElement::UiElement()
 }
 
 ///<summary>Задаёт цвет в RGB формате.</summary>
+///<param name = 'red'>Красная компонента цвета.</param>
+///<param name = 'green'>Зелёная компонента цвета.</param>
+///<param name = 'blue'>Синяя компонента цвета.</param>
 void UiElement::setBgColor(const unsigned int red, const unsigned int green, const unsigned int blue)
 {
 	this->bgColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
@@ -28,10 +31,27 @@ void UiElement::setBgColor(const unsigned int red, const unsigned int green, con
 }
 
 ///<summary>Задаёт цвет в float формате.</summary>
+///<param name = 'color'>Цвет.</param>
 void UiElement::setBgColor(const glm::vec3 color)
 {
 	this->bgColor_ = color;
 	this->color_ = this->bgColor_;
+}
+
+///<summary>Задаёт hover цвет в RGB формате.</summary>
+///<param name = 'red'>Красная компонента цвета.</param>
+///<param name = 'green'>Зелёная компонента цвета.</param>
+///<param name = 'blue'>Синяя компонента цвета.</param>
+void UiElement::setHoverColor(const unsigned int red, const unsigned int green, const unsigned int blue)
+{
+	this->hoverColor_ = glm::vec3(red / 255.0f, green / 255.0f, blue / 255.0f);
+}
+
+///<summary>Задаёт hover цвет в float формате.</summary>
+///<param name = 'color'>Цвет.</param>
+void UiElement::setHoverColor(const glm::vec3 color)
+{
+	this->hoverColor_ = color;
 }
 
 ///<summary>Задаёт текстуру.</summary>
@@ -131,25 +151,27 @@ void UiButton::setClickFunction(void(*function)(std::shared_ptr<IScene>))
 
 void UiButton::checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene, const float scaleX, const float scaleY)
 {
-	int left = this->x_ * scaleX;
-	int right = left + this->width_ * scaleX;
+	int left = static_cast<int>(this->x_ * scaleX);
+	int right = left + static_cast<int>(this->width_ * scaleX);
 	
-	int bottom = this->y_ * scaleY;
-	int top = bottom + this->height_ * scaleY;
+	int bottom = static_cast<int>(this->y_ * scaleY);
+	int top = bottom + static_cast<int>(this->height_ * scaleY);
 
-	double mouseX = input_handler->mouseX_;
-	double mouseY = input_handler->mouseY_;
+	double mouseX = input_handler->getCursorX();
+	double mouseY = input_handler->getCursorY();
 
 	if (left <= mouseX && mouseX <= right && bottom <= mouseY && mouseY <= top)
 	{
-		this->color_ = this->hoverColor_;
+		//this->color_ = this->hoverColor_;
+		this->color_ = this->bgColor_ * glm::vec3(2.0f);
 
 		if (this->click != nullptr)
 		{
-			if (input_handler->mouseKeys_[GLFW_MOUSE_BUTTON_1])
+			if (input_handler->getMouseKeyState(GLFW_MOUSE_BUTTON_1))
 			{
+				this->color_ = this->bgColor_ / glm::vec3(2.0f);
 				this->click(scene);
-				input_handler->mouseKeys_[GLFW_MOUSE_BUTTON_1] = false;
+				input_handler->setMouseKeyState(GLFW_MOUSE_BUTTON_1, false);
 			}
 		}
 	}

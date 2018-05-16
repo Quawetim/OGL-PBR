@@ -5,9 +5,9 @@ in VS_OUT
     vec3 vertexColor;
 } fs_in;
 
-out vec3 fragmentColor;
+out vec4 fragmentColor;
 
 void main()
 {	
-    fragmentColor = fs_in.vertexColor;
+    fragmentColor = vec4(fs_in.vertexColor, 1.0f);
 }

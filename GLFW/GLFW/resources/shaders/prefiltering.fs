@@ -1,6 +1,6 @@
 #version 430
 
-out vec3 fragmentColor;
+out vec4 fragmentColor;
 
 in vec3 textureCoords;
 
@@ -91,7 +91,5 @@ void main()
         }
     }
 
-    fragmentColor = color / weight;
-
-    //fragmentColor = vec3(1.0f, 0.0f, 0.0f);
+    fragmentColor = vec4(color / weight, 1.0f);
 }
