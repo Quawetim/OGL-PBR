@@ -15,8 +15,9 @@ const std::map<TextureType, TextureKeys> mapTextureType =
 	{ TextureType::albedo, {"albedoMaps", "useAlbedoMaps", "albedoMapsCount"} },
 	{ TextureType::smoothness, {"smoothnessMaps", "useSmoothnessMaps", "smoothnessMapsCount" } },
 	{ TextureType::metallic, { "metallicMaps", "useMetallicMaps", "metallicMapsCount" } },
-	{ TextureType::normal, {"normalMaps", "useNormalMaps", "normalMapsCount" } },
-	{ TextureType::ambientOcclusion,{ "ambientOcclusionMaps", "useAmbientOcclusionMaps", "ambientOcclusionMapsCount" } }
+	{ TextureType::ambientOcclusion, { "ambientOcclusionMaps", "useAmbientOcclusionMaps", "ambientOcclusionMapsCount" } },
+	{ TextureType::normal, { "normalMaps", "useNormalMaps", "normalMapsCount" } },
+	{ TextureType::height, { "heightMaps", "useHeightMaps", "heightMapsCount" } }
 };
 
 ///<summary>–азмер генерируемой карты отражений.</summary>

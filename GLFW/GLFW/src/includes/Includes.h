@@ -41,7 +41,7 @@
 enum ErrorType { info, warning, error };
 
 ///<summary>Тип текстуры.</summary>
-enum TextureType { albedo, smoothness, metallic, normal, ambientOcclusion };
+enum TextureType { albedo, smoothness, metallic, ambientOcclusion, normal, height };
 
 ///<summary>Структура хранящая параметры вершин.</summary>
 struct VertexData

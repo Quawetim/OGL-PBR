@@ -89,10 +89,12 @@ void Scene3::init(std::vector<Model*> models)
 	texture = Texture("pbr/uncat/cobblestone-floor/albedo.png", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("pbr/uncat/cobblestone-floor/smoothness.png", TextureType::smoothness);
+	material.addTexture(texture);	
+	texture = Texture("pbr/uncat/cobblestone-floor/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	texture = Texture("pbr/uncat/cobblestone-floor/normal.png", TextureType::normal);
 	material.addTexture(texture);
-	texture = Texture("pbr/uncat/cobblestone-floor/ao.png", TextureType::ambientOcclusion);
+	texture = Texture("pbr/uncat/cobblestone-floor/height.png", TextureType::height);
 	material.addTexture(texture);
 	this->spheres_[3]->setMaterial(material);
 	material.setDefault();

@@ -24,6 +24,9 @@ out VS_OUT
     vec3 fragmentNormal;
     vec2 textureCoords;
     vec3 cameraPosition; 
+
+    vec3 cameraPositionTBN;
+    vec3 fragmentPositionTBN;
 } vs_out;
 
 uniform mat4 projectionMatrix, viewMatrix, modelMatrix;
@@ -44,4 +47,12 @@ void main()
     vs_out.textureCoords = vTextureCoords;
 
     vs_out.cameraPosition = cameraPosition;
+
+    vec3 T = normalize(mat3(modelMatrix) * vTangent);
+    vec3 B = normalize(mat3(modelMatrix) * vBitangent);
+    vec3 N = normalize(mat3(modelMatrix) * vNormal);
+    mat3 TBN = transpose(mat3(T, B, N));
+
+    vs_out.cameraPositionTBN = TBN * cameraPosition;
+    vs_out.fragmentPositionTBN = TBN * vs_out.fragmentPosition;
 } 

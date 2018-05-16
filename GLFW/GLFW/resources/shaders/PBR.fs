@@ -25,7 +25,10 @@ in VS_OUT
     vec3 fragmentPosition;
     vec3 fragmentNormal;
     vec2 textureCoords;
-    vec3 cameraPosition; 
+    vec3 cameraPosition;
+
+    vec3 cameraPositionTBN;
+    vec3 fragmentPositionTBN; 
 } fs_in;
 
 out vec4 fragmentColor;
@@ -47,9 +50,17 @@ uniform bool useMetallicMaps;
 uniform int metallicMapsCount;
 uniform sampler2D metallicMaps[MAX_MAPS];
 
+uniform bool useAmbientOcclusionMaps;
+uniform int ambientOcclusionMapsCount;
+uniform sampler2D ambientOcclusionMaps[MAX_MAPS];
+
 uniform bool useNormalMaps;
 uniform int normalMapsCount;
 uniform sampler2D normalMaps[MAX_MAPS];
+
+uniform bool useHeightMaps;
+uniform int heightMapsCount;
+uniform sampler2D heightMaps[MAX_MAPS];
 
 uniform int lightsCount;
 uniform Light light[MAX_LIGHTS];
@@ -59,10 +70,8 @@ uniform samplerCube irradianceMap;
 uniform samplerCube prefilteredMap;
 uniform sampler2D brdfLutMap;
 
-vec3 getNormal(int map)
+mat3 computeTBN()
 {
-    vec3 normal = texture(normalMaps[map], fs_in.textureCoords).rgb * 2.0f - 1.0f;
-
     vec3 Q1 = dFdx(fs_in.fragmentPosition);
     vec3 Q2 = dFdy(fs_in.fragmentPosition);
     vec2 st1 = dFdx(fs_in.textureCoords);
@@ -71,7 +80,13 @@ vec3 getNormal(int map)
     vec3 N = normalize(fs_in.fragmentNormal);
     vec3 T = normalize(Q1 * st2.t - Q2 * st1.t);
     vec3 B = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
+
+    return mat3(T, B, N);
+}
+
+vec3 getNormal(int map, mat3 TBN, vec2 texture_coords)
+{
+    vec3 normal = texture(normalMaps[map], texture_coords).rgb * 2.0f - 1.0f;   
 
     return normalize(TBN * normal);
 }
@@ -141,12 +156,83 @@ float computeAmbientOcclusion(vec3 fragment_position, vec3 normal, vec3 view_dir
     return ao;
 }
 
+vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+{ 
+    float height = texture(heightMaps[0], texCoords).r;     
+    return texCoords + viewDir.xy / viewDir.z * (height * 0.005f);        
+}
+
+vec2 StepParallaxMapping(vec2 texCoords, vec3 viewDir)
+{ 
+	float layers = 20.0f;
+	
+	float depth = 1.0f / layers;
+	
+	float currentDepth = 0.0f;
+	
+	vec2 P = viewDir.xy / viewDir.z * 0.005f;
+	vec2 delta = P / layers;
+	
+	vec2 currentTexCoords = texCoords;
+	float currentDepthMap = texture(heightMaps[0], currentTexCoords).r;  
+
+	while (currentDepth < currentDepthMap)
+	{
+		currentTexCoords += delta;
+		currentDepthMap = texture(heightMaps[0], currentTexCoords).r;
+		currentDepth += depth;
+	}
+    
+    return currentTexCoords;        
+}
+
+vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
+{ 
+	// number of depth layers
+    const float minLayers = 32;
+    const float maxLayers = 64;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
+    // calculate the size of each layer
+    float layerDepth = 1.0 / numLayers;
+    // depth of current layer
+    float currentLayerDepth = 0.0;
+    // the amount to shift the texture coordinates per layer (from vector P)
+    vec2 P = viewDir.xy / viewDir.z * 0.005f; 
+    vec2 deltaTexCoords = P / numLayers;
+  
+    // get initial values
+    vec2  currentTexCoords     = texCoords;
+    float currentDepthMapValue = texture(heightMaps[0], currentTexCoords).r;
+      
+    while(currentLayerDepth < currentDepthMapValue)
+    {
+        // shift texture coordinates along direction of P
+        currentTexCoords += deltaTexCoords;
+        // get depthmap value at current texture coordinates
+        currentDepthMapValue = texture(heightMaps[0], currentTexCoords).r;  
+        // get depth of next layer
+        currentLayerDepth += layerDepth;  
+    }
+    
+    // get texture coordinates before collision (reverse operations)
+    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+
+    // get depth after and before collision for linear interpolation
+    float afterDepth  = currentDepthMapValue - currentLayerDepth;
+    float beforeDepth = texture(heightMaps[0], prevTexCoords).r - currentLayerDepth + layerDepth;
+ 
+    // interpolation of texture coordinates
+    float weight = afterDepth / (afterDepth - beforeDepth);
+    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+
+    return finalTexCoords;
+}
+
 void main()
 {
     const bool useLighting = true;
 
     fragmentColor = vec4(0.0f, 0.0f, 0.0f, 1.0f); 
-     
 
     if (useLighting)
     {
@@ -154,20 +240,31 @@ void main()
         vec3 albedo = vec3(0.0f);    
         float smoothness = 0.0f;
         float metallic = 0.0f;
+        float ambientOcclusion = 0.0f;
+        
+        mat3 TBN = computeTBN();
+        vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
+
+        vec3 viewDirectionTBN = normalize(fs_in.cameraPositionTBN - fs_in.fragmentPositionTBN);        
+        vec2 textureCoords = fs_in.textureCoords;
+    
+        textureCoords = ParallaxOcclusionMapping(fs_in.textureCoords, viewDirectionTBN);       
+        if(textureCoords.x > 1.0 || textureCoords.y > 1.0 || textureCoords.x < 0.0 || textureCoords.y < 0.0) textureCoords = fs_in.textureCoords;
 
         ////////////////////////Albedo////////////////////////
 
         if (useAlbedoMaps)
         {
-            for (int i = 0; i < albedoMapsCount && i <= MAX_MAPS; i++) albedo += texture(albedoMaps[i], fs_in.textureCoords).rgb;
+            for (int i = 0; i < albedoMapsCount && i <= MAX_MAPS; i++) albedo += texture(albedoMaps[i], textureCoords).rgb;
         }
         else albedo = material.albedo;
 
         ////////////////////////Smoothness////////////////////////
         
         if (useSmoothnessMaps)
+        //if (false)
         {
-            for (int i = 0; i < smoothnessMapsCount && i <= MAX_MAPS; i++) smoothness += texture(smoothnessMaps[i], fs_in.textureCoords).r;
+            for (int i = 0; i < smoothnessMapsCount && i <= MAX_MAPS; i++) smoothness += texture(smoothnessMaps[i], textureCoords).r;
         }
         else smoothness = material.smoothness;
         
@@ -176,24 +273,37 @@ void main()
         ////////////////////////Metallic////////////////////////
 
         if (useMetallicMaps)
+        //if (false)
         {
-            for (int i = 0; i < metallicMapsCount && i <= MAX_MAPS; i++) metallic += texture(metallicMaps[i], fs_in.textureCoords).r;
+            for (int i = 0; i < metallicMapsCount && i <= MAX_MAPS; i++) metallic += texture(metallicMaps[i], textureCoords).r;
         }
         else metallic = material.metallic;
 
         ////////////////////////Normal////////////////////////
 
         if (useNormalMaps)
+        //if (false)
         {
-            for (int i = 0; i < normalMapsCount && i <= MAX_MAPS; i++) normal += getNormal(i);
+            for (int i = 0; i < normalMapsCount && i <= MAX_MAPS; i++) normal += getNormal(i, TBN, textureCoords);
         }
         else normal = normalize(fs_in.fragmentNormal);
- 
-        vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
+        
+        ////////////////////////AmbientOcclusion////////////////////////       
+
+        if (useAmbientOcclusionMaps)
+        //if (false)
+        {
+            for (int i = 0; i < ambientOcclusionMapsCount && i <= MAX_MAPS; i++) ambientOcclusion += texture(ambientOcclusionMaps[i], textureCoords).r;
+        }
+        else
+        {
+           ambientOcclusion = computeAmbientOcclusion(fs_in.fragmentPosition, normal, viewDirection);
+        }   
+
+        ////////////////////////Lighting////////////////////////       
+        
         vec3 reflectionDirection = reflect(-viewDirection, normal);
         float w0 = max(dot(normal, viewDirection), 0.0f);
-
-        float ambientOcclusion = computeAmbientOcclusion(fs_in.fragmentPosition, normal, viewDirection);
 
         vec3 R0 = vec3(0.04f);
         R0 = mix(R0, albedo, metallic);
@@ -262,6 +372,7 @@ void main()
         //fragmentColor.rgb = vec3(roughness);
         //fragmentColor.rgb = vec3(metallic);
         //fragmentColor.rgb = vec3(ambientOcclusion);
+        //fragmentColor.rgb = vec3(height);
     }
     else
     {

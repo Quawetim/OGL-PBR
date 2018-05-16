@@ -413,22 +413,25 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 	{
 		unsigned int albedoMapsCount = 0;
 		unsigned int smoothnessMapsCount = 0;
-		unsigned int metallicMapsCount = 0;
-		unsigned int normalMapsCount = 0;
+		unsigned int metallicMapsCount = 0;		
 		unsigned int ambientOcclusionMapsCount = 0;
+		unsigned int normalMapsCount = 0;
+		unsigned int heightMapsCount = 0;
 
 		bool useAlbedoMaps = false;
 		bool useSmoothnessMaps = false;
-		bool useMetallicMaps = false;
-		bool useNormalMaps = false;
+		bool useMetallicMaps = false;		
 		bool useAmbientOcclusionMaps = false;
+		bool useNormalMaps = false;
+		bool useHeightMaps = false;
 
 		TextureKeys mapKeys;
 		TextureKeys albedoKeys = mapTextureType.find(TextureType::albedo)->second;
 		TextureKeys	smoothnessKeys = mapTextureType.find(TextureType::smoothness)->second;
 		TextureKeys	metallicKeys = mapTextureType.find(TextureType::metallic)->second;
-		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;
 		TextureKeys ambientOcclusionKeys = mapTextureType.find(TextureType::ambientOcclusion)->second;
+		TextureKeys normalKeys = mapTextureType.find(TextureType::normal)->second;
+		TextureKeys heightKeys = mapTextureType.find(TextureType::height)->second;
 
 		std::string mapNumber;
 		std::vector<Texture> pointer;
@@ -447,56 +450,85 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 			{
 				case TextureType::albedo:
 					{
-						mapKeys = albedoKeys;
+						if (albedoMapsCount < 5)
+						{
+							mapKeys = albedoKeys;
 
-						mapNumber = std::to_string(albedoMapsCount);
-						albedoMapsCount++;
+							mapNumber = std::to_string(albedoMapsCount);
+							albedoMapsCount++;
 
-						if (!useAlbedoMaps) useAlbedoMaps = true;
+							if (!useAlbedoMaps) useAlbedoMaps = true;
+						}
 
 						break;
 					}
 				case TextureType::smoothness:
 					{
-						mapKeys = smoothnessKeys;
+						if (smoothnessMapsCount < 5)
+						{
+							mapKeys = smoothnessKeys;
 
-						mapNumber = std::to_string(smoothnessMapsCount);
-						smoothnessMapsCount++;
+							mapNumber = std::to_string(smoothnessMapsCount);
+							smoothnessMapsCount++;
 
-						if (!useSmoothnessMaps) useSmoothnessMaps = true;
+							if (!useSmoothnessMaps) useSmoothnessMaps = true;
+						}
 
 						break;
 					}
 				case TextureType::metallic:
 					{
-						mapKeys = metallicKeys;
+						if (metallicMapsCount < 5)
+						{
+							mapKeys = metallicKeys;
 
-						mapNumber = std::to_string(metallicMapsCount);
-						metallicMapsCount++;
+							mapNumber = std::to_string(metallicMapsCount);
+							metallicMapsCount++;
 
-						if (!useMetallicMaps) useMetallicMaps = true;
+							if (!useMetallicMaps) useMetallicMaps = true;
+						}
+
+						break;
+					}				
+				case TextureType::ambientOcclusion:
+					{
+						if (ambientOcclusionMapsCount < 5)
+						{
+							mapKeys = ambientOcclusionKeys;
+
+							mapNumber = std::to_string(ambientOcclusionMapsCount);
+							ambientOcclusionMapsCount++;
+
+							if (!useAmbientOcclusionMaps) useAmbientOcclusionMaps = true;
+						}
 
 						break;
 					}
 				case TextureType::normal:
 					{
-						mapKeys = normalKeys;
+						if (normalMapsCount < 5)
+						{
+							mapKeys = normalKeys;
 
-						mapNumber = std::to_string(normalMapsCount);
-						normalMapsCount++;
+							mapNumber = std::to_string(normalMapsCount);
+							normalMapsCount++;
 
-						if (!useNormalMaps) useNormalMaps = true;
+							if (!useNormalMaps) useNormalMaps = true;
+						}
 
 						break;
 					}
-				case TextureType::ambientOcclusion:
+				case TextureType::height:
 					{
-						mapKeys = ambientOcclusionKeys;
+						if (heightMapsCount < 5)
+						{
+							mapKeys = heightKeys;
 
-						mapNumber = std::to_string(ambientOcclusionMapsCount);
-						ambientOcclusionMapsCount++;
+							mapNumber = std::to_string(heightMapsCount);
+							heightMapsCount++;
 
-						if (!useAmbientOcclusionMaps) useAmbientOcclusionMaps = true;
+							if (!useHeightMaps) useHeightMaps = true;
+						}
 
 						break;
 					}
@@ -515,15 +547,17 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		// Push texture flags
 		shader.setBool(albedoKeys.mapsUse, useAlbedoMaps);
 		shader.setBool(smoothnessKeys.mapsUse, useSmoothnessMaps);
-		shader.setBool(metallicKeys.mapsUse, useMetallicMaps);
-		shader.setBool(normalKeys.mapsUse, useNormalMaps);
+		shader.setBool(metallicKeys.mapsUse, useMetallicMaps);		
 		shader.setBool(ambientOcclusionKeys.mapsUse, useAmbientOcclusionMaps);
+		shader.setBool(normalKeys.mapsUse, useNormalMaps);
+		shader.setBool(heightKeys.mapsUse, useHeightMaps);
 
 		shader.setInt(albedoKeys.mapsCount, albedoMapsCount);
 		shader.setInt(smoothnessKeys.mapsCount, smoothnessMapsCount);
-		shader.setInt(metallicKeys.mapsCount, metallicMapsCount);
-		shader.setInt(normalKeys.mapsCount, normalMapsCount);
+		shader.setInt(metallicKeys.mapsCount, metallicMapsCount);		
 		shader.setInt(ambientOcclusionKeys.mapsCount, ambientOcclusionMapsCount);
+		shader.setInt(normalKeys.mapsCount, normalMapsCount);
+		shader.setInt(heightKeys.mapsCount, heightMapsCount);
 
 		int textureFreeNumber = pointer.size();
 
