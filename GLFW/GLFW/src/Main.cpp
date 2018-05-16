@@ -23,7 +23,7 @@ extern "C"
 	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 
-int activeScene = 0;
+int activeScene = 1;
 
 void func1(std::shared_ptr<IScene> scene)
 {

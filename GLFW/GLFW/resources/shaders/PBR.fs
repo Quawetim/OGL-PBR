@@ -3,11 +3,17 @@
 #define MAX_MAPS 5
 #define MAX_LIGHTS 5
 
+// 0 - Parallax Mapping
+// 1 - Step Parallax Mapping
+// 2 - Parallax Occlusion Mapping
+#define PARALLAX_TYPE 2
+
 struct Material
 {
     vec3 albedo;
     float metallic;
-    float smoothness;    
+    float smoothness;
+    float surfaceHeight;
 };
 
 struct Light
@@ -27,8 +33,9 @@ in VS_OUT
     vec2 textureCoords;
     vec3 cameraPosition;
 
-    vec3 cameraPositionTBN;
-    vec3 fragmentPositionTBN; 
+    // Tangent Space
+    vec3 fragmentPositionTBN;
+    vec3 cameraPositionTBN;   
 } fs_in;
 
 out vec4 fragmentColor;
@@ -156,81 +163,82 @@ float computeAmbientOcclusion(vec3 fragment_position, vec3 normal, vec3 view_dir
     return ao;
 }
 
-vec2 ParallaxMapping(vec2 texCoords, vec3 viewDir)
+vec2 SimpleParallaxMapping(int map, vec2 texture_coords, vec3 view_direction)
 { 
-    float height = texture(heightMaps[0], texCoords).r;     
-    return texCoords + viewDir.xy / viewDir.z * (height * 0.005f);        
+    float height = texture(heightMaps[map], texture_coords).r;     
+    return texture_coords + view_direction.xy / view_direction.z * (height * 0.005f);        
 }
 
-vec2 StepParallaxMapping(vec2 texCoords, vec3 viewDir)
+vec2 StepParallaxMapping(int map, vec2 texture_coords, vec3 view_direction)
 { 
-	float layers = 20.0f;
+	float minLayers = 32;
+    float maxLayers = 64;
+    float layers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), view_direction)));	
 	
-	float depth = 1.0f / layers;
-	
+    float deltaDepth = 1.0f / layers;	
 	float currentDepth = 0.0f;
 	
-	vec2 P = viewDir.xy / viewDir.z * 0.005f;
-	vec2 delta = P / layers;
+	vec2 P = view_direction.xy / view_direction.z * 0.005f;
+	vec2 deltaTextureCoords = P / layers;
 	
-	vec2 currentTexCoords = texCoords;
-	float currentDepthMap = texture(heightMaps[0], currentTexCoords).r;  
+	vec2 currentTextureCoords = texture_coords;
+	float currentDepth_map = texture(heightMaps[map], currentTextureCoords).r;  
 
-	while (currentDepth < currentDepthMap)
+	while (currentDepth < currentDepth_map)
 	{
-		currentTexCoords += delta;
-		currentDepthMap = texture(heightMaps[0], currentTexCoords).r;
-		currentDepth += depth;
+		currentTextureCoords += deltaTextureCoords;
+		currentDepth_map = texture(heightMaps[map], currentTextureCoords).r;
+		currentDepth += deltaDepth;
 	}
     
-    return currentTexCoords;        
+    return currentTextureCoords;        
 }
 
-vec2 ParallaxOcclusionMapping(vec2 texCoords, vec3 viewDir)
+vec2 ParallaxOcclusionMapping(int map, vec2 texture_coords, vec3 view_direction)
 { 
-	// number of depth layers
-    const float minLayers = 32;
-    const float maxLayers = 64;
-    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), viewDir)));  
-    // calculate the size of each layer
-    float layerDepth = 1.0 / numLayers;
-    // depth of current layer
-    float currentLayerDepth = 0.0;
-    // the amount to shift the texture coordinates per layer (from vector P)
-    vec2 P = viewDir.xy / viewDir.z * 0.005f; 
-    vec2 deltaTexCoords = P / numLayers;
-  
-    // get initial values
-    vec2  currentTexCoords     = texCoords;
-    float currentDepthMapValue = texture(heightMaps[0], currentTexCoords).r;
-      
-    while(currentLayerDepth < currentDepthMapValue)
-    {
-        // shift texture coordinates along direction of P
-        currentTexCoords += deltaTexCoords;
-        // get depthmap value at current texture coordinates
-        currentDepthMapValue = texture(heightMaps[0], currentTexCoords).r;  
-        // get depth of next layer
-        currentLayerDepth += layerDepth;  
-    }
-    
-    // get texture coordinates before collision (reverse operations)
-    vec2 prevTexCoords = currentTexCoords + deltaTexCoords;
+    float minLayers = 32;
+    float maxLayers = 64;
+    float layers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), view_direction)));	
+	
+    float deltaDepth = 1.0f / layers;	
+	float currentDepth = 0.0f;
+	
+	vec2 P = view_direction.xy / view_direction.z * 0.005f;
+	vec2 deltaTextureCoords = P / layers;
+	
+	vec2 currentTextureCoords = texture_coords;
+	float currentDepth_map = texture(heightMaps[map], currentTextureCoords).r;  
 
-    // get depth after and before collision for linear interpolation
-    float afterDepth  = currentDepthMapValue - currentLayerDepth;
-    float beforeDepth = texture(heightMaps[0], prevTexCoords).r - currentLayerDepth + layerDepth;
+	while (currentDepth < currentDepth_map)
+	{
+		currentTextureCoords += deltaTextureCoords;
+		currentDepth_map = texture(heightMaps[map], currentTextureCoords).r;
+		currentDepth += deltaDepth;
+	}
+    
+    vec2 prevTextureCoords = currentTextureCoords + deltaTextureCoords;
+
+    float afterDepth = currentDepth_map - currentDepth;
+    float beforeDepth = texture(heightMaps[map], prevTextureCoords).r - currentDepth + deltaDepth;
  
     // interpolation of texture coordinates
     float weight = afterDepth / (afterDepth - beforeDepth);
-    vec2 finalTexCoords = prevTexCoords * weight + currentTexCoords * (1.0 - weight);
+    vec2 result = prevTextureCoords * weight + currentTextureCoords * (1.0 - weight);
 
-    return finalTexCoords;
+    return result;
+}
+
+vec2 ParallaxMapping(int i, vec2 texture_coords, vec3 view_direction)
+{
+    if (PARALLAX_TYPE == 0) return SimpleParallaxMapping(i, texture_coords, view_direction);
+    if (PARALLAX_TYPE == 1) return StepParallaxMapping(i, texture_coords, view_direction);
+    if (PARALLAX_TYPE == 2) return ParallaxOcclusionMapping(i, texture_coords, view_direction);
 }
 
 void main()
 {
     const bool useLighting = true;
+    const bool useParallaxMapping = false;
 
     fragmentColor = vec4(0.0f, 0.0f, 0.0f, 1.0f); 
 
@@ -244,12 +252,18 @@ void main()
         
         mat3 TBN = computeTBN();
         vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
-
-        vec3 viewDirectionTBN = normalize(fs_in.cameraPositionTBN - fs_in.fragmentPositionTBN);        
         vec2 textureCoords = fs_in.textureCoords;
-    
-        textureCoords = ParallaxOcclusionMapping(fs_in.textureCoords, viewDirectionTBN);       
-        if(textureCoords.x > 1.0 || textureCoords.y > 1.0 || textureCoords.x < 0.0 || textureCoords.y < 0.0) textureCoords = fs_in.textureCoords;
+
+        ////////////////////////Parallax Mapping////////////////////////
+
+        if (useHeightMaps && useParallaxMapping)
+        {
+            textureCoords = vec2(0.0f);
+            vec3 viewDirectionTBN = normalize(fs_in.cameraPositionTBN - fs_in.fragmentPositionTBN);          
+            for (int i = 0; i < heightMapsCount && i <= MAX_MAPS; i++) textureCoords += ParallaxMapping(i, fs_in.textureCoords, viewDirectionTBN);       
+            
+            if (textureCoords.x > 1.0 || textureCoords.y > 1.0 || textureCoords.x < 0.0 || textureCoords.y < 0.0) textureCoords = fs_in.textureCoords;
+        }
 
         ////////////////////////Albedo////////////////////////
 

@@ -111,6 +111,7 @@ void Material::setDefault()
 
 	this->metallic_ = 0.0f;
 	this->smoothness_ = 0.0f;
+	this->surfaceHeight_ = 0.0f;
 	
 	if (this->textures_.size() > 0)
 	{
@@ -159,6 +160,13 @@ void Material::setSmoothness(const float smoothness)
 	}
 }
 
+///<summary>Задаёт коэффициент высоты поверхности.</summary>
+///<param name = 'surface_height'>Коэффициент высоты поверхности.</param>
+void Material::setSurfaceHeight(const float surface_height)
+{
+	this->surfaceHeight_ = surface_height;
+}
+
 ///<summary>Задаёт диффузную текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
 void Material::addTexture(Texture texture)
@@ -182,6 +190,12 @@ float Material::getMetallic() const
 float Material::getSmoothness() const
 {
 	return this->smoothness_;
+}
+
+///<summary>Возвращает коэффициент высоты поверхности.</summary>
+float Material::getSurfaceHeight() const
+{
+	return this->surfaceHeight_;
 }
 
 ///<summary>Возвращает список текстур.</summary>

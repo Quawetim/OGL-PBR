@@ -190,6 +190,9 @@ private:
 	///<summary>Гладкость поверхности.</summary>
 	float smoothness_;
 
+	///<summary>Коэффициент высоты для displacement mapping.</summary>
+	float surfaceHeight_;
+
 public:
 	///<summary>Конструктор.</summary>
 	Material();
@@ -218,6 +221,10 @@ public:
 	///<param name = 'smoothness'>Гладкость.</param>
 	void setSmoothness(const float smoothness);
 
+	///<summary>Задаёт коэффициент высоты поверхности.</summary>
+	///<param name = 'surface_height'>Коэффициент высоты поверхности.</param>
+	void setSurfaceHeight(const float surface_height);
+
 	///<summary>Задаёт текстуру.</summary>
 	///<param name = 'texture'>Текстура.</param>
 	void addTexture(Texture texture);
@@ -230,6 +237,9 @@ public:
 
 	///<summary>Возвращает гладкость поверхности.</summary>
 	float getSmoothness() const;
+
+	///<summary>Возвращает коэффициент высоты поверхности.</summary>
+	float getSurfaceHeight() const;
 
 	///<summary>Возвращает список текстур.</summary>
 	std::vector<Texture> getTextures() const;

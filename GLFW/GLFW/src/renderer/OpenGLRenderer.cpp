@@ -645,7 +645,8 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 
 	shader.setVec3("material.albedo", albedo);
 	shader.setFloat("material.metallic", object->getMaterial().getMetallic());	
-	shader.setFloat("material.smoothness", object->getMaterial().getSmoothness());	
+	shader.setFloat("material.smoothness", object->getMaterial().getSmoothness());
+	shader.setFloat("material.surfaceHeight", object->getMaterial().getSurfaceHeight());
 
 	// Push lights
 	shader.setInt("lightsCount", lights.size());

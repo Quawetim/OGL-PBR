@@ -57,10 +57,13 @@ void Scene3::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("pbr/wood/oak/smoothness.png", TextureType::smoothness);
 	material.addTexture(texture);
-	texture = Texture("pbr/wood/oak/normal.png", TextureType::normal);
-	material.addTexture(texture);
 	texture = Texture("pbr/wood/oak/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
+	texture = Texture("pbr/wood/oak/normal.png", TextureType::normal);
+	material.addTexture(texture);
+	texture = Texture("pbr/wood/oak/height.png", TextureType::height);
+	material.addTexture(texture);
+	material.setSurfaceHeight(0.05f);
 	this->spheres_[0]->setMaterial(material);
 	material.setDefault();
 
@@ -68,20 +71,23 @@ void Scene3::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("pbr/wood/mahog/smoothness.png", TextureType::smoothness);
 	material.addTexture(texture);
-	texture = Texture("pbr/wood/mahog/normal.png", TextureType::normal);
-	material.addTexture(texture);
 	texture = Texture("pbr/wood/mahog/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
+	texture = Texture("pbr/wood/mahog/normal.png", TextureType::normal);
+	material.addTexture(texture);
+	texture = Texture("pbr/wood/mahog/height.png", TextureType::height);
+	material.addTexture(texture);
+	material.setSurfaceHeight(0.5f);
 	this->spheres_[1]->setMaterial(material);
 	material.setDefault();
 
 	texture = Texture("pbr/uncat/tile/albedo.png", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("pbr/uncat/tile/smoothness.png", TextureType::smoothness);
+	material.addTexture(texture);	
+	texture = Texture("pbr/uncat/tile/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	texture = Texture("pbr/uncat/tile/normal.png", TextureType::normal);
-	material.addTexture(texture);
-	texture = Texture("pbr/uncat/tile/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	this->spheres_[2]->setMaterial(material);
 	material.setDefault();
@@ -96,6 +102,7 @@ void Scene3::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("pbr/uncat/cobblestone-floor/height.png", TextureType::height);
 	material.addTexture(texture);
+	material.setSurfaceHeight(0.08f);
 	this->spheres_[3]->setMaterial(material);
 	material.setDefault();
 
@@ -114,10 +121,13 @@ void Scene3::init(std::vector<Model*> models)
 	material.addTexture(texture);
 	texture = Texture("pbr/rock/limestone/smoothness.png", TextureType::smoothness);
 	material.addTexture(texture);
-	texture = Texture("pbr/rock/limestone/normal.png", TextureType::normal);
-	material.addTexture(texture);
 	texture = Texture("pbr/rock/limestone/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
+	texture = Texture("pbr/rock/limestone/normal.png", TextureType::normal);
+	material.addTexture(texture);
+	texture = Texture("pbr/rock/limestone/height.png", TextureType::height);
+	material.addTexture(texture);
+	material.setSurfaceHeight(0.2f);
 	this->spheres_[5]->setMaterial(material);
 	material.setDefault();
 
@@ -131,22 +141,28 @@ void Scene3::init(std::vector<Model*> models)
 	material.setDefault();
 
 	texture = Texture("pbr/rock/moon/albedo.png", TextureType::albedo);
+	material.addTexture(texture);	
+	texture = Texture("pbr/rock/moon/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	texture = Texture("pbr/rock/moon/normal.png", TextureType::normal);
 	material.addTexture(texture);
-	texture = Texture("pbr/rock/moon/ao.png", TextureType::ambientOcclusion);
+	texture = Texture("pbr/rock/moon/height.png", TextureType::height);
 	material.addTexture(texture);
+	material.setSurfaceHeight(0.2f);
 	this->spheres_[7]->setMaterial(material);
 	material.setDefault();
 
 	texture = Texture("pbr/rock/planet-surface/albedo.png", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("pbr/rock/planet-surface/smoothness.png", TextureType::smoothness);
+	material.addTexture(texture);	
+	texture = Texture("pbr/rock/planet-surface/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	texture = Texture("pbr/rock/planet-surface/normal.png", TextureType::normal);
 	material.addTexture(texture);
-	texture = Texture("pbr/rock/planet-surface/ao.png", TextureType::ambientOcclusion);
+	texture = Texture("pbr/rock/planet-surface/height.png", TextureType::height);
 	material.addTexture(texture);
+	material.setSurfaceHeight(0.1f);
 	this->spheres_[8]->setMaterial(material);
 	material.setDefault();				
 
@@ -248,10 +264,10 @@ void Scene3::init(std::vector<Model*> models)
 	texture = Texture("pbr/plastic/plastic-scuffed/albedo.png", TextureType::albedo);
 	material.addTexture(texture);
 	texture = Texture("pbr/plastic/plastic-scuffed/smoothness.png", TextureType::smoothness);
+	material.addTexture(texture);	
+	texture = Texture("pbr/plastic/plastic-scuffed/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	texture = Texture("pbr/plastic/plastic-scuffed/normal.png", TextureType::normal);
-	material.addTexture(texture);
-	texture = Texture("pbr/plastic/plastic-scuffed/ao.png", TextureType::ambientOcclusion);
 	material.addTexture(texture);
 	this->spheres_[18]->setMaterial(material);
 	material.setDefault();

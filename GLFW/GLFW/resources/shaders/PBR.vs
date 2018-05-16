@@ -1,6 +1,6 @@
 #version 430
 
-#define MAX_LIGHTS 5;
+#define MAX_MAPS 5
 
 layout (location = 0) in vec3 vPosition;
 layout (location = 1) in vec3 vNormal;
@@ -8,14 +8,12 @@ layout (location = 2) in vec2 vTextureCoords;
 layout (location = 3) in vec3 vTangent;
 layout (location = 4) in vec3 vBitangent;
 
-struct Light
+struct Material
 {
-    vec3 position;
-    float radius;
-
-    vec3 diffuseColor;
-    vec3 specularColor;
-    float power;
+    vec3 albedo;
+    float metallic;
+    float smoothness;
+    float surfaceHeight;
 };
 
 out VS_OUT
@@ -25,22 +23,35 @@ out VS_OUT
     vec2 textureCoords;
     vec3 cameraPosition; 
 
-    vec3 cameraPositionTBN;
+    // Tangent Space
     vec3 fragmentPositionTBN;
+    vec3 cameraPositionTBN;   
 } vs_out;
 
 uniform mat4 projectionMatrix, viewMatrix, modelMatrix;
-
 uniform vec3 cameraPosition;
 
-uniform int lightsCount;
-uniform Light light[5];
+uniform Material material;
 
-bool useNormalMaps;
+uniform bool useHeightMaps;
+uniform int heightMapsCount;
+uniform sampler2D heightMaps[MAX_MAPS];
 
 void main()
 {
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0f);
+    const bool useDisplacementMapping = true;
+    vec3 vertexPosition = vPosition;
+    
+    if (useHeightMaps && useDisplacementMapping)
+    {
+        for (int i = 0; i < heightMapsCount && i <= MAX_MAPS; i++)
+        {
+            float height = texture(heightMaps[i], vTextureCoords).r;
+            vertexPosition += vec3(vNormal * height * material.surfaceHeight);
+        }
+    }
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0f);
     
     vs_out.fragmentPosition = vec3(modelMatrix * vec4(vPosition, 1.0f));
     vs_out.fragmentNormal = mat3(transpose(inverse(modelMatrix))) * vNormal;  
