@@ -26,12 +26,11 @@ protected:
 	///<summary>Высота элемента.</summary>
 	int height_;
 
+	///<summary>Текущий цвет (bgColor || hoverColor).</summary>
 	glm::vec3 color_;
 
-	///<summary>Цвет.</summary>
+	///<summary>Цвет элемента.</summary>
 	glm::vec3 bgColor_;
-
-	glm::vec3 hoverColor_;
 
 	///<summary>Флаг использования текстуры.</summary>
 	bool useBgTexture_;
@@ -43,6 +42,12 @@ protected:
 	std::shared_ptr<Shader> shader_;
 
 	std::vector<std::shared_ptr<UiElement>> childs_;
+
+	///<summary>Хранит букву и соответствующую ей текстуру.</summary>
+	std::map<wchar_t, Character> characters_;
+
+	///<summary>Текст.</summary>
+	std::string text_;
 
 public:
 	///<summary>Констркутор.</summary>
@@ -57,17 +62,12 @@ public:
 	///<summary>Задаёт основной цвет в float формате.</summary>
 	void setBgColor(const glm::vec3 color);
 
-	///<summary>Задаёт hover цвет в RGB формате.</summary>
-	///<param name = 'red'>Красная компонента цвета.</param>
-	///<param name = 'green'>Зелёная компонента цвета.</param>
-	///<param name = 'blue'>Синяя компонента цвета.</param>
-	void setHoverColor(const unsigned int red, const unsigned int green, const unsigned int blue);
-
-	///<summary>Задаёт hover цвет в float формате.</summary>
-	void setHoverColor(const glm::vec3 color);
-
 	///<summary>Задаёт текстуру.</summary>
 	void setBgTexture(const std::shared_ptr<Texture> texture);
+
+	///<summary>Задаёт текст.</summary>
+	///<param name = 'text'>Текст.</param>
+	void setText(const std::string text);
 
 	///<summary>Возвращает позицию X левого нижнего угла в пикселях.</summary>
 	int getX() const;
@@ -90,20 +90,20 @@ public:
 	///<summary>Возвращает текстуру.</summary>
 	std::shared_ptr<Texture> getBgTexture() const;
 
+	///<summary>Возвращает текст.</summary>
+	std::string getText() const;
+
 	///<summary>Возвращает шейдер.</summary>
-	std::shared_ptr<Shader> getShader() const;
+	std::shared_ptr<Shader> getShader() const;	
 };
 
 class UiPanel : public UiElement
 {
-private:
-	
-
 public:
 	///<summary>Конструктор по-умолчанию.</summary>
 	UiPanel() {};
 
-	///<summary>Констркутор.</summary>
+	///<summary>Конструктор.</summary>
 	///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
 	///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
 	///<param name = 'width'>Ширина элемента.</param>
@@ -122,7 +122,7 @@ public:
 	///<summary>Конструктор по-умолчанию.</summary>
 	UiButton() {};
 
-	///<summary>Констркутор.</summary>
+	///<summary>Конструктор.</summary>
 	///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
 	///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
 	///<param name = 'width'>Ширина элемента.</param>
@@ -131,5 +131,23 @@ public:
 
 	void setClickFunction(void(*function)(std::shared_ptr<IScene>));
 
-	void checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene, const float scaleX, const float scaleY);
+	void checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene);
+};
+
+class UiLabel : public UiElement
+{
+private:
+	FT_Library ft_;
+	FT_Face face_;
+	
+public:
+	///<summary>Конструктор по-умолчанию.</summary>
+	UiLabel() {};
+
+	///<summary>Конструктор.</summary>
+	///<param name = 'font'>Название шрифта.</param>
+	///<param name = 'size'>Кегль.</param>
+	///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
+	///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
+	UiLabel(const std::string font, const int size, const int x, const int y);	
 };

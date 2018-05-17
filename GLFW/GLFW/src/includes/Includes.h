@@ -62,6 +62,14 @@ struct VertexData
     glm::vec3 bitangent;
 };
 
+struct Character
+{
+	unsigned int texture;
+	glm::ivec2 size;
+	glm::ivec2 bearing;
+	unsigned int advance;
+};
+
 class InputHandle
 {
 private:

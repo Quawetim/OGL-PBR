@@ -16,6 +16,9 @@ Renderer::Renderer()
 
 	readConfig();
 
+	this->initialWidth_ = this->windowWidth_;
+	this->initialHeight_ = this->windowHeight_;
+
 	this->updateAspectRatio();	
 	
 	this->uiScaleX_ = 1.0f;
@@ -49,64 +52,41 @@ void Renderer::readConfig()
 			if (s == "Fullscreen")
 			{
 				fin >> s;
-				if (s == "=")
-				{
-					fin >> s;
-					if (s == "true")
-						this->isFullScreen_ = true;
-					else
-						this->isFullScreen_ = false;
+				if (s == "1")
+					this->isFullScreen_ = true;
+				else
+					this->isFullScreen_ = false;
 
-					continue;
-				}
+				continue;
 			}
 
 			if (s == "Vsync")
 			{
 				fin >> s;
-				if (s == "=")
-				{
-					fin >> s;
-					if (s == "true")
-						this->isVSync_ = true;
-					else
-						this->isVSync_ = false;
+				if (s == "1")
+					this->isVSync_ = true;
+				else
+					this->isVSync_ = false;
 
-					continue;
-				}
+				continue;
 			}
 
 			if (s == "WindowWidth")
 			{
-				fin >> s;
-				if (s == "=")
-				{
-					fin >> this->windowWidth_;
+				fin >> this->windowWidth_;
 
-					continue;
-				}
+				if (this->windowWidth_ <= 0) this->windowWidth_ = 800;
+
+				continue;
 			}
 
 			if (s == "WindowHeight")
 			{
-				fin >> s;
-				if (s == "=")
-				{
-					fin >> this->windowHeight_;
+				fin >> this->windowHeight_;
 
-					continue;
-				}
-			}
+				if (this->windowHeight_ <= 0) this->windowHeight_ = 600;
 
-			if (s == "ReflectionResolution")
-			{
-				fin >> s;
-				if (s == "=")
-				{
-					fin >> this->reflectionsResolution_;
-
-					continue;
-				}
+				continue;
 			}
 		}
 	}
@@ -123,10 +103,10 @@ void Renderer::updateAspectRatio()
 
 	this->perspectiveProjection_ = glm::perspective(glm::radians(this->fov_), this->aspectRatio_, 0.05f, 500.0f);
 
-	this->orthoProjection_ = glm::ortho(-1.0f * this->aspectRatio_, 1.0f * this->aspectRatio_, -1.0f, 1.0f, -1.0f, 1.0f);
+	this->orthoProjection_ = glm::ortho(0.0f, static_cast<float>(this->windowWidth_), 0.0f, static_cast<float>(this->windowHeight_));
 
-	this->uiScaleX_ = this->windowWidth_ / 1280.0f;
-	this->uiScaleY_ = this->windowHeight_ / 720.0f;
+	this->uiScaleX_ = static_cast<float>(this->windowWidth_) / static_cast<float>(this->initialWidth_);
+	this->uiScaleY_ = static_cast<float>(this->windowHeight_) / static_cast<float>(this->initialHeight_);
 }
 
 ///<summary>Задаёт ширину окна.</summary>

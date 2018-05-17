@@ -38,6 +38,11 @@ OpenGLRenderer::OpenGLRenderer()
 		this->windowWidth_ = vidMode->width;
 		this->windowHeight_ = vidMode->height;
 
+		this->initialWidth_ = this->windowWidth_;
+		this->initialHeight_ = this->windowHeight_;
+
+		this->updateAspectRatio();
+
 		// Ширина, высота, название окна, монитор (Sсreen , NUll - оконный), обмен ресурсами с окном (NULL - нет такого)
 		GLFWwindow* wnd = glfwCreateWindow(this->windowWidth_, this->windowHeight_, "Diploma", screen, NULL);
 		this->window_.OGLwindow = wnd;
@@ -234,7 +239,7 @@ OpenGLRenderer::OpenGLRenderer()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	this->frame_ = this->generateTexture2D_RGB16F(this->windowWidth_, this->windowHeight_);
+	this->frame_ = this->generateTexture2D_RGB16F(this->windowWidth_, this->windowHeight_, nullptr);
 	this->frameRenderBuffer_ = this->generateRenderBuffer(this->windowWidth_, this->windowHeight_);
 	this->frameFrameBuffer_ = this->generateFrameBuffer(this->frameRenderBuffer_, this->frame_);
 
@@ -246,9 +251,9 @@ OpenGLRenderer::OpenGLRenderer()
 	this->tempRenderBuffer_ = this->generateRenderBuffer(256, 256);
 	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
 
-	this->irradianceMap_ = this->generateCubeMap16F(256, false);
-	this->prefilteredMap_ = this->generateCubeMap16F(512, true);
-	this->brdfLutMap_ = this->generateTexture2D_RG16F(256, 256);
+	this->irradianceMap_ = this->generateCubeMap16F(256, nullptr, false);
+	this->prefilteredMap_ = this->generateCubeMap16F(512, nullptr, true);
+	this->brdfLutMap_ = this->generateTexture2D_RG16F(256, 256, nullptr);
 
 	this->generateBrdfLutMap();
 }
@@ -266,7 +271,7 @@ void OpenGLRenderer::updateFrameSize()
 {
 	unsigned int oldFrame = this->frame_;
 
-	this->frame_ = this->generateTexture2D_RGB16F(this->windowWidth_, this->windowHeight_);
+	this->frame_ = this->generateTexture2D_RGB16F(this->windowWidth_, this->windowHeight_, nullptr);
 
 	this->bindFrameBuffer(this->frameFrameBuffer_);
 	glBindRenderbuffer(GL_RENDERBUFFER, this->frameRenderBuffer_);
@@ -744,38 +749,9 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 	glDisable(GL_DEPTH_TEST);
 
 	std::shared_ptr<Shader> shader = ui_element->getShader();
+	shader->activate();
 
-	/*	
-	*	   (0;0) ___________________
-	*			|					|
-	*			|	ui_element		|
-	*			|					|
-	*			|___________________|
-	*								(1;1)			
-	*/
-
-	// Magic.
-
-	//left = (ui_element->getX() * this->uiScaleX_ - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	//top = (this->getWindowHalfHeight() - ui_element->getY() * this->uiScaleY_) / this->getWindowHalfHeight();
-	
-	//right = (ui_element->getX() * this->uiScaleX_ + ui_element->getWidth() * this->uiScaleX_ - this->getWindowHalfWidth()) / this->getWindowHalfWidth() * this->aspectRatio_;
-	//bottom = (this->getWindowHalfHeight() - ui_element->getY() * this->uiScaleY_ - ui_element->getHeight() * this->uiScaleY_) / this->getWindowHalfHeight();
-
-	float left = (ui_element->getX() * this->uiScaleX_ / this->getWindowHalfWidth() - 1.0f) * this->aspectRatio_;
-	float right = left + (ui_element->getWidth() * this->uiScaleX_ * this->aspectRatio_) / this->getWindowHalfWidth();
-
-	float top = 1.0f - (ui_element->getY() * this->uiScaleY_ / this->getWindowHalfHeight());
-	float bottom = top - (ui_element->getHeight() * this->uiScaleY_ / this->getWindowHalfHeight());
-
-	float vertices[] =
-	{
-		// positions   // textureCoords
-		left,	top,	0.0f, 0.0f,
-		left,	bottom,	0.0f, 1.0f,
-		right,	top,	1.0f, 0.0f,
-		right,	bottom,	1.0f, 1.0f
-	};
+	int textLenght = ui_element->getText().length();
 
 	if (ui_element->VAO_ == 0)
 	{
@@ -783,48 +759,135 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 		glGenBuffers(1, &ui_element->VBO_);
 	}
 
-	glBindVertexArray(ui_element->VAO_);
-	glBindBuffer(GL_ARRAY_BUFFER, ui_element->VBO_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-	shader->activate();
-
-	shader->setProjectionMatrix(this->orthoProjection_);
-
-	if (ui_element->useBgTexture())
+	if (textLenght <= 0)
 	{
-		shader->setBool("useTexture", true);
+		shader->setBool("text", false);
+		
+		/*
+		*		  ___________________ (x + width; y + height)
+		*		 |					 |
+		*		 |	ui_element		 |
+		*		 |					 |
+		*		 |___________________|
+		*	(x; y)
+		*/
 
-		std::shared_ptr<Texture> texture = ui_element->getBgTexture();
+		/*
+		*		  ___________________ (width; height)
+		*		 |					 |
+		*		 |		screen		 |
+		*		 |					 |
+		*		 |___________________|
+		*	(0; 0)
+		*/
 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture->getID());
-		shader->setInt("Texture", 0);		
+		// Magic.
+
+		float left = ui_element->getX() * this->uiScaleX_;
+		float right = left + ui_element->getWidth() * this->uiScaleX_;
+
+		float bottom = ui_element->getY() * this->uiScaleY_;
+		float top = bottom + ui_element->getHeight() * this->uiScaleY_;
+
+		float vertices[] =
+		{
+			// positions   // textureCoords
+			left,	top,	0.0f, 0.0f,
+			left,	bottom,	0.0f, 1.0f,
+			right,	top,	1.0f, 0.0f,
+			right,	bottom,	1.0f, 1.0f
+		};	
+
+		glBindVertexArray(ui_element->VAO_);
+		glBindBuffer(GL_ARRAY_BUFFER, ui_element->VBO_);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));	
+
+		shader->setProjectionMatrix(this->orthoProjection_);
+
+		if (ui_element->useBgTexture())
+		{
+			shader->setBool("useTexture", true);
+
+			std::shared_ptr<Texture> texture = ui_element->getBgTexture();
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texture->getID());
+			shader->setInt("Texture", 0);
+		}
+		else
+		{
+			shader->setBool("useTexture", false);
+		}
+
+		shader->setVec3("color", ui_element->getColor());
+
+		glBindVertexArray(ui_element->VAO_);
+		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+		glBindVertexArray(0);
+
+		if (ui_element->useBgTexture())
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
 	}
 	else
 	{
-		shader->setBool("useTexture", false);	
-	}
+		shader->setBool("text", true);
+		shader->setProjectionMatrix(this->orthoProjection_);
+		shader->setVec3("color", ui_element->color_);				
 
-	shader->setVec3("color", ui_element->getColor());
+		float X = ui_element->getX() * this->uiScaleX_;
+		float Y = ui_element->getY() * this->uiScaleY_;
 
-	glBindVertexArray(ui_element->VAO_);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
+		glActiveTexture(GL_TEXTURE0);
 
-	if (ui_element->useBgTexture())
-	{
+		for (int i = 0; i < textLenght; i++)
+		{
+			Character ch = ui_element->characters_[ui_element->text_[i]];
+
+			float left = X + ch.bearing.x * this->uiScaleX_;
+			float right = left + ch.size.x * this->uiScaleX_;
+					
+			float bottom = Y - (ch.size.y - ch.bearing.y) * this->uiScaleY_;
+			float top = bottom + ch.size.y * this->uiScaleY_;
+
+			float vertices[] =
+			{
+				left,  top,		0.0f, 0.0f,
+				left,  bottom,	0.0f, 1.0f,
+				right, top,		1.0f, 0.0f,
+				right, bottom,	1.0f, 1.0f
+			};
+
+			glBindTexture(GL_TEXTURE_2D, ch.texture);
+			shader->setInt("Texture", 0);
+
+			glBindVertexArray(ui_element->VAO_);
+			glBindBuffer(GL_ARRAY_BUFFER, ui_element->VBO_);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+
+			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+			glBindVertexArray(0);
+			
+			X += (ch.advance / 64) * this->uiScaleX_;
+		}
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-
-	glEnable(GL_DEPTH_TEST);
 }
 
 ///<summary>Отрисовка осей координат.</summary>
@@ -926,17 +989,37 @@ void OpenGLRenderer::restoreViewPort()
 ///<summary>Создаёт текстуру RGB.</summary>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-unsigned int OpenGLRenderer::generateTexture2D_RGB(const int width, const int height)
+unsigned int OpenGLRenderer::generateTexture2D_RED(const int width, const int height, const unsigned char* buffer)
 {
 	unsigned int ID;
 
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, buffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return ID;
+}
+
+///<summary>Создаёт текстуру RGB.</summary>
+///<param name = 'width'>Ширина.</param>
+///<param name = 'height'>Высота.</param>
+unsigned int OpenGLRenderer::generateTexture2D_RGB(const int width, const int height, const unsigned char* buffer)
+{
+	unsigned int ID;
+
+	glGenTextures(1, &ID);
+	glBindTexture(GL_TEXTURE_2D, ID);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -948,14 +1031,14 @@ unsigned int OpenGLRenderer::generateTexture2D_RGB(const int width, const int he
 ///<summary>Создаёт текстуру RGB16F.</summary>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-unsigned int OpenGLRenderer::generateTexture2D_RGB16F(const int width, const int height)
+unsigned int OpenGLRenderer::generateTexture2D_RGB16F(const int width, const int height, const unsigned char* buffer)
 {
 	unsigned int ID;
 
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, buffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -969,14 +1052,14 @@ unsigned int OpenGLRenderer::generateTexture2D_RGB16F(const int width, const int
 ///<summary>Создаёт текстуру RG16F.</summary>
 ///<param name = 'width'>Ширина.</param>
 ///<param name = 'height'>Высота.</param>
-unsigned int OpenGLRenderer::generateTexture2D_RG16F(const int width, const int height)
+unsigned int OpenGLRenderer::generateTexture2D_RG16F(const int width, const int height, const unsigned char* buffer)
 {
 	unsigned int ID;
 
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, width, height, 0, GL_RG, GL_FLOAT, buffer);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -990,7 +1073,7 @@ unsigned int OpenGLRenderer::generateTexture2D_RG16F(const int width, const int 
 ///<summary>Создаёт float CubeMap.</summary>
 ///<param name = 'size'>Размер.</param>
 ///<param name = 'generate_mipmap'>Нужно ли генерировать mipmap.</param>
-unsigned int OpenGLRenderer::generateCubeMap16F(const int size, bool generate_mipmap)
+unsigned int OpenGLRenderer::generateCubeMap16F(const int size, const unsigned char* buffer, bool generate_mipmap)
 {
 	unsigned int ID;
 
@@ -999,7 +1082,7 @@ unsigned int OpenGLRenderer::generateCubeMap16F(const int size, bool generate_mi
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, size, size, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, size, size, 0, GL_RGB, GL_FLOAT, buffer);
 	}
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

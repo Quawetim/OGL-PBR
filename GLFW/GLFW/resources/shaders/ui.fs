@@ -11,15 +11,25 @@ uniform vec3 color;
 uniform bool useTexture;
 uniform sampler2D Texture;
 
+uniform bool text;
+
 void main()
 {	
-    if (useTexture)
+    if (text)
     {
-        fragmentColor = texture(Texture, fs_in.textureCoords);
-        fragmentColor.rgb *= color;
+        vec4 sampled = vec4(1.0f, 1.0f, 1.0f, texture(Texture, fs_in.textureCoords).r);
+	    fragmentColor = vec4(color, 1.0f) * sampled;
     }
     else
     {
-        fragmentColor = vec4(color, 1.0f);
+        if (useTexture)
+        {
+            fragmentColor = texture(Texture, fs_in.textureCoords);
+            fragmentColor.rgb *= color;
+        }
+        else
+        {
+            fragmentColor = vec4(color, 1.0f);
+        }
     }
 }

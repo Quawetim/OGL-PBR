@@ -8,10 +8,10 @@ out VS_OUT
     vec2 textureCoords;
 } vs_out;
 
-uniform mat4 projectionMatrix, modelMatrix;
+uniform mat4 projectionMatrix;
 
 void main()
 {	    
-	gl_Position = projectionMatrix * vec4(vPosition, 0.0f, 1.0f);
+    gl_Position = projectionMatrix * vec4(vPosition, 0.0f, 1.0f);    
     vs_out.textureCoords = vTextureCoords;
 }

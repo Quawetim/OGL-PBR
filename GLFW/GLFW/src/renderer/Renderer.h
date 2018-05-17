@@ -26,6 +26,8 @@ protected:
 	///<summary>Тип рендерера.</summary>
 	bool ogl_;
 
+	int initialWidth_, initialHeight_;
+
 	///<summary>Ширина окна.</summary>
 	int windowWidth_;
 
@@ -49,9 +51,6 @@ protected:
 
 	///<summary>FOV.</summary>
 	float fov_;
-
-	///<summary>Разрешение карт отражений.</summary>
-	int reflectionsResolution_;
 
 	///<summary>Перспективная матрица проекции.</summary>
 	glm::mat4 perspectiveProjection_;
@@ -156,25 +155,30 @@ public:
 	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
 	virtual void restoreViewPort() = 0;
 
+	///<summary>Создаёт текстуру RED.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	virtual unsigned int generateTexture2D_RED(const int width, const int height, const unsigned char* buffer) = 0;
+
 	///<summary>Создаёт текстуру RGB.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	virtual unsigned int generateTexture2D_RGB(const int width, const int height) = 0;
+	virtual unsigned int generateTexture2D_RGB(const int width, const int height, const unsigned char* buffer) = 0;
 
 	///<summary>Создаёт текстуру RGB16F.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	virtual unsigned int generateTexture2D_RGB16F(const int width, const int height) = 0;
+	virtual unsigned int generateTexture2D_RGB16F(const int width, const int height, const unsigned char* buffer) = 0;
 
 	///<summary>Создаёт текстуру RG16F.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	virtual unsigned int generateTexture2D_RG16F(const int width, const int height) = 0;
+	virtual unsigned int generateTexture2D_RG16F(const int width, const int height, const unsigned char* buffer) = 0;
 
 	///<summary>Создаёт float CubeMap.</summary>
 	///<param name = 'size'>Размер.</param>
 	///<param name = 'generate_mipmap'>Нужно ли генерировать mipmap.</param>
-	virtual unsigned int generateCubeMap16F(const int size, const bool generate_mipmap) = 0;
+	virtual unsigned int generateCubeMap16F(const int size, const unsigned char* buffer, const bool generate_mipmap) = 0;
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'ID'>Идентификатор текстуры.</param>
@@ -431,25 +435,30 @@ public:
 	///<summary>Возвращает размер вьюпорта к дефолным настройкам.</summary>
 	void restoreViewPort();
 
+	///<summary>Создаёт текстуру RED.</summary>
+	///<param name = 'width'>Ширина.</param>
+	///<param name = 'height'>Высота.</param>
+	unsigned int generateTexture2D_RED(const int width, const int height, const unsigned char* buffer);
+
 	///<summary>Создаёт текстуру RGB.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	unsigned int generateTexture2D_RGB(const int width, const int height);
+	unsigned int generateTexture2D_RGB(const int width, const int height, const unsigned char* buffer);
 
 	///<summary>Создаёт текстуру RGB16F.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	unsigned int generateTexture2D_RGB16F(const int width, const int height);
+	unsigned int generateTexture2D_RGB16F(const int width, const int height, const unsigned char* buffer);
 
 	///<summary>Создаёт текстуру RG16F.</summary>
 	///<param name = 'width'>Ширина.</param>
 	///<param name = 'height'>Высота.</param>
-	unsigned int generateTexture2D_RG16F(const int width, const int height);
+	unsigned int generateTexture2D_RG16F(const int width, const int height, const unsigned char* buffer);
 
 	///<summary>Создаёт float CubeMap.</summary>
 	///<param name = 'size'>Размер.</param>
 	///<param name = 'generate_mipmap'>Нужно ли генерировать mipmap.</param>
-	unsigned int generateCubeMap16F(const int size, const bool generate_mipmap);
+	unsigned int generateCubeMap16F(const int size, const unsigned char* buffer, const bool generate_mipmap);
 
 	///<summary>Задаёт активную текстуру.</summary>
 	///<param name = 'textureID'>Идентификатор текстуры.</param>

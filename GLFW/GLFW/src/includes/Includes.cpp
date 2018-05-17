@@ -20,9 +20,6 @@ const std::map<TextureType, TextureKeys> mapTextureType =
 	{ TextureType::height, { "heightMaps", "useHeightMaps", "heightMapsCount" } }
 };
 
-///<summary>Размер генерируемой карты отражений.</summary>
-int reflectionsResolution = 128;
-
 ///<summary>Значение гаммы для гамма-коррекции.</summary>
 float gamma = 2.2f;
 
