@@ -441,7 +441,7 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		TextureKeys heightKeys = mapTextureType.find(TextureType::height)->second;
 
 		std::string mapNumber;
-		std::vector<Texture> pointer;
+		std::vector<std::shared_ptr<Texture>> pointer;
 
 		// костылище
 		// проверить на жор памяти копированием
@@ -453,7 +453,7 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		{
 			glActiveTexture(GL_TEXTURE0 + i);
 
-			switch (pointer[i].getType())
+			switch (pointer[i]->getType())
 			{
 				case TextureType::albedo:
 					{
@@ -548,7 +548,7 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 			}
 
 			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), i);
-			glBindTexture(GL_TEXTURE_2D, pointer[i].getID());
+			glBindTexture(GL_TEXTURE_2D, pointer[i]->getID());
 		}
 
 		// Push texture flags
@@ -598,8 +598,14 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
-		glActiveTexture(GL_TEXTURE0 + pointer.size());
-		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		for (size_t i = 0; i < 3; i++)
+		{
+			glActiveTexture(GL_TEXTURE0 + pointer.size() + i);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		}	
+
+		glActiveTexture(GL_TEXTURE0 + pointer.size() + 3);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glActiveTexture(GL_TEXTURE0);
 	}
@@ -621,13 +627,30 @@ void OpenGLRenderer::renderCube()
 
 ////////////////////////////////////////////// public-функции //////////////////////////////////////////////
 
+void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture)
+{
+	shader->activate();
+	shader->setFloat("gamma", gamma);
+	shader->setVec2("resolution", glm::vec2(this->windowWidth_, this->windowHeight_));
+	shader->setBool("vignette", false);
+	shader->setBool("effect", 0);
+
+	this->bindTexture2D(texture->getID());
+	glBindVertexArray(this->quadVAO_);
+
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	this->bindTexture2D(0);
+}
+
 ///<summary>Отрисовка кадра во весь экран.</summary>
 ///<param name = 'shader'>Шейдер.</param>
-void OpenGLRenderer::drawFrame(Shader shader)
+void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader)
 {
-	shader.activate();
-	shader.setFloat("gamma", gamma);
-	shader.setVec2("resolution", glm::vec2(this->windowWidth_, this->windowHeight_));
+	shader->activate();
+	shader->setFloat("gamma", gamma);
+	shader->setVec2("resolution", glm::vec2(this->windowWidth_, this->windowHeight_));
+	shader->setBool("vignette", true);
+	shader->setBool("effect", 0);
 	
 	this->bindTexture2D(this->frame_);
 	glBindVertexArray(this->quadVAO_);
@@ -848,9 +871,11 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 
 		glActiveTexture(GL_TEXTURE0);
 
+		wchar_t* wtext = ui_element->getWText();
+
 		for (int i = 0; i < textLenght; i++)
 		{
-			Character ch = ui_element->characters_[ui_element->text_[i]];
+			Character ch = ui_element->characters_[wtext[i]];
 
 			float left = X + ch.bearing.x * this->uiScaleX_;
 			float right = left + ch.size.x * this->uiScaleX_;

@@ -1,3 +1,4 @@
+#include <locale>
 #include "includes\Includes.h"
 #include "renderer\Renderer.h"
 #include "callbacks\Callbacks.h"
@@ -56,6 +57,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 int main()
 #endif
 {
+	setlocale(LC_ALL, "Russian");
+
     logger.start(__FUNCTION__);
 
 	renderer = new OpenGLRenderer();
@@ -63,7 +66,11 @@ int main()
 	std::shared_ptr<InputHandler> inputHandler(new InputHandler);
 	inputHandler->setEventHandling();
 
-	////////////////////////////////////////////////////////////Loading Camera////////////////////////////////////////////////////////////
+	std::shared_ptr<Texture> loadingTexture(new Texture("ui/loading.png", TextureType::albedo, true));
+	std::shared_ptr<UiLabel> loadingLabel(new UiLabel("gothic", 32, renderer->getWindowWidth() / 2 - 250, 100));
+	loadingLabel->setBgColor(255, 255, 255);
+
+	////////////////////////////////////////////////////////////Loading Camera////////////////////////////////////////////////////////////	
 
 	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera());
 	//std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
@@ -83,17 +90,16 @@ int main()
 	Shader materialShader("material");
 	Shader pbrShader("PBR");
 	Shader skyboxShader("skybox");
-	Shader postProcessingShader("postProcessing");
-
-	////////////////////////////////////////////////////////////Loading Screen////////////////////////////////////////////////////////////		
-
-	std::shared_ptr<Texture> debugTexture(new Texture("test.png", TextureType::albedo));
-
-	renderer->clearScreen();
-	renderer->swapBuffers();
-	renderer->pollEvents();
+	std::shared_ptr<Shader> postProcessingShader(new Shader("postProcessing"));
 
 	////////////////////////////////////////////////////////////Loading Model//////////////////////////////////////////////////////////////   		
+
+	loadingLabel->setText("Загрузка: Model. Подождите...");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
+	renderer->pollEvents();
 
 	std::vector<Model*> models;
 
@@ -110,58 +116,89 @@ int main()
 
 	////////////////////////////////////////////////////////////Loading Scene//////////////////////////////////////////////////////////////
 
+	loadingLabel->setText("Загрузка: Scene #1. Подождите...");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
+	renderer->pollEvents();
+
 	std::shared_ptr<Scene1> scene1(new Scene1);
 	scene1->init(models);
 
+	loadingLabel->setText("Загрузка: Scene #2. Подождите...");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
 	renderer->pollEvents();
 
 	std::shared_ptr<Scene2> scene2(new Scene2);
 	scene2->init(models);
 
+	loadingLabel->setText("Загрузка: Scene #3. Подождите...");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
 	renderer->pollEvents();
 
 	std::shared_ptr<Scene3> scene3(new Scene3);
 	scene3->init(models);
-
-	renderer->pollEvents();
 
 	std::vector<std::shared_ptr<IScene>> allScene;
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene1));
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene2));
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene3));
 
+	////////////////////////////////////////////////////////////Loading Skybox//////////////////////////////////////////////////////////////
+
+	loadingLabel->setText("Загрузка: Skybox. Подождите...");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
+	renderer->pollEvents();
+
 	unsigned int environmentMap = textureLoader::loadCubeMap("env_maps/env_map_01");
 	//unsigned int environmentMap = textureLoader::loadCubeMapHDR("env_maps/env_map_03", 1024);
 	renderer->setEnvironmentMap(environmentMap);	
 	
-	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f));		// жрёт кучу памяти из-за огромного размера текстур (2048*2048*6*3 байт = 72 Мб)
+	std::shared_ptr<Skybox> skybox(new Skybox(10000.0f));
 	skybox->setRotation(-90, glm::vec3(0.0f, 1.0f, 0.0f));
 	
 	////////////////////////////////////////////////////////////Loading User Interface///////////////////////////////////////////////////////////////
+
+	loadingLabel->setText("Загрузка: User Interface. Подождите...");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
+	renderer->pollEvents();
 
 	std::shared_ptr<UiPanel> panel(new UiPanel(0, 0, 40, renderer->getWindowHeight()));
 	panel->setBgColor(47, 46, 48);	
 	
 	std::shared_ptr<UiButton> button1(new UiButton(0, renderer->getWindowHeight() - 40, 40, 40));
-	button1->setBgColor(43, 141, 217);
+	button1->setBgColor(0, 153, 204);
 	std::shared_ptr<Texture> icon_button1(new Texture("ui/next.png", TextureType::albedo));
 	button1->setBgTexture(icon_button1);
 	button1->setClickFunction(&func1);
 
 	std::shared_ptr<UiButton> button2(new UiButton(0, renderer->getWindowHeight() - 80, 40, 40));
-	button2->setBgColor(43, 141, 217);
+	button2->setBgColor(0, 153, 204);
 	std::shared_ptr<Texture> icon_button2(new Texture("ui/rotate_objects.png", TextureType::albedo));
 	button2->setBgTexture(icon_button2);
 	button2->setClickFunction(&func2);
 
 	std::shared_ptr<UiButton> button3(new UiButton(0, renderer->getWindowHeight() - 120, 40, 40));
-	button3->setBgColor(43, 141, 217);
+	button3->setBgColor(0, 153, 204);
 	std::shared_ptr<Texture> icon_button3(new Texture("ui/rotate_lights.png", TextureType::albedo));
 	button3->setBgTexture(icon_button3);
 	button3->setClickFunction(&func3);
 
 	std::shared_ptr<UiButton> button4(new UiButton(0, renderer->getWindowHeight() - 160, 40, 40));
-	button4->setBgColor(43, 141, 217);
+	button4->setBgColor(0, 153, 204);
 	std::shared_ptr<Texture> icon_button4(new Texture("ui/light1.png", TextureType::albedo));
 	button4->setBgTexture(icon_button4);
 	button4->setClickFunction(&func4);
@@ -181,6 +218,13 @@ int main()
 	////////////////////////////////DEBUG////////////////////////////////
 
 	////////////////////////////////////////////////////////////Render Loop///////////////////////////////////////////////////////////////
+
+	loadingLabel->setText("Загрузка завершена.");
+	renderer->clearScreen();
+	renderer->drawFrame(postProcessingShader, loadingTexture);
+	renderer->drawUiElement(std::dynamic_pointer_cast<UiElement>(loadingLabel));
+	renderer->swapBuffers();
+	renderer->pollEvents();
 
 	float startTime = static_cast<float>(glfwGetTime());
     float currentFrameTime = 0.0f;
@@ -224,7 +268,8 @@ int main()
 			}
 
 			std::stringstream l2;
-			l2 << "Time: " << ms << "ms.";
+			l2.precision(5);
+			l2 << std::fixed << "Time: " << ms << "мс.";
 			label2->setText(l2.str());
 
 			if (ms < 16.6f) label2->setBgColor(0, 255, 0);

@@ -8,7 +8,7 @@ namespace textureLoader
     ///<summary>Загрузка текстуры из файла.</summary>
     ///<param name = 'path'>Путь к текстуре.</param>
 	///<param name = 'type'>Тип текстуры.</param>
-    unsigned int loadTexture(const std::string path, TextureType type);
+    unsigned int loadTexture(const std::string path, TextureType type, const bool flip);
 
 	///<summary>Загрузка HDR текстуры из файла.</summary>
 	///<param name = 'path'>Путь к текстуре после resources/textures/.</param>

@@ -6,6 +6,8 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <locale>
+#include <codecvt>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -162,7 +164,7 @@ public:
 	///<summary>Конструктор.</summary>
 	///<param name = 'path'>Путь к текстуре.</param>
 	///<param name = 'type'>Тип текстуры.</param>
-	Texture(std::string path, TextureType type);
+	Texture(std::string path, TextureType type, const bool flip = false);
 
 	///<summary>Задаёт тип текстуры..</summary>
 	///<param name = 'type'>Тип текстуры.</param>
@@ -190,7 +192,7 @@ private:
 	glm::vec3 albedo_;
 
 	///<summary>Текстуры.</summary>
-	std::vector<Texture> textures_;
+	std::vector<std::shared_ptr<Texture>> textures_;
 
 	///<summary>Металличность поверхности.</summary>
 	float metallic_;
@@ -235,7 +237,7 @@ public:
 
 	///<summary>Задаёт текстуру.</summary>
 	///<param name = 'texture'>Текстура.</param>
-	void addTexture(Texture texture);
+	void addTexture(std::shared_ptr<Texture> texture);
 
 	///<summary>Возвращает альбедо в RGB формате.</summary>
 	glm::vec3 getAlbedo() const;
@@ -250,7 +252,7 @@ public:
 	float getSurfaceHeight() const;
 
 	///<summary>Возвращает список текстур.</summary>
-	std::vector<Texture> getTextures() const;
+	std::vector<std::shared_ptr<Texture>> getTextures() const;
 
 	///<summary>Проверяет список текстур на пустоту.</summary>
 	bool isTexturesEmpty() const;

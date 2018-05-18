@@ -23,7 +23,7 @@ private:
     std::vector<unsigned int> indices_;
  
 	///<summary>Текстуры.</summary>
-    std::vector<Texture> textures_;
+    std::vector<std::shared_ptr<Texture>> textures_;
 
 	///<summary>Конструктор.</summary>
 	Mesh();
@@ -33,7 +33,7 @@ private:
 	///<param name = 'vertices'>Вершины меша.</param>
 	///<param name = 'indices'>Индексы вершин.</param>
 	///<param name = 'textures'>Текстуры.</param>
-	Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+	Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures);
 
 public:
 	///<summary>Деструктор.</summary>
@@ -46,5 +46,5 @@ public:
 	unsigned int getIndicesSize() const;
 
 	///<summary>Возвращает текстуры, привязанные к мешу.</summary>
-	const std::vector<Texture>& getTextures() const;
+	const std::vector<std::shared_ptr<Texture>> getTextures() const;
 };

@@ -49,6 +49,8 @@ protected:
 	///<summary>Текст.</summary>
 	std::string text_;
 
+	wchar_t* wtext_;
+
 public:
 	///<summary>Констркутор.</summary>
 	UiElement();
@@ -92,6 +94,8 @@ public:
 
 	///<summary>Возвращает текст.</summary>
 	std::string getText() const;
+
+	wchar_t* getWText() const;
 
 	///<summary>Возвращает шейдер.</summary>
 	std::shared_ptr<Shader> getShader() const;	

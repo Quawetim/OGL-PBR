@@ -74,7 +74,7 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
     std::string name;
     std::vector<VertexData> vertices;
     std::vector<unsigned int> indices;
-    std::vector<Texture> textures;
+    std::vector<std::shared_ptr<Texture>> textures;
 
 	bool computeTB = true;
 
@@ -142,19 +142,19 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
     {
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        std::vector<Texture> albedoMap = loadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::albedo);
+        std::vector<std::shared_ptr<Texture>> albedoMap = loadMaterialTextures(material, aiTextureType_AMBIENT, TextureType::albedo);
         textures.insert(textures.end(), albedoMap.begin(), albedoMap.end());
 
-        std::vector<Texture> smoothnessMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::smoothness);
+        std::vector<std::shared_ptr<Texture>> smoothnessMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::smoothness);
         textures.insert(textures.end(), smoothnessMap.begin(), smoothnessMap.end());
 
-		std::vector<Texture> metallicMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::metallic);
+		std::vector<std::shared_ptr<Texture>> metallicMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::metallic);
 		textures.insert(textures.end(), metallicMap.begin(), metallicMap.end());
 
-        std::vector<Texture> normalMap = loadMaterialTextures(material, aiTextureType_NORMALS, TextureType::normal);
+        std::vector<std::shared_ptr<Texture>> normalMap = loadMaterialTextures(material, aiTextureType_NORMALS, TextureType::normal);
         textures.insert(textures.end(), normalMap.begin(), normalMap.end());
 
-		std::vector<Texture> ambientOcclusionMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::ambientOcclusion);
+		std::vector<std::shared_ptr<Texture>> ambientOcclusionMap = loadMaterialTextures(material, aiTextureType_SPECULAR, TextureType::ambientOcclusion);
 		textures.insert(textures.end(), ambientOcclusionMap.begin(), ambientOcclusionMap.end());
     }
 
@@ -165,9 +165,9 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 ///<param name = 'material'>Материал assimp.</param>
 ///<param name = 'type'>Тип текстуры assimp.</param>
 ///<param name = 'texture_type'>Тип текстуры в шейдере.</param>
-std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const TextureType texture_type)
+std::vector<std::shared_ptr<Texture>> Model::loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const TextureType texture_type)
 {
-	std::vector<Texture> textures;
+	std::vector<std::shared_ptr<Texture>> textures;
 
 	for (size_t i = 0; i < material->GetTextureCount(type); i++)
 	{
@@ -178,7 +178,7 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *material, con
 
 		for (unsigned int j = 0; j < loadedTextures_.size(); j++)
 		{
-			if (std::strcmp(loadedTextures_[j].getName().data(), s.C_Str()) == 0)
+			if (std::strcmp(loadedTextures_[j]->getName().data(), s.C_Str()) == 0)
 			{
 				textures.push_back(loadedTextures_[j]);
 				skip_loading = true;
@@ -188,8 +188,8 @@ std::vector<Texture> Model::loadMaterialTextures(const aiMaterial *material, con
 
 		if (!skip_loading)
 		{
-			Texture texture(std::string(dir_ + "/" + s.C_Str()), texture_type);
-			texture.setName(s.C_Str());
+			std::shared_ptr<Texture> texture(new Texture(std::string(dir_ + "/" + s.C_Str()), texture_type));
+			texture->setName(s.C_Str());
 
 			textures.push_back(texture);
 			loadedTextures_.push_back(texture);

@@ -94,9 +94,11 @@ public:
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
+	virtual void drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture) = 0;
+
 	///<summary>Отрисовка кадра во весь экран.</summary>
 	///<param name = 'shader'>Шейдер.</param>
-	virtual void drawFrame(Shader shader) = 0;
+	virtual void drawFrame(std::shared_ptr<Shader> shader) = 0;
 
 	///<summary>Отрисовка объекта.</summary>
 	///<param name = 'object'>Объект.</param>
@@ -374,9 +376,11 @@ public:
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
+	void drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture);
+
 	///<summary>Отрисовка кадра во весь экран.</summary>
 	///<param name = 'shader'>Шейдер.</param>
-	void drawFrame(Shader shader);
+	void drawFrame(std::shared_ptr<Shader> shader);
 
 	///<summary>Отрисовка объекта.</summary>
 	///<param name = 'object'>Объект.</param>

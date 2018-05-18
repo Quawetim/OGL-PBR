@@ -14,7 +14,7 @@ private:
     std::vector<Mesh> meshes_;
  
 	///<summary>Уже загруженные в память текстуры.</summary>
-    std::vector<Texture> loadedTextures_;
+    std::vector<std::shared_ptr<Texture>> loadedTextures_;
 
     ///<summary>Обработка узла модели.</summary>
     ///<param name = 'node'>Узел assimp.</param>
@@ -30,7 +30,7 @@ private:
     ///<param name = 'material'>Материал assimp.</param>
     ///<param name = 'type'>Тип текстуры assimp.</param>
     ///<param name = 'texture_type'>Тип текстуры в шейдере.</param>
-    std::vector<Texture> loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const TextureType texture_type);	
+    std::vector<std::shared_ptr<Texture>> loadMaterialTextures(const aiMaterial *material, const aiTextureType type, const TextureType texture_type);
 
 	///<summary>Вычисляет касательную и бикасательную для каждой из вершин.</summary>
 	///<param name = 'vertices'>Вершины.</param>

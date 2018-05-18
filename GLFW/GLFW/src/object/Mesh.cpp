@@ -19,7 +19,7 @@ Mesh::Mesh()
 ///<param name = 'vertices'>Вершины меша.</param>
 ///<param name = 'indices'>Индексы вершин.</param>
 ///<param name = 'textures'>Текстуры.</param>
-Mesh::Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+Mesh::Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsigned int> indices, std::vector<std::shared_ptr<Texture>> textures)
 {
 	this->name_ = name;
     this->vertices_ = vertices;
@@ -98,7 +98,7 @@ unsigned int Mesh::getIndicesSize() const
 }
 
 ///<summary>Возвращает текстуры, привязанные к мешу.</summary>
-const std::vector<Texture>& Mesh::getTextures() const
+const std::vector<std::shared_ptr<Texture>> Mesh::getTextures() const
 {
 	return this->textures_;
 }

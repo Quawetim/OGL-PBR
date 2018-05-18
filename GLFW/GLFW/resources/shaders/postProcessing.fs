@@ -12,11 +12,11 @@ uniform vec2 resolution;
 
 uniform sampler2D frame;
 
+uniform bool vignette;
+uniform int effect;
+
 void main()
 {
-    int effect = 0;
-    bool vignette = true;
-
     fragmentColor = texture(frame, fs_in.textureCoords);
 
     switch (effect)

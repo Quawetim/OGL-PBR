@@ -36,11 +36,11 @@ Texture::Texture()
 ///<summary>Конструктор.</summary>
 ///<param name = 'path'>Путь к текстуре.</param>
 ///<param name = 'type'>Тип текстуры.</param>
-Texture::Texture(std::string path, TextureType type)
+Texture::Texture(std::string path, TextureType type, const bool flip)
 {
 	this->path_ = path;
 	this->type_ = type;
-	this->id_ = textureLoader::loadTexture(path, type);
+	this->id_ = textureLoader::loadTexture(path, type, flip);
 }
 
 ///<summary>Задаёт тип текстуры.</summary>
@@ -113,7 +113,7 @@ void Material::setDefault()
 	if (this->textures_.size() > 0)
 	{
 		this->textures_.clear();
-		std::vector<Texture>(this->textures_).swap(this->textures_);
+		std::vector<std::shared_ptr<Texture>>(this->textures_).swap(this->textures_);
 	}
 }
 
@@ -166,7 +166,7 @@ void Material::setSurfaceHeight(const float surface_height)
 
 ///<summary>Задаёт диффузную текстуру.</summary>
 ///<param name = 'texture'>Текстура.</param>
-void Material::addTexture(Texture texture)
+void Material::addTexture(std::shared_ptr<Texture> texture)
 {
 	this->textures_.push_back(texture);
 }
@@ -196,7 +196,7 @@ float Material::getSurfaceHeight() const
 }
 
 ///<summary>Возвращает список текстур.</summary>
-std::vector<Texture> Material::getTextures() const
+std::vector<std::shared_ptr<Texture>> Material::getTextures() const
 {
 	return this->textures_;
 }

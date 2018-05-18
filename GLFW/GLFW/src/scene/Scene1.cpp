@@ -59,17 +59,13 @@ void Scene1::init(std::vector<Model*> models)
 		this->cylinders_.push_back(obj);
 	}
 
-	Texture texture;
+	std::shared_ptr<Texture> texture;
 	Material material;
 
 	// Кубы
-	texture = Texture("batman2.png", TextureType::smoothness);
-	material.addTexture(texture);
-	texture = Texture("batman2.png", TextureType::metallic);
-	material.addTexture(texture);
 	material.setAlbedo(255, 226, 155);
-	material.setMetallic(1.0f);
-	material.setSmoothness(1.0f);
+	texture = std::shared_ptr<Texture>(new Texture("up.png", TextureType::albedo));
+	material.addTexture(texture);
 	this->cubes_[0]->setScale(glm::vec3(0.5f));
 	this->cubes_[0]->setMaterial(material);
 	material.setDefault();
@@ -81,17 +77,14 @@ void Scene1::init(std::vector<Model*> models)
 	material.setDefault();
 
 	material.setAlbedo(155, 97, 186);
-	texture = Texture("batman1.png", TextureType::smoothness);
-	material.addTexture(texture);
-	texture = Texture("batman1.png", TextureType::metallic);
-	material.addTexture(texture);
 	material.setMetallic(0.3f);
 	material.setSmoothness(0.3f);
 	this->cubes_[2]->setMaterial(material);
 	material.setDefault();
-
+	material.addTexture(texture);
 	material.setMetallic(0.0f);
 	material.setSmoothness(0.0f);
+
 	this->cubes_[3]->setMaterial(material);
 	material.setDefault();
 
@@ -116,6 +109,7 @@ void Scene1::init(std::vector<Model*> models)
 
 	material.setMetallic(0.0f);
 	material.setSmoothness(0.0f);
+	material.addTexture(texture);
 	this->spheres_[3]->setMaterial(material);
 	material.setDefault();
 
@@ -140,6 +134,7 @@ void Scene1::init(std::vector<Model*> models)
 
 	material.setMetallic(0.0f);
 	material.setSmoothness(0.0f);
+	material.addTexture(texture);
 	this->cylinders_[3]->setMaterial(material);
 	material.setDefault();
 

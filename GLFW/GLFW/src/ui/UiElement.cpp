@@ -50,8 +50,12 @@ void UiElement::setBgTexture(const std::shared_ptr<Texture> texture)
 ///<summary>Задаёт текст.</summary>
 ///<param name = 'text'>Текст.</param>
 void UiElement::setText(const std::string text)
-{
+{	
 	this->text_ = text;
+
+	unsigned int lenght = strlen(&text[0]) + 1;
+	this->wtext_ = new wchar_t[lenght];
+	mbstowcs(this->wtext_, &text[0], lenght);
 }
 
 ///<summary>Возвращает позицию X левого нижнего угла в пикселях.</summary>
@@ -100,6 +104,11 @@ std::shared_ptr<Texture> UiElement::getBgTexture() const
 std::string UiElement::getText() const
 {
 	return this->text_;
+}
+
+wchar_t* UiElement::getWText() const
+{
+	return this->wtext_;
 }
 
 ///<summary>Возвращает шейдер.</summary>

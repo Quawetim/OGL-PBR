@@ -3,9 +3,9 @@
 ///<summary>Загрузка текстуры из файла.</summary>
 ///<param name = 'path'>Путь к текстуре.</param>
 ///<param name = 'type'>Тип текстуры.</param>
-unsigned int textureLoader::loadTexture(const std::string path, TextureType type)
+unsigned int textureLoader::loadTexture(const std::string path, TextureType type, const bool flip)
 {
-	//stbi_set_flip_vertically_on_load(true);
+	if (flip) stbi_set_flip_vertically_on_load(true);
 
     unsigned int ID;
 
@@ -62,7 +62,9 @@ unsigned int textureLoader::loadTexture(const std::string path, TextureType type
 
 		std::string msg = "Texture not found. PATH: " + path;
         logger.log(__FUNCTION__, ErrorType::error, msg);
-    }    
+    }   
+
+	if (flip) stbi_set_flip_vertically_on_load(false);
 
     return ID;
 }
@@ -125,7 +127,7 @@ unsigned int textureLoader::loadTextureHDR(const std::string path)
 ///<param name = 'folder'>Папка с текстурами граней.</param>
 unsigned int textureLoader::loadCubeMap(const std::string folder)
 {
-	//stbi_set_flip_vertically_on_load(false);
+	//stbi_set_flip_vertically_on_load(true);
 
 	unsigned int ID;
 
