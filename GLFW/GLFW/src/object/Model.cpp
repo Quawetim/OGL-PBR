@@ -69,7 +69,7 @@ void Model::handleNode(const aiNode *node, const aiScene *scene)
 ///<summary>Обработка меша модели.</summary>
 ///<param name = 'mesh'>Меш assimp.</param>
 ///<param name = 'scene'>Сцена assimp.</param>
-Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
+std::shared_ptr<Mesh> Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 {
     std::string name;
     std::vector<VertexData> vertices;
@@ -158,7 +158,7 @@ Mesh Model::handleMesh(const aiMesh *mesh, const aiScene *scene)
 		textures.insert(textures.end(), ambientOcclusionMap.begin(), ambientOcclusionMap.end());
     }
 
-    return Mesh(name, vertices, indices, textures);
+    return std::shared_ptr<Mesh>(new Mesh(name, vertices, indices, textures));
 }
 
 ///<summary>Загрузка текстур модели.</summary>
@@ -258,7 +258,7 @@ void Model::computeTangentsBitangents(std::vector<VertexData> &vertices)
 }
 
 ///<summary>Возвращает меши, из которых состоит модель.</summary>
-const std::vector<Mesh>& Model::getMeshes() const
+const std::vector<std::shared_ptr<Mesh>> Model::getMeshes() const
 {
 	return this->meshes_;
 }
@@ -268,11 +268,11 @@ const std::vector<Mesh>& Model::getMeshes() const
 ///<para>Если не найден, возвращает первый меш.</para>
 ///</summary>
 ///<param name = 'name'>Имя меша.</param>
-const Mesh Model::getMeshByName(std::string name) const
+const std::shared_ptr<Mesh> Model::getMeshByName(std::string name) const
 {
 	for (size_t i = 0; i < this->meshes_.size(); i++)
 	{
-		if (meshes_[i].name_ == name) return meshes_[i];
+		if (meshes_[i]->name_ == name) return meshes_[i];
 	}
 
 	std::string msg = "Mesh name: " + name + " not found.";

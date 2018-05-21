@@ -7,9 +7,9 @@
 class Scene2 : public IScene
 {
 private:
-	std::vector<Object*> cubes_;
-	std::vector<Object*> spheres_;
-	std::vector<Object*> cylinders_;
+	std::vector<std::shared_ptr<Object>> cubes_;
+	std::vector<std::shared_ptr<Object>> spheres_;
+	std::vector<std::shared_ptr<Object>> cylinders_;
 
 	std::vector<std::shared_ptr<PointLight>> lights_;
 
@@ -21,7 +21,7 @@ public:
 
 	///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
 	///<param name = 'models'>Список моделей.</param>
-	void init(std::vector<Model*> models);
+	void init(std::vector<std::shared_ptr<Model>> models);
 
 	///<summary>Отрисовка сцены.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>

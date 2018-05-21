@@ -414,10 +414,14 @@ void OpenGLRenderer::generateBrdfLutMap()
 ///<param name = 'model'>Модель.</param>
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'material'>Материал.</param>
-void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
+void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, Shader shader, Material material, glm::mat4 model_matrix)
 {
-	for (size_t j = 0; j < model->getMeshes().size(); j++)
+	size_t meshesCount = model->getMeshes().size();
+	for (size_t i = 0; i < meshesCount; i++)
 	{
+		std::shared_ptr<Mesh> mesh = model->getMeshes()[i];
+		shader.setModelMatrix(model_matrix * mesh->getModelMatrix());
+
 		unsigned int albedoMapsCount = 0;
 		unsigned int smoothnessMapsCount = 0;
 		unsigned int metallicMapsCount = 0;		
@@ -445,15 +449,15 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 
 		// костылище
 		// проверить на жор памяти копированием
-		if (material.isTexturesEmpty()) pointer = model->getMeshes()[j].getTextures();
+		if (material.isTexturesEmpty()) pointer = mesh->getTextures();
 		else pointer = material.getTextures();
 
-		// Push textures, i = texture unit
-		for (size_t i = 0; i < pointer.size(); i++)
+		// Push textures, j = texture unit
+		for (size_t j = 0; j < pointer.size(); j++)
 		{
-			glActiveTexture(GL_TEXTURE0 + i);
+			glActiveTexture(GL_TEXTURE0 + j);
 
-			switch (pointer[i]->getType())
+			switch (pointer[j]->getType())
 			{
 				case TextureType::albedo:
 					{
@@ -547,8 +551,8 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 					}
 			}
 
-			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), i);
-			glBindTexture(GL_TEXTURE_2D, pointer[i]->getID());
+			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), j);
+			glBindTexture(GL_TEXTURE_2D, pointer[j]->getID());
 		}
 
 		// Push texture flags
@@ -588,19 +592,19 @@ void OpenGLRenderer::drawModel(Model* model, Shader shader, Material material)
 		shader.setInt("brdfLutMap", textureFreeNumber);
 		textureFreeNumber++;
 
-		glBindVertexArray(model->getMeshes()[j].getVAO());
-		glDrawElements(GL_TRIANGLES, model->getMeshes()[j].getIndicesSize(), GL_UNSIGNED_INT, 0);
+		glBindVertexArray(mesh->getVAO());
+		glDrawElements(GL_TRIANGLES, mesh->getIndicesSize(), GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
-		for (size_t i = 0; i < pointer.size(); i++)
+		for (size_t j = 0; j < pointer.size(); j++)
 		{
-			glActiveTexture(GL_TEXTURE0 + i);
+			glActiveTexture(GL_TEXTURE0 + j);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
-		for (size_t i = 0; i < 3; i++)
+		for (size_t j = 0; j < 3; j++)
 		{
-			glActiveTexture(GL_TEXTURE0 + pointer.size() + i);
+			glActiveTexture(GL_TEXTURE0 + pointer.size() + j);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 		}	
 
@@ -664,10 +668,12 @@ void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader)
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
+void OpenGLRenderer::drawObject(std::shared_ptr<Object> object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
 	shader.activate();
-	shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, object->getModelMatrix());
+	//shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, object->getModelMatrix());
+	shader.setProjectionMatrix(this->perspectiveProjection_);
+	shader.setViewMatrix(view_matrix);
 	shader.setVec3("cameraPosition", camera_position);	
 
 	// Push material params
@@ -706,7 +712,7 @@ void OpenGLRenderer::drawObject(Object* object, Shader shader, std::vector<std::
 	// Для каждой из моделей в объекте
 	for (size_t i = 0; i < object->getModels().size(); i++)
 	{
-		drawModel(object->getModels()[i], shader, object->getMaterial());
+		drawModel(object->getModels()[i], shader, object->getMaterial(), object->getModelMatrix());
 	}	
 }
 
@@ -728,8 +734,8 @@ void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, g
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
 
-	glBindVertexArray(skybox->getModels()[0]->getMeshByName("skybox").getVAO());
-	glDrawElements(GL_TRIANGLES, skybox->getModels()[0]->getMeshByName("skybox").getIndicesSize(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(skybox->getModels()[0]->getMeshByName("skybox")->getVAO());
+	glDrawElements(GL_TRIANGLES, skybox->getModels()[0]->getMeshByName("skybox")->getIndicesSize(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
@@ -753,15 +759,15 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 	color = glm::pow(light->getSpecularColor(), glm::vec3(gamma));
 	light->getShader()->setVec3("color", color);
 
-	glBindVertexArray(light->getModel()->getMeshByName("specular").getVAO());
-	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("specular").getIndicesSize(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(light->getModel()->getMeshByName("specular")->getVAO());
+	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("specular")->getIndicesSize(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 
 	color = glm::pow(light->getDiffuseColor(), glm::vec3(gamma));
 	light->getShader()->setVec3("color", color);
 
-	glBindVertexArray(light->getModel()->getMeshByName("diffuse").getVAO());
-	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("diffuse").getIndicesSize(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(light->getModel()->getMeshByName("diffuse")->getVAO());
+	glDrawElements(GL_TRIANGLES, light->getModel()->getMeshByName("diffuse")->getIndicesSize(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 

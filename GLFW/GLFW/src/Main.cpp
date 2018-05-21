@@ -101,18 +101,18 @@ int main()
 	renderer->swapBuffers();
 	renderer->pollEvents();
 
-	std::vector<Model*> models;
+	std::vector<std::shared_ptr<Model>> models;
 
-	Model* cube = new Model("cube.obj");
+	std::shared_ptr<Model> cube(new Model("cube.obj"));
 	models.push_back(cube);
 
-	Model* sphere = new Model("sphere_highpoly.obj");
+	std::shared_ptr<Model> sphere(new Model("sphere_highpoly.obj"));
 	models.push_back(sphere);
 
-	Model* cylinder = new Model("cylinder.obj");
+	std::shared_ptr<Model> cylinder(new Model("cylinder.obj"));
 	models.push_back(cylinder);
 
-	Model* material_ball = new Model("material_ball.obj");
+	std::shared_ptr<Model> material_ball(new Model("material_ball.obj"));
 	models.push_back(material_ball);
 
 	std::shared_ptr<CoordinateAxes> coordinateAxes(new CoordinateAxes());
@@ -137,7 +137,7 @@ int main()
 	renderer->pollEvents();
 
 	std::shared_ptr<Scene2> scene2(new Scene2);
-	scene2->init(models);
+	//scene2->init(models);
 
 	loadingLabel->setText("Загрузка: Scene #3. Подождите...");
 	renderer->clearScreen();
@@ -147,7 +147,7 @@ int main()
 	renderer->pollEvents();
 
 	std::shared_ptr<Scene3> scene3(new Scene3);
-	scene3->init(models);
+	//scene3->init(models);
 
 	std::vector<std::shared_ptr<IScene>> allScene;
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene1));
@@ -296,7 +296,7 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		allScene[activeScene]->render(deltaTime, materialShader, camera->getViewMatrix(), camera->getPosition());
+		allScene[activeScene]->render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 
@@ -343,10 +343,8 @@ int main()
 	cameras.clear();
 	std::vector<std::shared_ptr<ICamera>>(cameras).swap(cameras);
 
-	delete cube;
-	delete sphere;
-	delete cylinder;
-	delete material_ball;
+	models.clear();
+	std::vector<std::shared_ptr<Model>>(models).swap(models);
 
 	delete renderer;
 

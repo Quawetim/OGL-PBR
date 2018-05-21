@@ -4,29 +4,14 @@
 ///<summary>Деструктор.</summary>
 Scene3::~Scene3()
 {
-	for (size_t i = 0; i < cubes_.size(); i++)
-	{
-		delete cubes_[i];
-	}
-
 	this->cubes_.clear();
-	std::vector<Object*>(this->cubes_).swap(this->cubes_);
-
-	for (size_t i = 0; i < spheres_.size(); i++)
-	{
-		delete spheres_[i];
-	}
+	std::vector<std::shared_ptr<Object>>(this->cubes_).swap(this->cubes_);
 
 	this->spheres_.clear();
-	std::vector<Object*>(this->spheres_).swap(this->spheres_);
-
-	for (size_t i = 0; i < cylinders_.size(); i++)
-	{
-		delete cylinders_[i];
-	}
+	std::vector<std::shared_ptr<Object>>(this->spheres_).swap(this->spheres_);
 
 	this->cylinders_.clear();
-	std::vector<Object*>(this->cylinders_).swap(this->cylinders_);
+	std::vector<std::shared_ptr<Object>>(this->cylinders_).swap(this->cylinders_);
 
 	this->lights_.clear();
 	std::vector<std::shared_ptr<PointLight>>(this->lights_).swap(this->lights_);
@@ -34,17 +19,17 @@ Scene3::~Scene3()
 
 ///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
 ///<param name = 'models'>Список моделей.</param>
-void Scene3::init(std::vector<Model*> models)
+void Scene3::init(std::vector<std::shared_ptr<Model>> models)
 {
 	for (size_t i = 0; i < 4; i++)
 	{
-		Object *obj;
+		std::shared_ptr<Object> obj;
 		std::string name;
 
 		for (size_t j = 0; j < 5; j++)
 		{
 			name = "sphere" + std::to_string(i + j + 1);
-			obj = new Object(name, models[1]);
+			obj = std::shared_ptr<Object>(new Object(name, models[1]));
 			obj->setPosition(glm::vec3(-6.0f + j * 3.0f, 6.0f - i * 3.0f, 0.0f));
 			this->spheres_.push_back(obj);
 		}

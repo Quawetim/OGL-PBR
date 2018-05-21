@@ -16,7 +16,7 @@ Object::Object()
 
 ///<summary>Конструктор.</summary>
 ///<param name = 'name'>Имя объекта.</param>
-Object::Object(std::string name, Model *model)
+Object::Object(std::string name, std::shared_ptr<Model> model)
 {
 	this->name_ = name;
 	this->models_.push_back(model);
@@ -32,7 +32,7 @@ Object::Object(std::string name, Model *model)
 
 ///<summary>Конструктор.</summary>
 ///<param name = 'name'>Имя объекта.</param>
-Object::Object(std::string name, std::vector<Model*> models)
+Object::Object(std::string name, std::vector<std::shared_ptr<Model>> models)
 {
 	this->name_ = name;
 	this->models_ = models;
@@ -54,24 +54,24 @@ Object::~Object()
 
 ///<summary>Добавляет модель к объекту.</summary>
 ///<param name = 'model'>Модель.</param>
-void Object::addModel(Model *model)
+void Object::addModel(std::shared_ptr<Model> model)
 {
 	this->models_.push_back(model);
 }
 
-///<summary>Извлекает модель из объекта пл имени.</summary>
+///<summary>Извлекает модель из объекта пo имени.</summary>
 ///<param name = 'name'>Имя извлекаемой модели.</param>
-Model* Object::removeModel(const std::string name)
+std::shared_ptr<Model> Object::removeModel(const std::string name)
 {
-	Model *model = nullptr;
+	std::shared_ptr<Model> model = nullptr;
 
 	for (size_t i = 0; i < this->models_.size(); i++)
 	{
 		if (this->models_[i]->getName() == name)
 		{
-			model = models_[i];
-			this->models_.erase(models_.begin() + i);
-			std::vector<Model*>(models_).swap(models_);
+			model = this->models_[i];
+			this->models_.erase(this->models_.begin() + i);
+			std::vector<std::shared_ptr<Model>>(models_).swap(this->models_);
 
 			return model;
 		}
@@ -96,7 +96,12 @@ Material Object::getMaterial() const
 }
 
 ///<summary>Возвращает модели, из которых состоит объект.</summary>
-const std::vector<Model*>& Object::getModels() const
+const std::vector<std::shared_ptr<Model>> Object::getModels() const
 {
 	return this->models_;
+}
+
+const std::shared_ptr<Model> Object::getModelByName(const std::string name) const
+{
+
 }

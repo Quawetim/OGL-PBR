@@ -9,7 +9,7 @@ TestScene::~TestScene()
 
 ///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
 ///<param name = 'models'>Список моделей.</param>
-void TestScene::init(std::vector<Model*> models)
+void TestScene::init(std::vector<std::shared_ptr<Model>> models)
 {
 	std::vector<VertexData> vertices;
 	std::vector<unsigned int> indices;
@@ -36,11 +36,11 @@ void TestScene::init(std::vector<Model*> models)
 	indices.push_back(2);
 	indices.push_back(3);
 	
-	this->objects_.push_back(new Object("nanosuit", models[0]));
+	this->objects_.push_back(std::shared_ptr<Object>(new Object("nanosuit", models[0])));
 	this->objects_[0]->setPosition(glm::vec3(0.0f, -4.0f, 0.0f));
 	this->objects_[0]->setScale(glm::vec3(0.5f));
 
-	this->objects_.push_back(new Object("deadpool", models[1]));
+	this->objects_.push_back(std::shared_ptr<Object>(new Object("deadpool", models[1])));
 	this->objects_[1]->setPosition(glm::vec3(5.0f, -4.0f, 0.0f));
 	this->objects_[1]->setRotation(-90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	this->objects_[1]->setScale(glm::vec3(0.04f));

@@ -4,37 +4,17 @@
 ///<summary>Деструктор.</summary>
 Scene1::~Scene1()
 {
-	for (size_t i = 0; i < this->cubes_.size(); i++)
-	{
-		delete this->cubes_[i];
-	}
-
 	this->cubes_.clear();
-	std::vector<Object*>(this->cubes_).swap(this->cubes_);
-
-	for (size_t i = 0; i < this->spheres_.size(); i++)
-	{
-		delete this->spheres_[i];
-	}
+	std::vector<std::shared_ptr<Object>>(this->cubes_).swap(this->cubes_);
 
 	this->spheres_.clear();
-	std::vector<Object*>(this->spheres_).swap(this->spheres_);
-
-	for (size_t i = 0; i < this->cylinders_.size(); i++)
-	{
-		delete this->cylinders_[i];
-	}
+	std::vector<std::shared_ptr<Object>>(this->spheres_).swap(this->spheres_);
 
 	this->cylinders_.clear();
-	std::vector<Object*>(this->cylinders_).swap(this->cylinders_);
-
-	for (size_t i = 0; i < this->objects_.size(); i++)
-	{
-		delete this->objects_[i];
-	}
+	std::vector<std::shared_ptr<Object>>(this->cylinders_).swap(this->cylinders_);
 
 	this->objects_.clear();
-	std::vector<Object*>(this->objects_).swap(this->objects_);
+	std::vector<std::shared_ptr<Object>>(this->objects_).swap(this->objects_);
 
 	this->lights_.clear();
 	std::vector<std::shared_ptr<PointLight>>(this->lights_).swap(this->lights_);
@@ -42,7 +22,7 @@ Scene1::~Scene1()
 
 ///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
 ///<param name = 'models'>Список моделей.</param>
-void Scene1::init(std::vector<Model*> models)
+void Scene1::init(std::vector<std::shared_ptr<Model>> models)
 {
 	/*this->decrease_ = true;
 
@@ -146,7 +126,7 @@ void Scene1::init(std::vector<Model*> models)
 	this->cylinders_[3]->setMaterial(material);
 	material.setDefault();*/
 
-	this->objects_.push_back(new Object("material_ball", models[3]));
+	this->objects_.push_back(std::shared_ptr<Object>(new Object("material_ball", models[3])));
 	this->objects_[0]->setPosition(glm::vec3(0.0f, -2.0f, 0.0f));
 
 	std::shared_ptr<Texture> texture;
@@ -235,6 +215,8 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	{
 		renderer->drawObject(this->objects_[i], shader, this->lights_, view_matrix, camera_position);
 	}
+
+	
 
 	if (this->lightsVisible_)
 	{

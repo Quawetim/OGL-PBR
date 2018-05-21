@@ -15,7 +15,7 @@ protected:
 public:
 	///<summary>Подготовка ресурсов для сцены. Создание и расстановка объектов.</summary>
 	///<param name = 'models'>Список моделей.</param>
-	virtual void init(std::vector<Model*> models) = 0;
+	virtual void init(std::vector<std::shared_ptr<Model>> models) = 0;
 
 	///<summary>Отрисовка сцены.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>

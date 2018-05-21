@@ -79,7 +79,7 @@ protected:
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
-	virtual void drawModel(Model* model, Shader shader, Material material) = 0;	
+	virtual void drawModel(std::shared_ptr<Model> model, Shader shader, Material material, glm::mat4 model_matrix) = 0;
 
 	virtual void renderCube() = 0;
 
@@ -105,7 +105,7 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+	virtual void drawObject(std::shared_ptr<Object> object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка скайбокса.</summary>
 	///<param name = 'skybox'>Скайбокс.</param>
@@ -361,7 +361,7 @@ private:
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
-	void drawModel(Model* model, Shader shader, Material material);
+	void drawModel(std::shared_ptr<Model> model, Shader shader, Material material, glm::mat4 model_matrix);
 
 	void renderQuad();
 
@@ -387,7 +387,7 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	void drawObject(Object* object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position);
+	void drawObject(std::shared_ptr<Object> object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка скайбокса.</summary>
 	///<param name = 'skybox'>Скайбокс.</param>

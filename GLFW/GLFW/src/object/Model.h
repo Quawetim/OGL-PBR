@@ -11,7 +11,7 @@ private:
     std::string dir_;
 
 	///<summary>Меши, из который состоит модель.</summary>
-    std::vector<Mesh> meshes_;
+    std::vector<std::shared_ptr<Mesh>> meshes_;
  
 	///<summary>Уже загруженные в память текстуры.</summary>
     std::vector<std::shared_ptr<Texture>> loadedTextures_;
@@ -24,7 +24,7 @@ private:
     ///<summary>Обработка меша модели.</summary>
     ///<param name = 'mesh'>Меш assimp.</param>
     ///<param name = 'scene'>Сцена assimp.</param>
-    Mesh handleMesh(const aiMesh *mesh, const aiScene *scene);
+	std::shared_ptr<Mesh> handleMesh(const aiMesh *mesh, const aiScene *scene);
 
     ///<summary>Загрузка текстур модели.</summary>
     ///<param name = 'material'>Материал assimp.</param>
@@ -45,12 +45,12 @@ public:
     Model(std::string path);
 
 	///<summary>Возвращает меши, из которых состоит модель.</summary>
-	const std::vector<Mesh>& getMeshes() const;
+	const std::vector<std::shared_ptr<Mesh>> getMeshes() const;
 
 	///<summary>
 	///<para>Возвращает меш по имени.</para>
 	///<para>Если не найден, возвращает первый меш.</para>
 	///</summary>
 	///<param name = 'name'>Имя меша.</param>
-	const Mesh getMeshByName(std::string name) const;
+	const std::shared_ptr<Mesh> getMeshByName(std::string name) const;
 };
