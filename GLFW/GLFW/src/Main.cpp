@@ -103,14 +103,17 @@ int main()
 
 	std::vector<Model*> models;
 
-	Model *cube = new Model("cube.obj");
+	Model* cube = new Model("cube.obj");
 	models.push_back(cube);
 
-	Model *sphere = new Model("sphere_highpoly.obj");
+	Model* sphere = new Model("sphere_highpoly.obj");
 	models.push_back(sphere);
 
-	Model *cylinder = new Model("cylinder.obj");
+	Model* cylinder = new Model("cylinder.obj");
 	models.push_back(cylinder);
+
+	Model* material_ball = new Model("material_ball.obj");
+	models.push_back(material_ball);
 
 	std::shared_ptr<CoordinateAxes> coordinateAxes(new CoordinateAxes());
 
@@ -293,7 +296,7 @@ int main()
 
 		////////////////////////////////DEBUG////////////////////////////////
 
-		allScene[activeScene]->render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
+		allScene[activeScene]->render(deltaTime, materialShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
 
@@ -337,12 +340,13 @@ int main()
 		frames++;
     }
 
-	delete cylinder;
-	delete sphere;
-	delete cube;	
-
 	cameras.clear();
 	std::vector<std::shared_ptr<ICamera>>(cameras).swap(cameras);
+
+	delete cube;
+	delete sphere;
+	delete cylinder;
+	delete material_ball;
 
 	delete renderer;
 

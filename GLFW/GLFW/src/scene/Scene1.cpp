@@ -4,29 +4,37 @@
 ///<summary>Деструктор.</summary>
 Scene1::~Scene1()
 {
-	for (size_t i = 0; i < cubes_.size(); i++)
+	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
-		delete cubes_[i];
+		delete this->cubes_[i];
 	}
 
 	this->cubes_.clear();
 	std::vector<Object*>(this->cubes_).swap(this->cubes_);
 
-	for (size_t i = 0; i < spheres_.size(); i++)
+	for (size_t i = 0; i < this->spheres_.size(); i++)
 	{
-		delete spheres_[i];
+		delete this->spheres_[i];
 	}
 
 	this->spheres_.clear();
 	std::vector<Object*>(this->spheres_).swap(this->spheres_);
 
-	for (size_t i = 0; i < cylinders_.size(); i++)
+	for (size_t i = 0; i < this->cylinders_.size(); i++)
 	{
-		delete cylinders_[i];
+		delete this->cylinders_[i];
 	}
 
 	this->cylinders_.clear();
 	std::vector<Object*>(this->cylinders_).swap(this->cylinders_);
+
+	for (size_t i = 0; i < this->objects_.size(); i++)
+	{
+		delete this->objects_[i];
+	}
+
+	this->objects_.clear();
+	std::vector<Object*>(this->objects_).swap(this->objects_);
 
 	this->lights_.clear();
 	std::vector<std::shared_ptr<PointLight>>(this->lights_).swap(this->lights_);
@@ -36,7 +44,7 @@ Scene1::~Scene1()
 ///<param name = 'models'>Список моделей.</param>
 void Scene1::init(std::vector<Model*> models)
 {
-	this->decrease_ = true;
+	/*this->decrease_ = true;
 
 	for (size_t i = 0; i < 4; i++)
 	{
@@ -136,7 +144,23 @@ void Scene1::init(std::vector<Model*> models)
 	material.setSmoothness(0.0f);
 	material.addTexture(texture);
 	this->cylinders_[3]->setMaterial(material);
-	material.setDefault();
+	material.setDefault();*/
+
+	this->objects_.push_back(new Object("material_ball", models[3]));
+	this->objects_[0]->setPosition(glm::vec3(0.0f, -2.0f, 0.0f));
+
+	std::shared_ptr<Texture> texture;
+	Material material;
+
+	texture = std::shared_ptr<Texture>(new Texture("pbr/metal/gold-scuffed/albedo.png", TextureType::albedo));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/metal/gold-scuffed/smoothness.png", TextureType::smoothness));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/metal/gold-scuffed/metallic.png", TextureType::metallic));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/metal/gold-scuffed/normal.png", TextureType::normal));
+	material.addTexture(texture);
+	this->objects_[0]->setMaterial(material);
 
 	std::shared_ptr<Model> pointLight(new Model("pointLight.obj"));
 	std::shared_ptr<Shader> lightShader(new Shader("lightShader"));
@@ -163,7 +187,7 @@ void Scene1::init(std::vector<Model*> models)
 ///<param name = 'camera_position'>Позиция камеры.</param>
 void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {	
-	// Кубы
+	/*// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
 	{
 		renderer->drawObject(this->cubes_[i], shader, this->lights_, view_matrix, camera_position);
@@ -205,6 +229,11 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		renderer->drawObject(this->cylinders_[i], shader, this->lights_, view_matrix, camera_position);
 		
 		if (this->objectsMoving_) this->cylinders_[i]->rotate(deltaTime, 10.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	}*/
+
+	for (size_t i = 0; i < this->objects_.size(); i++)
+	{
+		renderer->drawObject(this->objects_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
 	if (this->lightsVisible_)
@@ -213,7 +242,7 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 		{
 			renderer->drawPointLight(this->lights_[i], view_matrix, camera_position);
 		}
-	}	
+	}
 	
 	if (this->lightsMoving_)
 	{

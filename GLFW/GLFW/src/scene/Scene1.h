@@ -10,6 +10,7 @@ private:
 	std::vector<Object*> cubes_;
 	std::vector<Object*> spheres_;
 	std::vector<Object*> cylinders_;
+	std::vector<Object*> objects_;
 	bool decrease_;
 
 	std::vector<std::shared_ptr<PointLight>> lights_;

@@ -5,12 +5,10 @@
 
 struct Material
 {
-    vec3 ambientColor;
-    vec3 diffuseColor;
-    vec3 specularColor;
-    float shininess;
-    float refractiveIndex;
-    float reflectiveIndex;
+    vec3 albedo;
+    float metallic;
+    float smoothness;
+    float surfaceHeight;
 };
 
 struct Light
@@ -26,53 +24,78 @@ struct Light
 in VS_OUT
 {
     vec3 fragmentPosition;
-    vec3 fragmentPositionTBN;
-
     vec3 fragmentNormal;
     vec2 textureCoords;
-
-    vec3 cameraPosition; 
-    vec3 cameraPositionTBN;
-
-    vec3 lightsPositionsTBN[MAX_LIGHTS];
+    vec3 cameraPosition;   
 } fs_in;
 
 out vec4 fragmentColor;
 
+const float PI = 22.0f / 7.0f;
+const float MAX_REFLECTION_LOD = 4.0f;
+
 uniform Material material;
 
-uniform bool useDiffuseMaps;
-uniform int diffuseMapsCount;
-uniform sampler2D diffuseMaps[MAX_MAPS];
+uniform bool useAlbedoMaps;
+uniform int albedoMapsCount;
+uniform sampler2D albedoMaps[MAX_MAPS];
 
-uniform bool useSpecularMaps;
-uniform int specularMapsCount;
-uniform sampler2D specularMaps[MAX_MAPS];
+uniform bool useSmoothnessMaps;
+uniform int smoothnessMapsCount;
+uniform sampler2D smoothnessMaps[MAX_MAPS];
+
+uniform bool useMetallicMaps;
+uniform int metallicMapsCount;
+uniform sampler2D metallicMaps[MAX_MAPS];
+
+uniform bool useAmbientOcclusionMaps;
+uniform int ambientOcclusionMapsCount;
+uniform sampler2D ambientOcclusionMaps[MAX_MAPS];
 
 uniform bool useNormalMaps;
 uniform int normalMapsCount;
 uniform sampler2D normalMaps[MAX_MAPS];
 
-uniform int lightsCount;
-uniform Light lights[MAX_LIGHTS];
+uniform bool useHeightMaps;
+uniform int heightMapsCount;
+uniform sampler2D heightMaps[MAX_MAPS];
 
-uniform samplerCube envMap;
+uniform int lightsCount;
+uniform Light light[MAX_LIGHTS];
+
+uniform samplerCube environmentMap;
+uniform samplerCube irradianceMap;
+uniform samplerCube prefilteredMap;
+uniform sampler2D brdfLutMap;
+
+mat3 computeTBN()
+{
+    vec3 Q1 = dFdx(fs_in.fragmentPosition);
+    vec3 Q2 = dFdy(fs_in.fragmentPosition);
+    vec2 st1 = dFdx(fs_in.textureCoords);
+    vec2 st2 = dFdy(fs_in.textureCoords);
+
+    vec3 N = normalize(fs_in.fragmentNormal);
+    vec3 T = normalize(Q1 * st2.t - Q2 * st1.t);
+    vec3 B = -normalize(cross(N, T));
+
+    return mat3(T, B, N);
+}
+
+vec3 getNormal(int map, mat3 TBN, vec2 texture_coords)
+{
+    vec3 normal = texture(normalMaps[map], texture_coords).rgb * 2.0f - 1.0f;   
+
+    return normalize(TBN * normal);
+}
 
 vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_direction)
 {
     vec3 lightDirection;
     float distanceFromLight;
 
-    if (useNormalMaps)
-    {
-        lightDirection = normalize(fs_in.lightsPositionsTBN[id] - fragment_position);
-        distanceFromLight = length(fs_in.lightsPositionsTBN[id] - fragment_position);
-    }
-    else
-    {
-        lightDirection = normalize(lights[id].position - fragment_position);
-        distanceFromLight = length(lights[id].position - fragment_position);
-    }  
+    lightDirection = normalize(light[id].position - fragment_position);
+    distanceFromLight = length(light[id].position - fragment_position);
 
     float diffuseFactor = max(dot(normal, lightDirection), 0.0f);
     float specularFactor;
@@ -82,53 +105,41 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
         // Blinn-Phong
 
         vec3 halfWayDirection = normalize(lightDirection + view_direction);
-        specularFactor = pow(max(dot(normal, halfWayDirection), 0.0f), material.shininess * 1.56);
+        specularFactor = pow(max(dot(normal, halfWayDirection), 0.0f), 512.0f);
     }
     else
     {
         // Phong
 
         vec3 reflectionDirection = reflect(-lightDirection, normal);
-        specularFactor = pow(max(dot(view_direction, reflectionDirection), 0.0f), material.shininess);
+        specularFactor = pow(max(dot(view_direction, reflectionDirection), 0.0f), 256.0f);
     }    
 
     vec3 ambientColor = vec3(0.0f);
     vec3 diffuseColor = vec3(0.0f);
     vec3 specularColor = vec3(0.0f);
 
-    if (useDiffuseMaps)
+    if (useAlbedoMaps)
     {
-        for (int i = 0; i < diffuseMapsCount && i < MAX_MAPS; i++)
+        for (int i = 0; i < albedoMapsCount && i < MAX_MAPS; i++)
         {
-            diffuseColor += texture(diffuseMaps[i], fs_in.textureCoords).rgb;
+            diffuseColor += texture(albedoMaps[i], fs_in.textureCoords).rgb;
         }
         
-        ambientColor = 0.05f * diffuseColor;;
-        diffuseColor *= lights[id].diffuseColor * lights[id].power * diffuseFactor;
+        ambientColor = 0.05f * diffuseColor;
+        diffuseColor *= light[id].diffuseColor * light[id].power * diffuseFactor;
     }
     else
     {
-        ambientColor = 0.05f * material.diffuseColor;
-        diffuseColor = lights[id].diffuseColor * lights[id].power * material.diffuseColor * diffuseFactor;
+        ambientColor = 0.05f * material.albedo;
+        diffuseColor = light[id].diffuseColor * light[id].power * material.albedo * diffuseFactor;
     }
 
-    if (useSpecularMaps)
-    {
-        for (int i = 0; i < specularMapsCount && i < MAX_MAPS; i++)
-        {
-            specularColor += texture(specularMaps[i], fs_in.textureCoords).rgb;
-        }
-
-        specularColor *= lights[id].specularColor * lights[id].power * specularFactor;
-    }
-    else
-    {
-        specularColor = lights[id].specularColor * lights[id].power * specularFactor;
-    }
+    specularColor = light[id].specularColor * light[id].power * specularFactor;
 
     float constant_factor = 1.0f; 
-    float linear_factor = 2.0 / lights[id].radius;
-    float quadratic_factor = 1.0 / (lights[id].radius * lights[id].radius);
+    float linear_factor = 2.0 / light[id].radius;
+    float quadratic_factor = 1.0 / (light[id].radius * light[id].radius);
 
     float attenuation = 1.0f / (constant_factor + (linear_factor * distanceFromLight) + (quadratic_factor * distanceFromLight * distanceFromLight));
 
@@ -136,7 +147,12 @@ vec3 computePointLight(int id, vec3 normal, vec3 fragment_position, vec3 view_di
     diffuseColor *= attenuation;
     specularColor *= attenuation;
 
-    return ambientColor + diffuseColor + specularColor;   
+    //return ambientColor;
+    //return diffuseColor;
+    //return ambientColor + diffuseColor;
+    //return specularColor;
+    return ambientColor + diffuseColor + specularColor;
+    
 }
 
 vec3 computeRimLighting(int id, vec3 normal, vec3 view_direction)
@@ -149,7 +165,7 @@ vec3 computeRimLighting(int id, vec3 normal, vec3 view_direction)
 
 	factor = pow(factor, 1.0f / rimPower);
 	
-    vec3 color = factor * lights[id].diffuseColor * material.diffuseColor;
+    vec3 color = factor * light[id].diffuseColor * material.albedo;
 	
 	return color;
 }
@@ -158,108 +174,62 @@ vec4 computeReflection(vec3 normal, vec3 view_direction)
 {
     vec3 R = reflect(-view_direction, normal);
 
-    return texture(envMap, R);
-}
-
-vec4 computeRefraction(vec3 normal, vec3 view_direction)
-{
-    vec3 R = refract(-view_direction, normal, 1.0f / material.refractiveIndex);
-    
-    return texture(envMap, R);
+    return texture(environmentMap, R);
 }
 
 void main()
 {
-    const bool useLighting = true;
-
     fragmentColor = vec4(0.0f, 0.0f, 0.0f, 1.0f);       
 
-    if (useLighting)
+    if (true)
     {
         // With lighting
         
-        vec3 normal, fragmentPosition, viewDirection;
+        vec3 normal;
 
         if (useNormalMaps)
         {           
-            normal = texture(normalMaps[0], fs_in.textureCoords).rgb;
-            normal = normalize(normal * 2.0f - 1.0f);
-
-            fragmentPosition = fs_in.fragmentPositionTBN;
-
-            viewDirection = normalize(fs_in.cameraPositionTBN - fs_in.fragmentPositionTBN);
+            mat3 TBN = computeTBN();
+            normal = getNormal(0, TBN, fs_in.textureCoords);
         }
         else
         {            
-            normal = normalize(fs_in.fragmentNormal);
-
-            fragmentPosition = fs_in.fragmentPosition;
-
-            viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
+            normal = normalize(fs_in.fragmentNormal);           
         }
+
+        vec3 viewDirection = normalize(fs_in.cameraPosition - fs_in.fragmentPosition);
 
         for (int i = 0; i < lightsCount; i++)
         {
-            fragmentColor.rgb += computePointLight(i, normal, fragmentPosition, viewDirection);
-            
-            //if (fs_in.lightsPositions[i].z < fs_in.fragmentPosition.z)
-            //{
-            //    fragmentColor.rgb += computeRimLighting(i, normal, viewDirection);
-            //}
+            fragmentColor.rgb += computePointLight(i, normal, fs_in.fragmentPosition, viewDirection);
         }
 
-        // Calculate refraction and reflection
-        //if (material.refractiveIndex > 0 && material.reflectiveIndex > 0)
-        //{
-        //    vec4 reflection = computeReflection(normal, viewDirection);
-        //    reflection.a = material.reflectiveIndex;
-        //    //reflection.rgb = mix(reflection.rgb, fragmentColor.rgb, material.reflectiveIndex);
+        vec4 reflection = 0.5f * computeReflection(normal, viewDirection);
 
-        //    vec4 refraction = computeRefraction(normal, viewDirection);
-        //    refraction.a = 1.0f;
-        //    //refraction.rgb = mix(refraction.rgb, fragmentColor.rgb, material.refractiveIndex);	
-            
-        //    fragmentColor = (reflection + refraction + fragmentColor) / 3.0f;
-        
-        //    //vec3 fresnel = vec3(dot(viewDirection, normal));
-        //    //fragmentColor.rgb = mix(reflection, refraction, fresnel);
-        //}
-        //else
-        //{
-        //    if (material.reflectiveIndex > 0)
-        //    {
-        //        vec4 reflection = computeReflection(normal, viewDirection);
-        //        reflection.a = material.reflectiveIndex;
-
-        //        fragmentColor += reflection;
-        //        //fragmentColor.rgb = mix(reflection.rgb, fragmentColor.rgb, material.reflectiveIndex);
-        //    }
-
-        //    if (material.refractiveIndex > 0)
-        //    {
-        //        vec4 refraction = computeRefraction(normal, viewDirection);
-        //        refraction.a = 1.0f;
-
-        //        fragmentColor += refraction;
-
-        //        //fragmentColor.rgb = mix(refraction.rgb, fragmentColor.rgb, material.refractiveIndex);
-        //    }       
-        //}
+        if (useMetallicMaps)
+        {
+            float metallic = 0.5f * texture(metallicMaps[0], fs_in.textureCoords).r;
+            fragmentColor.rgb = mix(fragmentColor.rgb, reflection.rgb, metallic);
+        }
+        else
+        {
+            fragmentColor.rgb = mix(fragmentColor.rgb, reflection.rgb, material.metallic);
+        }
     }
     else
     {
         // Without lighting
 
-        if (useDiffuseMaps) 
+        if (useAlbedoMaps) 
         {
-            for (int i = 0; i < diffuseMapsCount; i++)
+            for (int i = 0; i < albedoMapsCount; i++)
             {
-                fragmentColor.rgb += texture(diffuseMaps[i], fs_in.textureCoords).rgb;
+                fragmentColor.rgb += texture(albedoMaps[i], fs_in.textureCoords).rgb;
             }
         }
         else
         {
-            fragmentColor.rgb = material.diffuseColor;
+            fragmentColor.rgb = material.albedo;
         }       
     }
 }
