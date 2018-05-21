@@ -262,23 +262,23 @@ int main()
 			l1 << "FPS: " << fps;
 			label1->setText(l1.str());
 
-			if (fps < 31) label1->setBgColor(255, 0, 0);
+			if (fps >= 60) label1->setBgColor(0, 255, 0);
 			else
 			{
-				if (fps < 61) label1->setBgColor(255, 255, 0);
-				else label1->setBgColor(0, 255, 0);
-			}
+				if (fps >= 30) label1->setBgColor(255, 255, 0);
+				else label1->setBgColor(255, 0, 0);
+			}			
 
 			std::stringstream l2;
 			l2.precision(5);
 			l2 << std::fixed << "Time: " << ms << "мс.";
 			label2->setText(l2.str());
 
-			if (ms < 16.6f) label2->setBgColor(0, 255, 0);
+			if (ms >= 33.3f) label2->setBgColor(255, 0, 0);
 			else
 			{
-				if (fps < 33.3f) label1->setBgColor(255, 255, 0);
-				else label1->setBgColor(255, 0, 0);
+				if (ms >= 16.6f) label2->setBgColor(255, 255, 0);
+				else label2->setBgColor(0, 255, 0);
 			}
 
 			fps = 0;
