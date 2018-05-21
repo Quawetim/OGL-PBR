@@ -72,7 +72,7 @@ int main()
 
 	////////////////////////////////////////////////////////////Loading Camera////////////////////////////////////////////////////////////	
 
-	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera());
+	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera(glm::vec3(0.0f, 5.0f, 15.0f)));
 	//std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
 	//std::shared_ptr<ICamera> camera_static(new StaticCamera());
 	//std::shared_ptr<ICamera> camera_free(new FreeCamera());
@@ -136,7 +136,7 @@ int main()
 	renderer->pollEvents();
 
 	std::shared_ptr<Scene2> scene2(new Scene2);
-	//scene2->init(models);
+	scene2->init(models);
 
 	loadingLabel->setText("Загрузка: Scene #3. Подождите...");
 	renderer->clearScreen();
@@ -146,7 +146,7 @@ int main()
 	renderer->pollEvents();
 
 	std::shared_ptr<Scene3> scene3(new Scene3);
-	//scene3->init(models);
+	scene3->init(models);
 
 	std::vector<std::shared_ptr<IScene>> allScene;
 	allScene.push_back(std::dynamic_pointer_cast<IScene>(scene1));

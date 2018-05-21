@@ -100,8 +100,12 @@ private:
 	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 public:
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	FirstPersonCamera();
+
+	///<summary>Конструктор.</summary>
+	///<param name = 'position'>Начальная позиция.</param>
+	FirstPersonCamera(const glm::vec3 position);
 
 	///<summary>Обработка клавиатуры.</summary>
 	void handleInput(float deltaTime);

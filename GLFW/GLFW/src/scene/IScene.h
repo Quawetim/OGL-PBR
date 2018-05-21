@@ -1,11 +1,15 @@
 #pragma once
 #include "../includes/Includes.h"
 #include "../object/Object.h"
+#include "../object/light/Light.h"
 
 ///<summary>Класс-контенер для объектов aka сцена, уровень.</summary>
 class IScene
 {
 protected:
+	std::vector<std::shared_ptr<Object>> objects_;
+	std::vector<std::shared_ptr<PointLight>> lights_;
+
 	bool objectsMoving_ = false;
 	bool lightsMoving_ = false;
 	bool lightsVisible_ = false;

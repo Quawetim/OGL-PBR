@@ -5,7 +5,7 @@
 ///<summary>Конструктор.</summary>
 ICamera::ICamera()
 {
-	this->position_ = glm::vec3(0.0f, 0.0f, 20.0f);
+	this->position_ = glm::vec3(0.0f, 0.0f, 0.0f);
 	this->front_ = glm::vec3(0.0f, 0.0f, -1.0f);;
 	this->up_ = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->right_ = glm::normalize(glm::cross(this->front_, this->up_));
@@ -40,12 +40,22 @@ glm::vec3 ICamera::getPosition() const
 
 ////////////////////////////////////////////////////////////FirstPersonCamera////////////////////////////////////////////////////////////
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор по-умолчанию.</summary>
 FirstPersonCamera::FirstPersonCamera()
 {
 	this->pitch_ = 0.0f;
 	this->yaw_ = 0.0f;
 	this->roll_ = 0.0f;
+}
+
+///<summary>Конструктор.</summary>
+///<param name = 'position'>Начальная позиция.</param>
+FirstPersonCamera::FirstPersonCamera(const glm::vec3 position)
+{
+	this->position_ = position;
+	this->pitch_ = 0.0f;
+	this->yaw_ = 0.0f;
+	this->roll_ = 0.0f;	
 }
 
 ///<summary>Вычисляет матрицу вида камеры.</summary>

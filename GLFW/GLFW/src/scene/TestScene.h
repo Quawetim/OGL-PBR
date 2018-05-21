@@ -7,10 +7,6 @@
 class TestScene : public IScene
 {
 private:
-	std::vector<std::shared_ptr<Object>> objects_;
-
-	bool drawLights_ = true;
-	std::vector<std::shared_ptr<PointLight>> lights_;
 
 public:
 	///<summary>Деструктор.</summary>

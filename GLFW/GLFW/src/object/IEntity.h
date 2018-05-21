@@ -47,10 +47,8 @@ public:
 	void scale(float deltaTime, const float velocity_xyz);
 
 	///<summary>Изменяет размер объекта с заданной скоростью.</summary>
-	///<param name = 'velocity_x'>Скорость изменения размера по X.</param>
-	///<param name = 'velocity_y'>Скорость изменения размера по Y.</param>
-	///<param name = 'velocity_z'>Скорость изменения размера по Z.</param>
-	void scale(float deltaTime, const float velocity_x, const float velocity_y, const float velocity_z);
+	///<param name = 'velocity'>Скорость изменения размера по каждой из осей.</param>
+	void scale(float deltaTime, const glm::vec3 velocity);
 
 	///<summary>Задаёт позицию.</summary>
 	///<param name = 'position'>Позиция.</param>
@@ -60,6 +58,10 @@ public:
 	///<param name = 'angle'>Угол поворота в градусах.</param>
 	///<param name = 'axis'>Ось поворота.</param>
 	void setRotation(const double angle, const glm::vec3 axis);
+
+	///<summary>Задаёт размер от исходного.</summary>
+	///<param name = 'scale'>Коэффициент размера.</param>
+	void setScale(const float scale);
 
 	///<summary>Задаёт размер от исходного.</summary>
 	///<param name = 'scale'>Коэффициент размера.</param>

@@ -7,12 +7,6 @@
 class Scene2 : public IScene
 {
 private:
-	std::vector<std::shared_ptr<Object>> cubes_;
-	std::vector<std::shared_ptr<Object>> spheres_;
-	std::vector<std::shared_ptr<Object>> cylinders_;
-
-	std::vector<std::shared_ptr<PointLight>> lights_;
-
 	bool right_ = true;
 
 public:

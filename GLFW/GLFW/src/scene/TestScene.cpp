@@ -86,7 +86,7 @@ void TestScene::render(float deltaTime, std::shared_ptr<Shader> shader, const gl
 		this->objects_[i]->rotate(deltaTime, 90.0, glm::vec3(0.0f, 1.0f, 0.0f));
 	}	
 
-	if (this->drawLights_)
+	if (this->lightsVisible_)
 	{
 		for (size_t i = 0; i < this->lights_.size(); i++)
 		{

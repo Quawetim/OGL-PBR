@@ -43,12 +43,10 @@ void IEntity::scale(float deltaTime, const float velocity_xyz)
 }
 
 ///<summary>Изменяет размер объекта с заданной скоростью.</summary>
-///<param name = 'velocity_x'>Скорость изменения размера по X.</param>
-///<param name = 'velocity_y'>Скорость изменения размера по Y.</param>
-///<param name = 'velocity_z'>Скорость изменения размера по Z.</param>
-void IEntity::scale(float deltaTime, const float velocity_x, const float velocity_y, const float velocity_z)
+///<param name = 'velocity'>Скорость изменения размера по каждой из осей.</param>
+void IEntity::scale(float deltaTime, const glm::vec3 velocity)
 {
-	this->scaleCoeffs_ += glm::vec3(velocity_x * deltaTime, velocity_y * deltaTime, velocity_z * deltaTime);
+	this->scaleCoeffs_ += velocity * deltaTime;
 
 	if (this->scaleCoeffs_.x == 0 || this->scaleCoeffs_.y == 0 || this->scaleCoeffs_.z == 0) logger.log(__FUNCTION__, ErrorType::error, "Scale = 0");
 	else
@@ -82,6 +80,21 @@ void IEntity::setRotation(const double angle, const glm::vec3 axis)
 	}
 
 	this->rotationMatrix_ = glm::rotate(static_cast<float>(glm::radians(this->rotationAngle_)), this->rotationAxis_);
+}
+
+///<summary>Задаёт размер от исходного.</summary>
+///<param name = 'scale'>Коэффициент размера.</param>
+void IEntity::setScale(const float scale)
+{
+	this->scaleCoeffs_ = glm::vec3(scale);
+
+	if (this->scaleCoeffs_.x == 0) logger.log(__FUNCTION__, ErrorType::error, "Scale = 0");
+	else
+	{
+		if (this->scaleCoeffs_.x < 0) logger.log(__FUNCTION__, ErrorType::warning, "Scale < 0");
+	}
+
+	this->scaleMatrix_ = glm::scale(this->scaleCoeffs_);
 }
 
 ///<summary>Задаёт размер сущности от исходного.</summary>

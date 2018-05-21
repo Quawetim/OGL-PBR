@@ -7,13 +7,10 @@
 class Scene3 : public IScene
 {
 private:
-	std::vector<std::shared_ptr<Object>> cubes_;
-	std::vector<std::shared_ptr<Object>> spheres_;
-	std::vector<std::shared_ptr<Object>> cylinders_;
-
-	std::vector<std::shared_ptr<PointLight>> lights_;
-
-	bool right_ = true; 
+	std::shared_ptr<Mesh> innerBall_;
+	std::shared_ptr<Mesh> outerBall_;
+	bool front_ = true;
+	bool up_ = false;
 
 public:
 	///<summary>Деструктор.</summary>

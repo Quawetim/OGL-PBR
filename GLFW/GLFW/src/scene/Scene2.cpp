@@ -4,14 +4,8 @@
 ///<summary>Деструктор.</summary>
 Scene2::~Scene2()
 {
-	this->cubes_.clear();
-	std::vector<std::shared_ptr<Object>>(this->cubes_).swap(this->cubes_);
-
-	this->spheres_.clear();
-	std::vector<std::shared_ptr<Object>>(this->spheres_).swap(this->spheres_);
-
-	this->cylinders_.clear();
-	std::vector<std::shared_ptr<Object>>(this->cylinders_).swap(this->cylinders_);
+	this->objects_.clear();
+	std::vector<std::shared_ptr<Object>>(this->objects_).swap(this->objects_);
 
 	this->lights_.clear();
 	std::vector<std::shared_ptr<PointLight>>(this->lights_).swap(this->lights_);
@@ -30,8 +24,8 @@ void Scene2::init(std::vector<std::shared_ptr<Model>> models)
 		{
 			name = "sphere" + std::to_string(i + j + 1);
 			obj = std::shared_ptr<Object>(new Object(name, models[1]));
-			obj->setPosition(glm::vec3(-10.0f + j * 2.0f, -10.0f + i * 2.0f, 0.0f));
-			this->spheres_.push_back(obj);
+			obj->setPosition(glm::vec3(-10.0f + j * 2.0f, -5.0f + i * 2.0f, -10.0f));
+			this->objects_.push_back(obj);
 		}
 	}
 
@@ -54,7 +48,7 @@ void Scene2::init(std::vector<std::shared_ptr<Model>> models)
 		for (size_t j = 0; j < 11; j++)
 		{
 			material.setSmoothness(smoothness);
-			this->spheres_[11 * i + j]->setMaterial(material);
+			this->objects_[11 * i + j]->setMaterial(material);
 
 			smoothness += 0.1f;
 		}
@@ -87,9 +81,9 @@ void Scene2::init(std::vector<std::shared_ptr<Model>> models)
 void Scene2::render(float deltaTime, std::shared_ptr<Shader> shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
 	// Сферы
-	for (size_t i = 0; i < spheres_.size(); i++)
+	for (size_t i = 0; i < this->objects_.size(); i++)
 	{
-		renderer->drawObject(this->spheres_[i], shader, this->lights_, view_matrix, camera_position);
+		renderer->drawObject(this->objects_[i], shader, this->lights_, view_matrix, camera_position);
 	}
 
 	if (this->lightsVisible_)

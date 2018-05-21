@@ -71,7 +71,7 @@ std::shared_ptr<Model> Object::removeModel(const std::string name)
 		{
 			model = this->models_[i];
 			this->models_.erase(this->models_.begin() + i);
-			std::vector<std::shared_ptr<Model>>(models_).swap(this->models_);
+			std::vector<std::shared_ptr<Model>>(this->models_).swap(this->models_);
 
 			return model;
 		}
@@ -103,5 +103,13 @@ const std::vector<std::shared_ptr<Model>> Object::getModels() const
 
 const std::shared_ptr<Model> Object::getModelByName(const std::string name) const
 {
+	for (size_t i = 0; i < this->models_.size(); i++)
+	{
+		if (models_[i]->name_ == name) return models_[i];
+	}
 
+	std::string msg = "Mesh name: " + name + " not found.";
+	logger.log(__FUNCTION__, ErrorType::warning, msg);
+
+	return models_[0];
 }

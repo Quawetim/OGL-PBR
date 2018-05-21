@@ -421,6 +421,8 @@ void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, std::shared_ptr<Sha
 	for (size_t i = 0; i < meshesCount; i++)
 	{
 		std::shared_ptr<Mesh> mesh = model->getMeshes()[i];
+		glm::mat4 m = mesh->getModelMatrix();
+		glm::mat4 m1 = model_matrix * m;
 		shader->setModelMatrix(model_matrix * mesh->getModelMatrix());
 
 		unsigned int albedoMapsCount = 0;
