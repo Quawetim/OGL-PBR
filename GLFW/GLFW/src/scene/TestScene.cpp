@@ -75,10 +75,10 @@ void TestScene::init(std::vector<std::shared_ptr<Model>> models)
 ///<summary>Отрисовка сцены.</summary>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void TestScene::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
+void TestScene::render(float deltaTime, std::shared_ptr<Shader> shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
-	shader.setFloat("material.metallic", 0.2f);
-	shader.setFloat("material.roughness", 0.2f);
+	shader->setFloat("material.metallic", 0.2f);
+	shader->setFloat("material.roughness", 0.2f);
 
 	for (size_t i = 0; i < this->objects_.size(); i++)
 	{

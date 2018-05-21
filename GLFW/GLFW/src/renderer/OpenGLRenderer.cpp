@@ -243,10 +243,11 @@ OpenGLRenderer::OpenGLRenderer()
 	this->frameRenderBuffer_ = this->generateRenderBuffer(this->windowWidth_, this->windowHeight_);
 	this->frameFrameBuffer_ = this->generateFrameBuffer(this->frameRenderBuffer_, this->frame_);
 
-	this->irradianceShader_ = Shader("irradiance");
-	this->prefilteringShader_ = Shader("prefiltering");
-	this->brdfLutShader_ = Shader("brdf");
-	this->coordinateAxesShader_ = Shader("axes");
+	this->irradianceShader_ = std::shared_ptr<Shader>(new Shader("irradiance"));
+	this->prefilteringShader_ = std::shared_ptr<Shader>(new Shader("prefiltering"));
+	this->brdfLutShader_ = std::shared_ptr<Shader>(new Shader("brdf"));
+	this->coordinateAxesShader_ = std::shared_ptr<Shader>(new Shader("axes"));
+	this->skyboxShader_ = std::shared_ptr<Shader>(new Shader("skybox"));
 
 	this->tempRenderBuffer_ = this->generateRenderBuffer(256, 256);
 	this->tempFrameBuffer_ = this->generateFrameBufferCube(this->tempRenderBuffer_);
@@ -299,19 +300,19 @@ void OpenGLRenderer::generateIrradianceMap()
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
 
-	this->irradianceShader_.activate();
-	this->irradianceShader_.setProjectionMatrix(projection);
+	this->irradianceShader_->activate();
+	this->irradianceShader_->setProjectionMatrix(projection);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
-	this->irradianceShader_.setInt("envMap", 0);
+	this->irradianceShader_->setInt("envMap", 0);
 
 	this->setViewport(0, 0, size, size);
 	this->bindFrameBuffer(this->tempFrameBuffer_);
 
 	for (int i = 0; i < 6; i++)
 	{
-		this->irradianceShader_.setMat4("viewMatrix", view[i]);
+		this->irradianceShader_->setMat4("viewMatrix", view[i]);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->irradianceMap_, 0);
 		
@@ -343,19 +344,19 @@ void OpenGLRenderer::generatePrefilteredMap()
 		glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
 	};
 
-	this->prefilteringShader_.activate();
-	this->prefilteringShader_.setProjectionMatrix(projection);
+	this->prefilteringShader_->activate();
+	this->prefilteringShader_->setProjectionMatrix(projection);
 	
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
-	this->prefilteringShader_.setInt("envMap", 0);
+	this->prefilteringShader_->setInt("envMap", 0);
 
 	int levels = 5;
 	this->bindFrameBuffer(this->tempFrameBuffer_);
 	for (int mip = 0; mip < levels; mip++)
 	{
 		float roughness = static_cast<float>(mip) / static_cast<float>(levels - 1);
-		this->prefilteringShader_.setFloat("roughness", roughness);
+		this->prefilteringShader_->setFloat("roughness", roughness);
 
 		int mipSize = static_cast<int>(size * std::pow(0.5f, mip));
 
@@ -366,7 +367,7 @@ void OpenGLRenderer::generatePrefilteredMap()
 
 		for (int i = 0; i < 6; i++)
 		{
-			this->prefilteringShader_.setMat4("viewMatrix", view[i]);
+			this->prefilteringShader_->setMat4("viewMatrix", view[i]);
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, this->prefilteredMap_, mip);
 			
@@ -389,7 +390,7 @@ void OpenGLRenderer::generateBrdfLutMap()
 
 	int size = 256;
 
-	this->brdfLutShader_.activate();
+	this->brdfLutShader_->activate();
 
 	this->bindFrameBuffer(this->tempFrameBuffer_);
 	glBindRenderbuffer(GL_RENDERBUFFER, this->tempRenderBuffer_);
@@ -414,13 +415,13 @@ void OpenGLRenderer::generateBrdfLutMap()
 ///<param name = 'model'>Модель.</param>
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'material'>Материал.</param>
-void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, Shader shader, Material material, glm::mat4 model_matrix)
+void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, std::shared_ptr<Shader> shader, Material material, glm::mat4 model_matrix)
 {
 	size_t meshesCount = model->getMeshes().size();
 	for (size_t i = 0; i < meshesCount; i++)
 	{
 		std::shared_ptr<Mesh> mesh = model->getMeshes()[i];
-		shader.setModelMatrix(model_matrix * mesh->getModelMatrix());
+		shader->setModelMatrix(model_matrix * mesh->getModelMatrix());
 
 		unsigned int albedoMapsCount = 0;
 		unsigned int smoothnessMapsCount = 0;
@@ -551,45 +552,45 @@ void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, Shader shader, Mate
 					}
 			}
 
-			shader.setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), j);
+			shader->setInt(std::string(mapKeys.mapsName + "[" + mapNumber + "]"), j);
 			glBindTexture(GL_TEXTURE_2D, pointer[j]->getID());
 		}
 
 		// Push texture flags
-		shader.setBool(albedoKeys.mapsUse, useAlbedoMaps);
-		shader.setBool(smoothnessKeys.mapsUse, useSmoothnessMaps);
-		shader.setBool(metallicKeys.mapsUse, useMetallicMaps);		
-		shader.setBool(ambientOcclusionKeys.mapsUse, useAmbientOcclusionMaps);
-		shader.setBool(normalKeys.mapsUse, useNormalMaps);
-		shader.setBool(heightKeys.mapsUse, useHeightMaps);
+		shader->setBool(albedoKeys.mapsUse, useAlbedoMaps);
+		shader->setBool(smoothnessKeys.mapsUse, useSmoothnessMaps);
+		shader->setBool(metallicKeys.mapsUse, useMetallicMaps);		
+		shader->setBool(ambientOcclusionKeys.mapsUse, useAmbientOcclusionMaps);
+		shader->setBool(normalKeys.mapsUse, useNormalMaps);
+		shader->setBool(heightKeys.mapsUse, useHeightMaps);
 
-		shader.setInt(albedoKeys.mapsCount, albedoMapsCount);
-		shader.setInt(smoothnessKeys.mapsCount, smoothnessMapsCount);
-		shader.setInt(metallicKeys.mapsCount, metallicMapsCount);		
-		shader.setInt(ambientOcclusionKeys.mapsCount, ambientOcclusionMapsCount);
-		shader.setInt(normalKeys.mapsCount, normalMapsCount);
-		shader.setInt(heightKeys.mapsCount, heightMapsCount);
+		shader->setInt(albedoKeys.mapsCount, albedoMapsCount);
+		shader->setInt(smoothnessKeys.mapsCount, smoothnessMapsCount);
+		shader->setInt(metallicKeys.mapsCount, metallicMapsCount);		
+		shader->setInt(ambientOcclusionKeys.mapsCount, ambientOcclusionMapsCount);
+		shader->setInt(normalKeys.mapsCount, normalMapsCount);
+		shader->setInt(heightKeys.mapsCount, heightMapsCount);
 
 		int textureFreeNumber = pointer.size();
 
 		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
-		shader.setInt("environmentMap", textureFreeNumber);
+		shader->setInt("environmentMap", textureFreeNumber);
 		textureFreeNumber++;
 
 		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this->irradianceMap_);
-		shader.setInt("irradianceMap", textureFreeNumber);
+		shader->setInt("irradianceMap", textureFreeNumber);
 		textureFreeNumber++;
 
 		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, this->prefilteredMap_);
-		shader.setInt("prefilteredMap", textureFreeNumber);
+		shader->setInt("prefilteredMap", textureFreeNumber);
 		textureFreeNumber++;
 
 		glActiveTexture(GL_TEXTURE0 + textureFreeNumber);
 		glBindTexture(GL_TEXTURE_2D, this->brdfLutMap_);
-		shader.setInt("brdfLutMap", textureFreeNumber);
+		shader->setInt("brdfLutMap", textureFreeNumber);
 		textureFreeNumber++;
 
 		glBindVertexArray(mesh->getVAO());
@@ -668,45 +669,45 @@ void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader)
 ///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void OpenGLRenderer::drawObject(std::shared_ptr<Object> object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
+void OpenGLRenderer::drawObject(std::shared_ptr<Object> object, std::shared_ptr<Shader> shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
-	shader.activate();
+	shader->activate();
 	//shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, object->getModelMatrix());
-	shader.setProjectionMatrix(this->perspectiveProjection_);
-	shader.setViewMatrix(view_matrix);
-	shader.setVec3("cameraPosition", camera_position);	
+	shader->setProjectionMatrix(this->perspectiveProjection_);
+	shader->setViewMatrix(view_matrix);
+	shader->setVec3("cameraPosition", camera_position);	
 
 	// Push material params
 	glm::vec3 albedo = glm::pow(object->getMaterial().getAlbedo(), glm::vec3(gamma));
 
-	shader.setVec3("material.albedo", albedo);
-	shader.setFloat("material.metallic", object->getMaterial().getMetallic());	
-	shader.setFloat("material.smoothness", object->getMaterial().getSmoothness());
-	shader.setFloat("material.surfaceHeight", object->getMaterial().getSurfaceHeight());
+	shader->setVec3("material.albedo", albedo);
+	shader->setFloat("material.metallic", object->getMaterial().getMetallic());	
+	shader->setFloat("material.smoothness", object->getMaterial().getSmoothness());
+	shader->setFloat("material.surfaceHeight", object->getMaterial().getSurfaceHeight());
 
 	// Push lights
-	shader.setInt("lightsCount", lights.size());
+	shader->setInt("lightsCount", lights.size());
 
 	for (size_t i = 0; i < lights.size(); i++)
 	{
 		std::string name;
 
 		name = "light[" + std::to_string(i) + "].position";
-		shader.setVec3(name, lights[i]->getPosition());
+		shader->setVec3(name, lights[i]->getPosition());
 
 		name = "light[" + std::to_string(i) + "].radius";
-		shader.setFloat(name, lights[i]->getRadius());
+		shader->setFloat(name, lights[i]->getRadius());
 
 		name = "light[" + std::to_string(i) + "].diffuseColor";
 		glm::vec3 diffuseColor = glm::pow(lights[i]->getDiffuseColor(), glm::vec3(gamma));
-		shader.setVec3(name, diffuseColor);
+		shader->setVec3(name, diffuseColor);
 
 		name = "light[" + std::to_string(i) + "].specularColor";
 		glm::vec3 specularColor = glm::pow(lights[i]->getSpecularColor(), glm::vec3(gamma));
-		shader.setVec3(name, specularColor);
+		shader->setVec3(name, specularColor);
 
 		name = "light[" + std::to_string(i) + "].power";
-		shader.setFloat(name, lights[i]->getPower());
+		shader->setFloat(name, lights[i]->getPower());
 	}	
 
 	// Для каждой из моделей в объекте
@@ -718,19 +719,18 @@ void OpenGLRenderer::drawObject(std::shared_ptr<Object> object, Shader shader, s
 
 ///<summary>Отрисовка скайбокса.</summary>
 ///<param name = 'skybox'>Скайбокс.</param>
-///<param name = 'shader'>Шейдер.</param>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position)
+void OpenGLRenderer::drawSkybox(std::shared_ptr<Skybox> skybox, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
 	glDisable(GL_BLEND);
 	glDepthFunc(GL_LEQUAL);
 
-	shader.activate();
-	shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, skybox->getModelMatrix());
-	shader.setVec3("cameraPosition", camera_position);
+	this->skyboxShader_->activate();
+	this->skyboxShader_->setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, skybox->getModelMatrix());
+	this->skyboxShader_->setVec3("cameraPosition", camera_position);
 
-	shader.setInt("envMap", 0);
+	this->skyboxShader_->setInt("envMap", 0);
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, this->environmentMap_);
 
@@ -925,8 +925,8 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 ///<param name = 'view_matrix'>Матрица вида.</param>
 void OpenGLRenderer::drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix)
 {
-	this->coordinateAxesShader_.activate();
-	this->coordinateAxesShader_.setProjectionViewModelMatrices(axes->getProjectionMatrix(), view_matrix, axes->getModelMatrix());
+	this->coordinateAxesShader_->activate();
+	this->coordinateAxesShader_->setProjectionViewModelMatrices(axes->getProjectionMatrix(), view_matrix, axes->getModelMatrix());
 
 	int margin = 5;
 	int size = 60;
@@ -941,7 +941,7 @@ void OpenGLRenderer::drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, gl
 	glViewport(0, 0, this->windowWidth_, this->windowHeight_);
 }
 
-void OpenGLRenderer::drawDebugQuad(unsigned int textureID, Shader shader)
+void OpenGLRenderer::drawDebugQuad(unsigned int textureID, std::shared_ptr<Shader> shader)
 {
 	glm::mat4 modelMatrix;
 	modelMatrix = glm::scale(glm::vec3(0.3f));
@@ -949,15 +949,15 @@ void OpenGLRenderer::drawDebugQuad(unsigned int textureID, Shader shader)
 
 	glDisable(GL_DEPTH_TEST);
 
-	shader.activate();
+	shader->activate();
 
-	shader.setProjectionMatrix(this->orthoProjection_);
-	shader.setModelMatrix(modelMatrix);
+	shader->setProjectionMatrix(this->orthoProjection_);
+	shader->setModelMatrix(modelMatrix);
 	
-	shader.setBool("useBgTexture", true);
+	shader->setBool("useBgTexture", true);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	shader.setInt("bgTexture", 0);
+	shader->setInt("bgTexture", 0);
 
 	glBindVertexArray(this->quadVAO_);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

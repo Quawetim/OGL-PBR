@@ -84,7 +84,7 @@ void Scene2::init(std::vector<std::shared_ptr<Model>> models)
 ///<summary>Отрисовка сцены.</summary>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void Scene2::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
+void Scene2::render(float deltaTime, std::shared_ptr<Shader> shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {
 	// Сферы
 	for (size_t i = 0; i < spheres_.size(); i++)

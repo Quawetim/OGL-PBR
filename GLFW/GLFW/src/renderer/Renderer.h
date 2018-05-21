@@ -79,7 +79,7 @@ protected:
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
-	virtual void drawModel(std::shared_ptr<Model> model, Shader shader, Material material, glm::mat4 model_matrix) = 0;
+	virtual void drawModel(std::shared_ptr<Model> model, std::shared_ptr<Shader> shader, Material material, glm::mat4 model_matrix) = 0;
 
 	virtual void renderCube() = 0;
 
@@ -105,14 +105,13 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void drawObject(std::shared_ptr<Object> object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+	virtual void drawObject(std::shared_ptr<Object> object, std::shared_ptr<Shader> shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка скайбокса.</summary>
 	///<param name = 'skybox'>Скайбокс.</param>
-	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
+	virtual void drawSkybox(std::shared_ptr<Skybox> skybox, glm::mat4 view_matrix, glm::vec3 camera_position) = 0;
 
 	///<summary>Отрисовка точечного источника освещения.</summary>
 	///<param name = 'light'>Точечный источник освещения.</param>
@@ -128,7 +127,7 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	virtual void drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix) = 0;
 
-	virtual void drawDebugQuad(unsigned int textureID, Shader shader) = 0;
+	virtual void drawDebugQuad(unsigned int textureID, std::shared_ptr<Shader> shader) = 0;
 
 	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
 
@@ -334,16 +333,19 @@ private:
 	unsigned int tempFrameBuffer_;
 
 	///<summary>Шейдер для генерации irradiance map.</summary>
-	Shader irradianceShader_;
+	std::shared_ptr<Shader> irradianceShader_;
 
 	///<summary>Шейдер для генерации pre-filtered map.</summary>
-	Shader prefilteringShader_;
+	std::shared_ptr<Shader> prefilteringShader_;
 
 	///<summary>Шейдер для генерации BRDF LUT map.</summary>
-	Shader brdfLutShader_;
+	std::shared_ptr<Shader> brdfLutShader_;
 
 	///<summary>Шейдер для отрисовки координатных осей.</summary>
-	Shader coordinateAxesShader_;
+	std::shared_ptr<Shader> coordinateAxesShader_;
+
+	///<summary>Шейдер для отрисовки скайбокса.</summary>
+	std::shared_ptr<Shader> skyboxShader_;
 
 	///<summary>Пересчитывает размер frame текстуры.</summary>
 	void updateFrameSize();
@@ -361,7 +363,7 @@ private:
 	///<param name = 'model'>Модель.</param>
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'material'>Материал.</param>
-	void drawModel(std::shared_ptr<Model> model, Shader shader, Material material, glm::mat4 model_matrix);
+	void drawModel(std::shared_ptr<Model> model, std::shared_ptr<Shader> shader, Material material, glm::mat4 model_matrix);
 
 	void renderQuad();
 
@@ -387,14 +389,13 @@ public:
 	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	void drawObject(std::shared_ptr<Object> object, Shader shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position);
+	void drawObject(std::shared_ptr<Object> object, std::shared_ptr<Shader> shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка скайбокса.</summary>
 	///<param name = 'skybox'>Скайбокс.</param>
-	///<param name = 'shader'>Шейдер.</param>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	void drawSkybox(std::shared_ptr<Skybox> skybox, Shader shader, glm::mat4 view_matrix, glm::vec3 camera_position);
+	void drawSkybox(std::shared_ptr<Skybox> skybox, glm::mat4 view_matrix, glm::vec3 camera_position);
 
 	///<summary>Отрисовка точечного источника освещения.</summary>
 	///<param name = 'light'>Точечный источник освещения.</param>
@@ -410,7 +411,7 @@ public:
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	void drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix);
 
-	void drawDebugQuad(unsigned int textureID, Shader shader);
+	void drawDebugQuad(unsigned int textureID, std::shared_ptr<Shader> shader);
 
 	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
 

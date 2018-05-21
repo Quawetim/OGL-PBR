@@ -165,7 +165,7 @@ void Scene1::init(std::vector<std::shared_ptr<Model>> models)
 ///<summary>Отрисовка сцены.</summary>
 ///<param name = 'view_matrix'>Матрица вида.</param>
 ///<param name = 'camera_position'>Позиция камеры.</param>
-void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
+void Scene1::render(float deltaTime, std::shared_ptr<Shader> shader, const glm::mat4 view_matrix, const glm::vec3 camera_position)
 {	
 	/*// Кубы
 	for (size_t i = 0; i < this->cubes_.size(); i++)
@@ -215,8 +215,6 @@ void Scene1::render(float deltaTime, Shader shader, const glm::mat4 view_matrix,
 	{
 		renderer->drawObject(this->objects_[i], shader, this->lights_, view_matrix, camera_position);
 	}
-
-	
 
 	if (this->lightsVisible_)
 	{

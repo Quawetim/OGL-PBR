@@ -87,9 +87,8 @@ int main()
 
 	////////////////////////////////////////////////////////////Loading Shader////////////////////////////////////////////////////////////
 
-	Shader materialShader("material");
-	Shader pbrShader("PBR");
-	Shader skyboxShader("skybox");
+	std::shared_ptr<Shader> materialShader(new Shader("material"));
+	std::shared_ptr<Shader> pbrShader(new Shader("PBR"));
 	std::shared_ptr<Shader> postProcessingShader(new Shader("postProcessing"));
 
 	////////////////////////////////////////////////////////////Loading Model//////////////////////////////////////////////////////////////   		
@@ -298,7 +297,7 @@ int main()
 
 		allScene[activeScene]->render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
-		renderer->drawSkybox(skybox, skyboxShader, camera->getViewMatrix(), camera->getPosition());
+		renderer->drawSkybox(skybox, camera->getViewMatrix(), camera->getPosition());
 
 		// Frame
 

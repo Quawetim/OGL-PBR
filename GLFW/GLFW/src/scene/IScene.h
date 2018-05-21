@@ -20,7 +20,7 @@ public:
 	///<summary>Отрисовка сцены.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	///<param name = 'camera_position'>Позиция камеры.</param>
-	virtual void render(float deltaTime, Shader shader, const glm::mat4 view_matrix, const glm::vec3 camera_position) = 0;
+	virtual void render(float deltaTime, std::shared_ptr<Shader> shader, const glm::mat4 view_matrix, const glm::vec3 camera_position) = 0;
 
 	void moveObjects(const bool move) { this->objectsMoving_ = move; }
 
