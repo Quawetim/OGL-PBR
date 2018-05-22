@@ -64,11 +64,27 @@ struct VertexData
     glm::vec3 bitangent;
 };
 
+///<summary>Структура соответствия переменных в шейдере и программе.</summary>
+struct TextureKeys
+{
+	std::string mapsName;
+	std::string mapsUse;
+	std::string mapsCount;
+};
+
+///<summary>Структура хранящая параметры символа шрифта.</summary>
 struct Character
 {
+	///<summary>Идентификатор текстуры.</summary>
 	unsigned int texture;
+
+	///<summary>Кегль.</summary>
 	glm::ivec2 size;
+
+	///<summary>Отступ символа.</summary>
 	glm::ivec2 bearing;
+
+	///<summary>Ширина символа.</summary>
 	unsigned int advance;
 };
 
@@ -256,13 +272,6 @@ public:
 
 	///<summary>Проверяет список текстур на пустоту.</summary>
 	bool isTexturesEmpty() const;
-};
-
-struct TextureKeys
-{
-	std::string mapsName;
-	std::string mapsUse;
-	std::string mapsCount;
 };
 
 ///<summary>Задаёт соответствие TextureType и её TextureKeys в шейдере.</summary>

@@ -86,7 +86,7 @@ protected:
 	virtual void renderQuad() = 0;
 
 public:
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	Renderer();
 
 	///<summary>Деструктор.</summary>
@@ -94,6 +94,9 @@ public:
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
+	///<summary>Отрисовка текстуры во весь экран.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'texture'>Текстура.</param>
 	virtual void drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture) = 0;
 
 	///<summary>Отрисовка кадра во весь экран.</summary>
@@ -126,8 +129,6 @@ public:
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	virtual void drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix) = 0;
-
-	virtual void drawDebugQuad(unsigned int textureID, std::shared_ptr<Shader> shader) = 0;
 
 	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
 
@@ -370,7 +371,7 @@ private:
 	void renderCube();
 
 public:
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	OpenGLRenderer();
 
 	///<summary>Деструктор.</summary>
@@ -378,6 +379,9 @@ public:
 
 	////////////////////////////////////////////// draw-функции //////////////////////////////////////////////
 
+	///<summary>Отрисовка текстуры во весь экран.</summary>
+	///<param name = 'shader'>Шейдер.</param>
+	///<param name = 'texture'>Текстура.</param>
 	void drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture);
 
 	///<summary>Отрисовка кадра во весь экран.</summary>
@@ -410,8 +414,6 @@ public:
 	///<summary>Отрисовка осей координат.</summary>
 	///<param name = 'view_matrix'>Матрица вида.</param>
 	void drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, glm::mat4 view_matrix);
-
-	void drawDebugQuad(unsigned int textureID, std::shared_ptr<Shader> shader);
 
 	////////////////////////////////////////////// служебные функции //////////////////////////////////////////////
 

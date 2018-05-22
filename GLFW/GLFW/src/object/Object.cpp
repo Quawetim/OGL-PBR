@@ -1,6 +1,6 @@
 #include "Object.h"
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор по-умолчанию.</summary>
 Object::Object()
 {
 	this->name_ = "Name does not set.";
@@ -101,6 +101,8 @@ const std::vector<std::shared_ptr<Model>> Object::getModels() const
 	return this->models_;
 }
 
+///<summary>Возвращает модель по имени. Или первую, если не найдено.</summary>
+///<param name = 'name'>Имя модели.</param>
 const std::shared_ptr<Model> Object::getModelByName(const std::string name) const
 {
 	for (size_t i = 0; i < this->models_.size(); i++)

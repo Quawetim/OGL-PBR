@@ -1,7 +1,7 @@
 #include "Model.h"
 #include "..\texture_loader\TextureLoader.h"
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор по-умолчанию.</summary>
 Model::Model()
 {
 	this->translationMatrix_ = glm::mat4(1.0f);

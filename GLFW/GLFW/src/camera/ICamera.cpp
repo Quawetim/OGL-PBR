@@ -73,11 +73,6 @@ void FirstPersonCamera::computeViewMatrixAxes()
 	this->viewMatrixAxes_ = glm::lookAt(glm::vec3(this->axesRadius_ * cos(angle), height, this->axesRadius_ * sin(angle)), glm::vec3(0.0f), this->up_);
 }
 
-void FirstPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	
-}
-
 ///<summary>Обработка клавиатуры.</summary>
 void FirstPersonCamera::handleInput(float deltaTime)
 {
@@ -150,11 +145,6 @@ void ThirdPersonCamera::computeViewMatrixAxes()
 	this->viewMatrixAxes_ = glm::lookAt(glm::vec3(this->axesRadius_ * cos(angle), height, this->axesRadius_ * sin(angle)), glm::vec3(0.0f), this->up_);
 }
 
-void ThirdPersonCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "TP CAM" << std::endl;
-}
-
 ///<summary>Обработка клавиатуры.</summary>
 void ThirdPersonCamera::handleInput(float deltaTime)
 {
@@ -213,11 +203,6 @@ void StaticCamera::computeViewMatrixAxes()
 	this->viewMatrixAxes_ = glm::lookAt(glm::normalize(this->position_), glm::vec3(0.0f), this->up_);
 }
 
-void StaticCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "STATIC CAM" << std::endl;
-}
-
 ///<summary>Обработка клавиатуры.</summary>
 void StaticCamera::handleInput(float deltaTime)
 {
@@ -244,11 +229,6 @@ void FreeCamera::computeViewMatrix()
 void FreeCamera::computeViewMatrixAxes()
 {
 
-}
-
-void FreeCamera::handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (glfwGetKey(renderer->getWindow().OGLwindow, GLFW_KEY_SPACE) == GLFW_PRESS) std::cout << "FREE CAM" << std::endl;
 }
 
 ///<summary>Обработка клавиатуры.</summary>

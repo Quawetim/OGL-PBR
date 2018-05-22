@@ -14,7 +14,7 @@ protected:
 	std::vector<std::shared_ptr<Model>> models_;									// Мб лучше список? Который можно отсортировать по приоритету отрисовки...
 
 public:
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	Object();
 
 	///<summary>Конструктор.</summary>
@@ -47,6 +47,8 @@ public:
 	///<summary>Возвращает модели, из которых состоит объект.</summary>
 	const std::vector<std::shared_ptr<Model>> getModels() const;
 
+	///<summary>Возвращает модель по имени. Или первую, если не найдено.</summary>
+	///<param name = 'name'>Имя модели.</param>
 	const std::shared_ptr<Model> getModelByName(const std::string name) const;
 };
 

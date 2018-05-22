@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор по-умолчанию.</summary>
 Mesh::Mesh()
 {
 	this->name_ = "not loaded";
@@ -79,10 +79,10 @@ Mesh::Mesh(std::string name, std::vector<VertexData> vertices, std::vector<unsig
 ///<summary>Деструктор.</summary>
 Mesh::~Mesh()
 {
-	for (size_t i = 0; i < this->textures_.size(); i++)
+	/*for (size_t i = 0; i < this->textures_.size(); i++)
 	{
-		//textureLoader::deleteTexture(this->textures_[i].getID());
-	}
+		textureLoader::deleteTexture(this->textures_[i].getID());
+	}*/
 }
 
 ///<summary>Возвращает номер VAO.</summary>

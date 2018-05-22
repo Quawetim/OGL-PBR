@@ -3,6 +3,7 @@
 ///<summary>Загрузка текстуры из файла.</summary>
 ///<param name = 'path'>Путь к текстуре.</param>
 ///<param name = 'type'>Тип текстуры.</param>
+///<param name = 'flip'>Нужно ли перевернуть текстуру.</param>
 unsigned int textureLoader::loadTexture(const std::string path, TextureType type, const bool flip)
 {
 	if (flip) stbi_set_flip_vertically_on_load(true);

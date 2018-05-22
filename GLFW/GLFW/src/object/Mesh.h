@@ -25,7 +25,7 @@ private:
 	///<summary>Текстуры.</summary>
     std::vector<std::shared_ptr<Texture>> textures_;
 
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	Mesh();
 
 	///<summary>Конструктор.</summary>

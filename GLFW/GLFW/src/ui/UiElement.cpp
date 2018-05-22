@@ -106,6 +106,7 @@ std::string UiElement::getText() const
 	return this->text_;
 }
 
+///<summary>Возвращает текст в Unicode.</summary>
 wchar_t* UiElement::getWText() const
 {
 	return this->wtext_;
@@ -152,11 +153,16 @@ UiButton::UiButton(const int x, const int y, const int width, const int height)
 	this->click = nullptr;
 }
 
+///<summary>Задаёт функцию клика.</summary>
+///<param name = 'function'>Указатель на функцию.</param>
 void UiButton::setClickFunction(void(*function)(std::shared_ptr<IScene>))
 {
 	this->click = function;
 }
 
+///<summary>проверяет взаимодействие с курсором.</summary>
+///<param name = 'input_handler'>Обработчик ввода.</param>
+///<param name = 'scene'>Сцена.</param>
 void UiButton::checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene)
 {
 	float scaleX = renderer->getUiScaleX();
@@ -198,6 +204,11 @@ void UiButton::checkActions(std::shared_ptr<InputHandler> input_handler, std::sh
 
 //////////////////////////////////////Label//////////////////////////////////////
 
+///<summary>Конструктор.</summary>
+///<param name = 'font'>Название шрифта.</param>
+///<param name = 'size'>Кегль.</param>
+///<param name = 'x'>Позиция X левого нижнего угла в пикселях.</param>
+///<param name = 'y'>Позиция Y левого нижнего угла в пикселях.</param>
 UiLabel::UiLabel(const std::string font, const int size, const int x, const int y)
 {
 	this->x_ = x;

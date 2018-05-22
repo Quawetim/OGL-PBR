@@ -26,7 +26,7 @@ private:
     void checkCompilationErrors(const unsigned int id, const int type) const;
 
 public:
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	Shader() {};
 
     ///<summary>Конструктор.</summary>

@@ -49,6 +49,7 @@ protected:
 	///<summary>Текст.</summary>
 	std::string text_;
 
+	///<summary>Unicode.</summary>
 	wchar_t* wtext_;
 
 public:
@@ -95,6 +96,7 @@ public:
 	///<summary>Возвращает текст.</summary>
 	std::string getText() const;
 
+	///<summary>Возвращает текст в Unicode.</summary>
 	wchar_t* getWText() const;
 
 	///<summary>Возвращает шейдер.</summary>
@@ -120,6 +122,7 @@ public:
 class UiButton : public UiElement
 {
 private:
+	///<summary>Функция клика.</summary>
 	void(*click)(std::shared_ptr<IScene>);
 
 public:
@@ -133,8 +136,13 @@ public:
 	///<param name = 'height'>Высота элемента.</param>
 	UiButton(const int x, const int y, const int width, const int height);
 
+	///<summary>Задаёт функцию клика.</summary>
+	///<param name = 'function'>Указатель на функцию.</param>
 	void setClickFunction(void(*function)(std::shared_ptr<IScene>));
 
+	///<summary>проверяет взаимодействие с курсором.</summary>
+	///<param name = 'input_handler'>Обработчик ввода.</param>
+	///<param name = 'scene'>Сцена.</param>
 	void checkActions(std::shared_ptr<InputHandler> input_handler, std::shared_ptr<IScene> scene);
 };
 

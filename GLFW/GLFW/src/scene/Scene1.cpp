@@ -15,10 +15,32 @@ Scene1::~Scene1()
 ///<param name = 'models'>Список моделей.</param>
 void Scene1::init(std::vector<std::shared_ptr<Model>> models)
 {
-	this->objects_.push_back(std::shared_ptr<Object>(new Object("material_ball", models[3])));
+	this->objects_.push_back(std::shared_ptr<Object>(new Object("material_ball_1", models[3])));
+	this->objects_.push_back(std::shared_ptr<Object>(new Object("material_ball_2", models[3])));	
+	this->objects_.push_back(std::shared_ptr<Object>(new Object("material_ball_3", models[3])));
+
+	this->objects_[0]->setPosition(glm::vec3(-6.0f, 0.0f, 0.0f));
+	this->objects_[0]->setRotation(-45.0, glm::vec3(0.0f, 1.0f, 0.0f));
+	this->objects_[1]->setPosition(glm::vec3(0.0f, 0.0f, -3.0f));
+	this->objects_[2]->setPosition(glm::vec3(6.0f, 0.0f, 0.0f));
+	this->objects_[2]->setRotation(45.0, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	std::shared_ptr<Texture> texture;
 	Material material;
+
+	texture = std::shared_ptr<Texture>(new Texture("pbr/rock/planet-surface/albedo.png", TextureType::albedo));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/rock/planet-surface/smoothness.png", TextureType::smoothness));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/rock/planet-surface/ao.png", TextureType::ambientOcclusion));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/rock/planet-surface/normal.png", TextureType::normal));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/rock/planet-surface/height.png", TextureType::height));
+	material.addTexture(texture);
+	material.setSurfaceHeight(0.1f);
+	this->objects_[0]->setMaterial(material);
+	material.setDefault();
 
 	texture = std::shared_ptr<Texture>(new Texture("pbr/metal/gold-scuffed/albedo.png", TextureType::albedo));
 	material.addTexture(texture);
@@ -28,7 +50,19 @@ void Scene1::init(std::vector<std::shared_ptr<Model>> models)
 	material.addTexture(texture);
 	texture = std::shared_ptr<Texture>(new Texture("pbr/metal/gold-scuffed/normal.png", TextureType::normal));
 	material.addTexture(texture);
-	this->objects_[0]->setMaterial(material);
+	this->objects_[1]->setMaterial(material);
+	material.setDefault();
+
+	texture = std::shared_ptr<Texture>(new Texture("pbr/plastic/plastic-scuffed/albedo.png", TextureType::albedo));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/plastic/plastic-scuffed/smoothness.png", TextureType::smoothness));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/plastic/plastic-scuffed/ao.png", TextureType::ambientOcclusion));
+	material.addTexture(texture);
+	texture = std::shared_ptr<Texture>(new Texture("pbr/plastic/plastic-scuffed/normal.png", TextureType::normal));
+	material.addTexture(texture);
+	this->objects_[2]->setMaterial(material);
+	material.setDefault();
 
 	std::shared_ptr<Model> pointLight(new Model("pointLight.obj"));
 	std::shared_ptr<Shader> lightShader(new Shader("lightShader"));

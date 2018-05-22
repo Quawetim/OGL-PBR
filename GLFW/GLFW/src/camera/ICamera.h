@@ -97,8 +97,6 @@ private:
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
 
-	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 public:
 	///<summary>Конструктор по-умолчанию.</summary>
 	FirstPersonCamera();
@@ -124,8 +122,6 @@ private:
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
 
-	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 public:
 	///<summary>Конструктор.</summary>
 	ThirdPersonCamera();
@@ -146,8 +142,6 @@ private:
 
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
-
-	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 public:
 	///<summary>Конструктор.</summary>
@@ -172,8 +166,6 @@ private:
 
 	///<summary>Вычисляет матрицу вида осей координат.</summary>
 	void computeViewMatrixAxes();
-
-	void handleKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 public:
 	///<summary>Конструктор.</summary>

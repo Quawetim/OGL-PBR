@@ -1,7 +1,7 @@
 #include "Renderer.h"
 #include "..\callbacks\Callbacks.h"
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор по-умолчанию.</summary>
 OpenGLRenderer::OpenGLRenderer()
 {
 	this->ogl_ = true;
@@ -421,8 +421,6 @@ void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, std::shared_ptr<Sha
 	for (size_t i = 0; i < meshesCount; i++)
 	{
 		std::shared_ptr<Mesh> mesh = model->getMeshes()[i];
-		glm::mat4 m = mesh->getModelMatrix();
-		glm::mat4 m1 = model_matrix * m;
 		shader->setModelMatrix(model_matrix * mesh->getModelMatrix());
 
 		unsigned int albedoMapsCount = 0;
@@ -634,6 +632,9 @@ void OpenGLRenderer::renderCube()
 
 ////////////////////////////////////////////// public-функции //////////////////////////////////////////////
 
+///<summary>Отрисовка текстуры во весь экран.</summary>
+///<param name = 'shader'>Шейдер.</param>
+///<param name = 'texture'>Текстура.</param>
 void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture)
 {
 	shader->activate();
@@ -674,7 +675,6 @@ void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader)
 void OpenGLRenderer::drawObject(std::shared_ptr<Object> object, std::shared_ptr<Shader> shader, std::vector<std::shared_ptr<PointLight>> lights, glm::mat4 view_matrix, glm::vec3 camera_position)
 {
 	shader->activate();
-	//shader.setProjectionViewModelMatrices(this->perspectiveProjection_, view_matrix, object->getModelMatrix());
 	shader->setProjectionMatrix(this->perspectiveProjection_);
 	shader->setViewMatrix(view_matrix);
 	shader->setVec3("cameraPosition", camera_position);	
@@ -941,34 +941,6 @@ void OpenGLRenderer::drawCoordinateAxes(std::shared_ptr<CoordinateAxes> axes, gl
 	glBindVertexArray(0);
 
 	glViewport(0, 0, this->windowWidth_, this->windowHeight_);
-}
-
-void OpenGLRenderer::drawDebugQuad(unsigned int textureID, std::shared_ptr<Shader> shader)
-{
-	glm::mat4 modelMatrix;
-	modelMatrix = glm::scale(glm::vec3(0.3f));
-	modelMatrix *= glm::translate(glm::vec3(5.0f, 2.0f, 0.0f));
-
-	glDisable(GL_DEPTH_TEST);
-
-	shader->activate();
-
-	shader->setProjectionMatrix(this->orthoProjection_);
-	shader->setModelMatrix(modelMatrix);
-	
-	shader->setBool("useBgTexture", true);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	shader->setInt("bgTexture", 0);
-
-	glBindVertexArray(this->quadVAO_);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-	glBindVertexArray(0);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	glEnable(GL_DEPTH_TEST);
 }
 
 ////////////////////////////////////////////// служебные функции //////////////////////////////////////////////

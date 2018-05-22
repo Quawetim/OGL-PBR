@@ -37,7 +37,7 @@ private:
 	void computeTangentsBitangents(std::vector<VertexData> &vertices);
 
 public:
-	///<summary>Конструктор.</summary>
+	///<summary>Конструктор по-умолчанию.</summary>
 	Model();
 
     ///<summary>Конструктор.</summary>

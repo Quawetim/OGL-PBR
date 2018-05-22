@@ -5,8 +5,10 @@
 ///<summary>Логгер. Логирует ошибки на экран и в файл "log.txt".</summary>
 Logger logger;
 
+///<summary>Рендерер.</summary>
 Renderer* renderer;
 
+///<summary>Обработчик ввода.</summary>
 InputHandle *InputHandle::inputHandle_;
 
 ///<summary>Задаёт соответствие TextureType и её TextureKeys в шейдере.</summary>

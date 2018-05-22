@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-///<summary>Конструктор.</summary>
+///<summary>Конструктор по-умолчанию.</summary>
 Renderer::Renderer()
 {
 	this->window_.OGLwindow = nullptr;
