@@ -285,7 +285,6 @@ int main()
 		}
 
 		renderer->bindFrameBuffer();
-		renderer->useDepthTesting(true);
 
 		// Очистить экран
 		renderer->clearScreen();
@@ -302,7 +301,6 @@ int main()
 		// Frame
 
 		renderer->bindFrameBuffer(0);
-		renderer->useDepthTesting(false);
 		
 		renderer->clearScreen();
 		renderer->drawFrame(postProcessingShader);

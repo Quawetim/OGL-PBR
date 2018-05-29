@@ -637,6 +637,8 @@ void OpenGLRenderer::renderCube()
 ///<param name = 'texture'>Текстура.</param>
 void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture)
 {
+	this->useDepthTesting(false);
+
 	shader->activate();
 	shader->setFloat("gamma", gamma);
 	shader->setVec2("resolution", glm::vec2(this->windowWidth_, this->windowHeight_));
@@ -648,12 +650,16 @@ void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader, std::shared_ptr<T
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	this->bindTexture2D(0);
+
+	this->useDepthTesting(true);
 }
 
 ///<summary>Отрисовка кадра во весь экран.</summary>
 ///<param name = 'shader'>Шейдер.</param>
 void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader)
 {
+	this->useDepthTesting(false);
+
 	shader->activate();
 	shader->setFloat("gamma", gamma);
 	shader->setVec2("resolution", glm::vec2(this->windowWidth_, this->windowHeight_));
@@ -665,6 +671,8 @@ void OpenGLRenderer::drawFrame(std::shared_ptr<Shader> shader)
 
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	this->bindTexture2D(0);
+
+	this->useDepthTesting(true);
 }
 
 ///<summary>Отрисовка объекта.</summary>
@@ -777,7 +785,7 @@ void OpenGLRenderer::drawPointLight(std::shared_ptr<PointLight> light, glm::mat4
 ///<param name = 'ui_element'>Элемент.</param>
 void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 {
-	glDisable(GL_DEPTH_TEST);
+	this->useDepthTesting(false);
 
 	std::shared_ptr<Shader> shader = ui_element->getShader();
 	shader->activate();
@@ -921,6 +929,8 @@ void OpenGLRenderer::drawUiElement(std::shared_ptr<UiElement> ui_element)
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+	this->useDepthTesting(true);
 }
 
 ///<summary>Отрисовка осей координат.</summary>
