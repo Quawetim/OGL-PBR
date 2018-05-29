@@ -2,7 +2,10 @@
 
 out vec4 fragmentColor;
 
-in vec3 textureCoords;
+in VS_OUT
+{
+	vec3 textureCoords;
+} fs_in;
 
 const float PI = 22.0f / 7.0f;
 
@@ -10,7 +13,7 @@ uniform samplerCube envMap;
 
 void main()
 {
-    vec3 normal = normalize(textureCoords);
+    vec3 normal = normalize(fs_in.textureCoords);
 
     vec3 irradiance = vec3(0.0f);
 

@@ -62,9 +62,9 @@ vec3 ImportanceSamplingGGX(vec2 Xi, vec3 normal, float roughness)
     vec3 tangent = normalize(cross(up, normal));
     vec3 bitangent = cross(normal, tangent);
 
-    vec3 sampledVector = normalize(tangent * H.x + bitangent * H.y + normal * H.z);
+    vec3 res = normalize(tangent * H.x + bitangent * H.y + normal * H.z);
     
-    return sampledVector;
+    return normalize(res);
 }
 
 void main()

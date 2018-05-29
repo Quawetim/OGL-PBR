@@ -216,7 +216,7 @@ vec2 ParallaxOcclusionMapping(int map, vec2 texture_coords, vec3 view_direction)
 		currentDepth += deltaDepth;
 	}
     
-    vec2 prevTextureCoords = currentTextureCoords + deltaTextureCoords;
+    vec2 prevTextureCoords = currentTextureCoords - deltaTextureCoords;
 
     float afterDepth = currentDepth_map - currentDepth;
     float beforeDepth = texture(heightMaps[map], prevTextureCoords).r - currentDepth + deltaDepth;
