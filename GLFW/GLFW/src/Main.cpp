@@ -217,6 +217,9 @@ int main()
 	renderer->setVsync(false);
 #endif
 
+	//std::ofstream temp_stream;
+	//temp_stream.open("time.txt", std::ios::app);
+
 	////////////////////////////////DEBUG////////////////////////////////
 
 	////////////////////////////////////////////////////////////Render Loop///////////////////////////////////////////////////////////////
@@ -282,27 +285,28 @@ int main()
 			}
 
 			fps = 0;
-		}
+		}		
+
+		////////////////////////////////DEBUG////////////////////////////////
+
+
+		////////////////////////////////DEBUG////////////////////////////////
 
 		renderer->bindFrameBuffer();
 
 		// Очистить экран
 		renderer->clearScreen();
 
-		////////////////////////////////DEBUG////////////////////////////////
-
-
-		////////////////////////////////DEBUG////////////////////////////////
-
 		allScene[activeScene]->render(deltaTime, pbrShader, camera->getViewMatrix(), camera->getPosition());
 
 		renderer->drawSkybox(skybox, camera->getViewMatrix(), camera->getPosition());
 
-		// Frame
-
 		renderer->bindFrameBuffer(0);
+
+		// Frame	
 		
 		renderer->clearScreen();
+
 		renderer->drawFrame(postProcessingShader);
 
 		// GUI
@@ -329,13 +333,26 @@ int main()
 			camera->handleInput(deltaTime);
 			//skybox->setPosition(camera->getPosition());
 		}
+	
+		/*if (frames == 4999)
+		{
+			if (temp_stream)
+			{
+				float time = static_cast<float>(glfwGetTime()) - startTime;
+
+				temp_stream << "scene:\t" << activeScene << "\ttime:\t" << time << "\tframes:\t" << frames + 1 << std::endl;
+				temp_stream.close();
+
+				activeScene = 2;
+			}
+		}*/
 
         // Меняем кадр
 
 		renderer->swapBuffers();
 		renderer->pollEvents();
 		frames++;
-    }
+    }	
 
 	cameras.clear();
 	std::vector<std::shared_ptr<ICamera>>(cameras).swap(cameras);

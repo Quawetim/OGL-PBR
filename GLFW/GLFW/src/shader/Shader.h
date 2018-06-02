@@ -20,6 +20,9 @@ private:
 	///<summary>Путь к фрагментному шейдеру.</summary>
 	std::string fsPath_;
 
+	///<summary>Путь к геометрическому шейдеру.</summary>
+	std::string gsPath_;
+
     ///<summary>Проверка на ошибки компиляции шейдера.</summary>
     ///<param name = 'id'>Идентификатор шейдера.</param>
     ///<param name = 'type'>Тип шейдера.</param>

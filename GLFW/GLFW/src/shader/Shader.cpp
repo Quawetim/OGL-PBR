@@ -21,6 +21,7 @@ void Shader::checkCompilationErrors(const unsigned int id, const int type) const
 			{
 				case 1: msg = "Shader compilation error.\nType: Vertex.\nName: " + this->name_ + ".vs\n" + std::string(log); break;
 				case 2: msg = "Shader compilation error.\nType: Fragment.\nName: " + this->name_ + ".fs\n" + std::string(log); break;
+				case 3: msg = "Shader compilation error.\nType: Geometry.\nName: " + this->name_ + ".gs\n" + std::string(log); break;
 			}
             
             logger.log(__FUNCTION__, ErrorType::error, msg);
@@ -49,13 +50,15 @@ Shader::Shader(std::string name)
 
 	this->vsPath_ = path + ".vs";
 	this->fsPath_ = path + ".fs";
+	this->gsPath_ = path + ".gs";
     
 	// Reading
-    std::string vsCode, fsCode;
-    std::ifstream vsFin, fsFin;
+    std::string vsCode, fsCode, gsCode;
+    std::ifstream vsFin, fsFin, gsFin;
 
 	vsFin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	fsFin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	gsFin.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     
     try
     {
@@ -85,8 +88,37 @@ Shader::Shader(std::string name)
         logger.log(__FUNCTION__, ErrorType::error, msg);
     }
 
+	bool gsExist = false;
+	try
+	{
+		gsFin.open(this->gsPath_);
+
+		std::stringstream gsStream;
+
+		gsStream << gsFin.rdbuf();
+
+		gsFin.close();
+
+		gsCode = gsStream.str();
+		gsExist = true;
+	}
+	catch (std::ifstream::failure e)
+	{
+		std::string msg;
+		logger.log(__FUNCTION__, ErrorType::info, "Shader file not found.");
+
+		msg = "GS_PATH: " + this->gsPath_;
+		logger.log(__FUNCTION__, ErrorType::info, msg);
+	}
+
     const char* vShaderCode = vsCode.c_str();
     const char* fShaderCode = fsCode.c_str();
+	const char* gShaderCode;
+
+	if (gsExist)
+	{
+		gShaderCode = gsCode.c_str();
+	}
 
     // Compilation
     
@@ -101,16 +133,29 @@ Shader::Shader(std::string name)
     glShaderSource(fragment, 1, &fShaderCode, NULL);
     glCompileShader(fragment);
     checkCompilationErrors(fragment, 2);
+
+	unsigned int geometry;
+	if (gsExist)
+	{
+		geometry = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geometry, 1, &gShaderCode, NULL);
+		glCompileShader(geometry);
+		checkCompilationErrors(geometry, 3);
+	}
     
     // Full shader
     this->id_ = glCreateProgram();
     glAttachShader(this->id_, vertex);
     glAttachShader(this->id_, fragment);
+
+	if (gsExist) glAttachShader(this->id_, geometry);
+
     glLinkProgram(this->id_);
     checkCompilationErrors(this->id_, 0);
     
     glDeleteShader(vertex);
     glDeleteShader(fragment);
+	if (gsExist) glDeleteShader(geometry);
 }
 
 ///<summary>Возвращает идентификатор шейдера.</summary>

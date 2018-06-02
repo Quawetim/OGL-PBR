@@ -219,7 +219,6 @@ unsigned int textureLoader::loadCubeMapHDR(const std::string folder, const int r
 
 	for (size_t i = 0; i < 6; i++)
 	{
-		stbi_set_flip_vertically_on_load(true);
 		data = stbi_loadf(faces[i].c_str(), &width, &height, &colorChannels, 0);
 
 		if (data)
