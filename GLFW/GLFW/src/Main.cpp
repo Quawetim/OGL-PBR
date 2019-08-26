@@ -26,6 +26,7 @@ extern "C"
 
 int activeScene = 0;
 
+// Button-clicks
 void func1(std::shared_ptr<IScene> scene)
 {
 	activeScene++;
@@ -73,15 +74,9 @@ int main()
 	////////////////////////////////////////////////////////////Loading Camera////////////////////////////////////////////////////////////	
 
 	std::shared_ptr<ICamera> camera_FPC(new FirstPersonCamera(glm::vec3(0.0f, 5.0f, 15.0f)));
-	//std::shared_ptr<ICamera> camera_TPC(new ThirdPersonCamera());
-	//std::shared_ptr<ICamera> camera_static(new StaticCamera());
-	//std::shared_ptr<ICamera> camera_free(new FreeCamera());
 
 	std::vector<std::shared_ptr<ICamera>> cameras;
 	cameras.push_back(camera_FPC);
-	//cameras.push_back(camera_TPC);
-	//cameras.push_back(camera_static);
-	//cameras.push_back(camera_free);
 
 	std::shared_ptr<ICamera> camera = cameras[0];
 
@@ -217,9 +212,6 @@ int main()
 	renderer->setVsync(false);
 #endif
 
-	//std::ofstream temp_stream;
-	//temp_stream.open("time.txt", std::ios::app);
-
 	////////////////////////////////DEBUG////////////////////////////////
 
 	////////////////////////////////////////////////////////////Render Loop///////////////////////////////////////////////////////////////
@@ -333,19 +325,6 @@ int main()
 			camera->handleInput(deltaTime);
 			//skybox->setPosition(camera->getPosition());
 		}
-	
-		/*if (frames == 4999)
-		{
-			if (temp_stream)
-			{
-				float time = static_cast<float>(glfwGetTime()) - startTime;
-
-				temp_stream << "scene:\t" << activeScene << "\ttime:\t" << time << "\tframes:\t" << frames + 1 << std::endl;
-				temp_stream.close();
-
-				activeScene = 2;
-			}
-		}*/
 
         // Меняем кадр
 

@@ -448,8 +448,6 @@ void OpenGLRenderer::drawModel(std::shared_ptr<Model> model, std::shared_ptr<Sha
 		std::string mapNumber;
 		std::vector<std::shared_ptr<Texture>> pointer;
 
-		// костылище
-		// проверить на жор памяти копированием
 		if (material.isTexturesEmpty()) pointer = mesh->getTextures();
 		else pointer = material.getTextures();
 

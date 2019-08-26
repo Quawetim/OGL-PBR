@@ -11,7 +11,7 @@ private:
 
 protected:
 	///<summary>Модели, из которых состоит объект.</summary>
-	std::vector<std::shared_ptr<Model>> models_;									// Мб лучше список? Который можно отсортировать по приоритету отрисовки...
+	std::vector<std::shared_ptr<Model>> models_;
 
 public:
 	///<summary>Конструктор по-умолчанию.</summary>
@@ -50,34 +50,4 @@ public:
 	///<summary>Возвращает модель по имени. Или первую, если не найдено.</summary>
 	///<param name = 'name'>Имя модели.</param>
 	const std::shared_ptr<Model> getModelByName(const std::string name) const;
-};
-
-class StarDestroyer : public Object
-{
-
-};
-
-class StarFighter : public Object
-{
-
-};
-
-class ImperialStarDestroyer : public StarDestroyer
-{
-
-};
-
-class Venator : public StarDestroyer
-{
-
-};
-
-class TieFighter : public StarFighter
-{
-
-};
-
-class ARC170 : public StarFighter
-{
-
 };

@@ -93,8 +93,8 @@
     <IncludePath>$(SolutionDir)/GLFW/include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)/GLFW/lib/x86;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma</TargetName>
-    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -103,7 +103,7 @@
     <LibraryPath>$(SolutionDir)/GLFW/lib/x64;$(LibraryPath)</LibraryPath>
     <TargetName>Diploma64</TargetName>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
